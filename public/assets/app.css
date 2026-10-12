@@ -81,6 +81,40 @@ th { font-size: .875rem; color: var(--muted); }
 
 .secret { font-family: ui-monospace, Consolas, monospace; font-size: 1.4rem; letter-spacing: .08em; padding: .75rem 1rem; background: #fff; border: 2px dashed var(--brand); display: inline-block; }
 
+.btn-block { width: 100%; }
+.req { color: var(--err); }
+
+/* Public pages */
+.public-head { background: var(--brand); color: #fff; }
+.public-head-inner { display: flex; align-items: center; gap: .75rem; padding-block: .6rem; }
+.public-head .logo { max-height: 48px; max-width: 160px; background: #fff; border-radius: 4px; padding: 2px; }
+.public-head .org { font-weight: 600; margin-inline-end: auto; }
+.public-head .lang { color: #fff; display: inline-flex; align-items: center; min-height: 44px; padding-inline: .5rem; }
+.exhibition { margin-block: 1rem; }
+.public-foot { display: flex; flex-wrap: wrap; gap: 1rem; font-size: .875rem; padding-block-end: 2rem; }
+.public-foot a { color: var(--muted); display: inline-flex; align-items: center; min-height: 44px; }
+.hp { position: absolute; inset-inline-start: -10000px; inline-size: 1px; block-size: 1px; overflow: hidden; }
+
+/* Staff: exhibition QR */
+.spaced { margin-block: 1.25rem .5rem; }
+.spaced form { margin: 0; }
+.qr-card { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+.qr { inline-size: 220px; block-size: 220px; background: #fff; }
+.qr svg, .poster-qr svg { display: block; inline-size: 100%; block-size: 100%; }
+.url { word-break: break-all; }
+.logo-preview { max-height: 64px; max-width: 200px; border: 1px solid var(--line); padding: 4px; background: #fff; }
+
+/* A4 poster */
+.poster { background: #fff; }
+.poster-page { max-width: 190mm; margin: 0 auto; padding: 12mm 0; text-align: center; }
+.poster-logo { max-height: 40mm; max-width: 120mm; }
+.poster-org { font-size: 2rem; font-weight: 700; margin: 0; }
+.poster-title { font-size: 2.6rem; margin: 8mm 0; }
+.poster-qr { inline-size: 150mm; block-size: 150mm; margin: 0 auto; }
+.poster-url { font-family: ui-monospace, Consolas, monospace; font-size: 1.9rem; font-weight: 700; margin-block: 6mm; word-break: break-all; }
+@page { size: A4 portrait; margin: 10mm; }
+@media print { .no-print { display: none; } }
+
 .lang-block + .lang-block { margin-block-start: 1.5rem; padding-block-start: 1.5rem; border-block-start: 1px solid var(--line); }
 
 @media (max-width: 40rem) {

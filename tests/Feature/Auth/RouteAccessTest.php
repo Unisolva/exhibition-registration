@@ -4,6 +4,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Exhibition;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route;
@@ -41,6 +42,18 @@ class RouteAccessTest extends TestCase
         'PUT staff/users/{super}' => [302, 403, 403],
         'POST staff/users/{staff}/reset-password' => [200, 200, 403],
         'POST staff/users/{super}/reset-password' => [200, 403, 403],
+        'GET staff/exhibitions' => [200, 200, 403],
+        'GET staff/exhibitions/create' => [200, 200, 403],
+        'POST staff/exhibitions' => [302, 302, 403],
+        'GET staff/exhibitions/{exhibition}' => [200, 200, 403],
+        'GET staff/exhibitions/{exhibition}/edit' => [200, 200, 403],
+        'PUT staff/exhibitions/{exhibition}' => [302, 302, 403],
+        'POST staff/exhibitions/{exhibition}/open' => [302, 302, 403],
+        'POST staff/exhibitions/{exhibition}/close' => [302, 302, 403],
+        'GET staff/exhibitions/{exhibition}/qr.svg' => [200, 200, 403],
+        'GET staff/exhibitions/{exhibition}/poster' => [200, 200, 403],
+        'GET staff/settings/branding' => [200, 403, 403],
+        'PUT staff/settings/branding' => [302, 403, 403],
     ];
 
     public function test_every_staff_route_is_in_the_role_table(): void
@@ -58,10 +71,11 @@ class RouteAccessTest extends TestCase
     public function test_anonymous_requests_to_every_staff_route_go_to_sign_in(): void
     {
         $target = User::factory()->staff()->create();
+        $exhibition = Exhibition::factory()->create();
 
         foreach ($this->staffRoutes() as $key) {
             [$method, $uri] = explode(' ', $key, 2);
-            $url = '/'.str_replace('{user}', (string) $target->id, $uri);
+            $url = '/'.str_replace(['{user}', '{exhibition}'], [(string) $target->id, (string) $exhibition->id], $uri);
 
             $this->newProcess();
             $this->call($method, $url)->assertRedirect(route('login'));
@@ -84,8 +98,11 @@ class RouteAccessTest extends TestCase
                     'admin' => User::factory()->admin()->create(),
                 ];
 
+                $exhibition = Exhibition::factory()->create();
+
                 [$method, $uri] = explode(' ', $key, 2);
                 $url = '/'.preg_replace_callback('/\{(staff|super|admin)\}/', fn ($m) => (string) $targets[$m[1]]->id, $uri);
+                $url = str_replace('{exhibition}', (string) $exhibition->id, $url);
                 $data = $this->payloadFor($key, $targets);
 
                 $this->newProcess();
@@ -129,6 +146,8 @@ class RouteAccessTest extends TestCase
     {
         return match (true) {
             $key === 'POST staff/users' => ['name' => 'Matrix User', 'email' => uniqid('m').'@example.test', 'role' => 'staff'],
+            $key === 'POST staff/exhibitions', $key === 'PUT staff/exhibitions/{exhibition}' => ['name' => 'Matrix Fair', 'starts_on' => '2026-11-01'],
+            $key === 'PUT staff/settings/branding' => ['brand_color' => '#1F4E79'],
             str_starts_with($key, 'PUT staff/users/') => (function () use ($key, $targets) {
                 $target = $targets[str_contains($key, '{super}') ? 'super' : 'staff'];
 
