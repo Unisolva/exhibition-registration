@@ -1,0 +1,90 @@
+/* Copyright (c) 2026 Unisolva for Information Technology and App Development L.L.C. All rights reserved. See LICENSE. */
+/* One hand-written stylesheet, system fonts only, logical properties so RTL works unchanged. */
+
+:root {
+  --brand: #1F4E79;
+  --ink: #1b1f24;
+  --muted: #5b6470;
+  --line: #d5d9de;
+  --bg: #f5f6f8;
+  --card: #fff;
+  --ok: #1e6b3a;
+  --ok-bg: #e5f3ea;
+  --warn: #7a4b00;
+  --warn-bg: #fff4dc;
+  --err: #a1121b;
+  --err-bg: #fdeaea;
+  --radius: 6px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Arabic", Tahoma, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--bg);
+}
+a { color: var(--brand); }
+h1 { font-size: 1.5rem; margin: 0 0 1rem; }
+h2 { font-size: 1.2rem; margin: 1.5rem 0 .75rem; }
+
+.wrap { max-width: 72rem; margin: 0 auto; padding: 1rem; }
+.narrow { max-width: 28rem; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; }
+
+.topbar { background: var(--brand); color: #fff; }
+.topbar .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.25rem; padding-block: .6rem; }
+.topbar a, .topbar button { color: #fff; }
+.topbar .brand { font-weight: 600; text-decoration: none; margin-inline-end: auto; }
+.topbar nav { display: flex; flex-wrap: wrap; gap: .25rem 1rem; }
+.topbar form { margin: 0; }
+
+label { display: block; font-weight: 600; margin-block-end: .25rem; }
+.field { margin-block-end: 1rem; }
+.hint { color: var(--muted); font-size: .875rem; font-weight: 400; }
+input[type=text], input[type=email], input[type=tel], input[type=password], select, textarea {
+  display: block; width: 100%; min-height: 44px; padding: .5rem .75rem;
+  font: inherit; color: inherit; background: #fff;
+  border: 1px solid #8a939d; border-radius: var(--radius);
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 3px solid #f2b705; outline-offset: 2px;
+}
+.check { display: flex; align-items: center; gap: .5rem; font-weight: 400; min-height: 44px; }
+.check input { width: 1.25rem; height: 1.25rem; }
+[aria-invalid=true] { border-color: var(--err); }
+.error { color: var(--err); font-size: .9rem; margin-block-start: .25rem; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+  padding: .5rem 1.1rem; font: inherit; font-weight: 600; text-decoration: none; cursor: pointer;
+  color: #fff; background: var(--brand); border: 1px solid var(--brand); border-radius: var(--radius);
+}
+.btn[disabled] { opacity: .6; cursor: progress; }
+.btn-secondary { color: var(--brand); background: #fff; }
+.btn-link { background: none; border: 0; padding: 0; min-height: 0; font: inherit; text-decoration: underline; cursor: pointer; }
+.actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+
+.notice { padding: .75rem 1rem; border-radius: var(--radius); margin-block-end: 1rem; border: 1px solid transparent; }
+.notice-ok { background: var(--ok-bg); color: var(--ok); border-color: #b9dfc6; }
+.notice-warn { background: var(--warn-bg); color: var(--warn); border-color: #f0d49a; }
+.notice-err { background: var(--err-bg); color: var(--err); border-color: #f2b8bb; }
+
+table { width: 100%; border-collapse: collapse; background: var(--card); }
+th, td { text-align: start; padding: .6rem .75rem; border-block-end: 1px solid var(--line); vertical-align: top; }
+th { font-size: .875rem; color: var(--muted); }
+.badge { display: inline-block; padding: .1rem .5rem; border-radius: 999px; font-size: .8rem; background: #e8ebef; }
+.badge-off { background: var(--err-bg); color: var(--err); }
+
+.secret { font-family: ui-monospace, Consolas, monospace; font-size: 1.4rem; letter-spacing: .08em; padding: .75rem 1rem; background: #fff; border: 2px dashed var(--brand); display: inline-block; }
+
+.lang-block + .lang-block { margin-block-start: 1.5rem; padding-block-start: 1.5rem; border-block-start: 1px solid var(--line); }
+
+@media (max-width: 40rem) {
+  .stack-sm thead { display: none; }
+  .stack-sm tr { display: block; border-block-end: 1px solid var(--line); padding-block: .5rem; }
+  .stack-sm td { display: block; border: 0; padding-block: .15rem; }
+}

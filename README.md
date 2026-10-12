@@ -11,7 +11,7 @@ A self-hosted web application for agricultural companies that collect visitor de
 - **One visitor list** across all exhibitions, with search and filters. Repeat sign-ups of the same phone number at an exhibition are flagged, never merged.
 - **Configurable form.** Administrators add their own fields (text or a list of choices) in Arabic and English without code changes.
 - **Selected visitors only go to the CRM.** An administrator ticks the visitors to send and confirms. Each one becomes an Odoo lead. Nothing is sent automatically, and a visitor already sent is never sent twice.
-- **Two roles.** Administrators configure and send to the CRM; data entry staff enter and review visitors.
+- **Three roles.** Super admins configure the installation and its CRM connection; admins run exhibitions, users and sending to the CRM; staff enter visitors and see only their own entries.
 - **The company's own brand.** Name, logo and colour are settings.
 
 ## CRM support
