@@ -14,7 +14,9 @@
   <div class="wrap">
     <a class="brand" href="{{ route('staff.home') }}">{{ config('app.name') }}</a>
     <nav aria-label="Main">
+      @can('exhibitions.manage')<a href="{{ route('exhibitions.index') }}">Exhibitions</a>@endcan
       @can('users.manage')<a href="{{ route('users.index') }}">Users</a>@endcan
+      @can('system.manage')<a href="{{ route('settings.branding') }}">Branding</a>@endcan
       <a href="{{ route('password.edit') }}">Password</a>
     </nav>
     <form method="post" action="{{ route('logout') }}">

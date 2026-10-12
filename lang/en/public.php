@@ -1,0 +1,33 @@
+<?php
+
+// Copyright (c) 2026 Unisolva for Information Technology and App Development L.L.C. All rights reserved. See LICENSE.
+
+return [
+    'register_title' => 'Register your visit',
+    'intro' => 'Leave your details and our team will contact you.',
+    'required_note' => 'Fields marked * are required.',
+    'choose' => 'Choose…',
+    'submit' => 'Send',
+    'privacy' => 'How we use your details',
+    'powered_by' => 'Powered by Unisolva',
+    'switch_language' => 'العربية',
+    'switch_language_code' => 'ar',
+    'errors_heading' => 'Please check the fields marked below.',
+    'error' => [
+        'required' => ':field is required.',
+        'too_long' => ':field must be at most :max characters.',
+        'phone_short' => ':field needs at least 7 digits.',
+        'email' => ':field is not a valid email address.',
+        'option' => 'Choose a value from the list for :field.',
+        'form_expired' => 'The form was reloaded. Please press Send again.',
+    ],
+    'thanks_title' => 'Thank you',
+    'thanks_body' => 'Your registration has been received.',
+    'thanks_again' => 'Register another person',
+    'closed_title' => 'Registration is closed',
+    'closed_body' => 'Registration for this exhibition is not open at the moment.',
+    'conflict_title' => 'This form was already sent',
+    'conflict_body' => 'This form was already used for a different registration. Please open the registration page again to start a new one.',
+    'conflict_again' => 'Open the registration page',
+    'rate_limited' => 'Too many registrations from this connection in a short time. Please wait a minute, then press Send again. Your details are still in the form.',
+];

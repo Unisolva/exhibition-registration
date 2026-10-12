@@ -28,18 +28,10 @@ class SecurityHeaders
         }
         $response->headers->remove('X-Cacheable');
 
-        $response->headers->set('Content-Security-Policy', implode('; ', [
-            "default-src 'self'",
-            "script-src 'self' 'nonce-{$nonce}'",
-            "style-src 'self' 'nonce-{$nonce}'",
-            "img-src 'self' data:",
-            "font-src 'self'",
-            "connect-src 'self'",
-            "form-action 'self'",
-            "base-uri 'none'",
-            "frame-ancestors 'none'",
-            "object-src 'none'",
-        ]));
+        // A response with its own, stricter policy (the logo) keeps it.
+        if (! $response->headers->has('Content-Security-Policy')) {
+            $response->headers->set('Content-Security-Policy', $this->policy($nonce));
+        }
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'same-origin');
         $response->headers->set('X-Frame-Options', 'DENY');
@@ -50,5 +42,21 @@ class SecurityHeaders
         }
 
         return $response;
+    }
+
+    private function policy(string $nonce): string
+    {
+        return implode('; ', [
+            "default-src 'self'",
+            "script-src 'self' 'nonce-{$nonce}'",
+            "style-src 'self' 'nonce-{$nonce}'",
+            "img-src 'self' data:",
+            "font-src 'self'",
+            "connect-src 'self'",
+            "form-action 'self'",
+            "base-uri 'none'",
+            "frame-ancestors 'none'",
+            "object-src 'none'",
+        ]);
     }
 }
