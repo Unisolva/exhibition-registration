@@ -1,0 +1,35 @@
+# Copyright (c) 2026 Unisolva for Information Technology and App Development L.L.C. All rights reserved. See LICENSE.
+
+# Environment files and secrets (never published)
+.env*
+!.env.example
+secrets/
+*.inv
+docs/installations/
+
+# Database dumps
+*.sql
+*.sql.gz
+
+# Dependencies and build output
+/vendor
+/node_modules
+/build
+release-*.tgz
+
+# Runtime state (folder skeleton kept by the .gitignore files inside)
+/storage/*.key
+/bootstrap/cache/*.php
+
+# Browser test output
+/tests/Browser/test-results
+/tests/Browser/playwright-report
+
+# Tooling
+*.log
+.phpunit.result.cache
+/.phpunit.cache
+/.idea
+/.vscode
+.DS_Store
+Thumbs.db
