@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Unisolva for Information Technology and App Development L.L.C. All rights reserved. See LICENSE.
+compiled.php
+config.php
+down
+events.scanned.php
+lsp-*.php
+maintenance.php
+routes.php
+routes.scanned.php
+schedule-*
+services.json

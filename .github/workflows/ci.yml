@@ -1,0 +1,64 @@
+# Copyright (c) 2026 Unisolva for Information Technology and App Development L.L.C. All rights reserved. See LICENSE.
+
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: PHP 8.4 / MariaDB 10.11
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_DATABASE: exreg_test
+          MARIADB_USER: exreg
+          MARIADB_PASSWORD: exreg
+          MARIADB_ROOT_PASSWORD: ci-root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # Same extensions as the production PHP profile (work order §0b), nothing more.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: none, ctype, curl, dom, fileinfo, filter, iconv, intl, json, libxml, mbstring, openssl, pcre, pdo, pdo_mysql, session, simplexml, sodium, tokenizer, xml, xmlreader, xmlwriter, zip, bcmath, phar
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+
+      - name: Code style
+        run: vendor/bin/pint --test
+
+      - name: Tests
+        env:
+          INSTALLATION_DENYLIST: ${{ secrets.INSTALLATION_DENYLIST }}
+        run: php artisan test
