@@ -1,0 +1,43 @@
+Exhibition Registration
+Copyright (c) 2026 Unisolva for Information Technology and App Development L.L.C.
+All rights reserved.
+
+PROPRIETARY LICENCE
+
+1. Ownership. This software, including its source code, documentation,
+   database schema, translations and other files in this repository (the
+   "Software"), is owned by Unisolva for Information Technology and App
+   Development L.L.C. ("Unisolva") and is protected by copyright law.
+
+2. Visibility is not permission. The Software is published so that it can
+   be read and reviewed. Publishing it does not grant you any licence to it.
+   Except as stated in section 3, you may not use, run, install, deploy,
+   copy, modify, merge, translate, distribute, sublicense, sell, rent, host
+   for others, or create derivative works of the Software, in whole or in
+   part, without a written agreement signed by Unisolva.
+
+3. What is allowed. You may view the Software on GitHub and use the features
+   GitHub provides for public repositories, only to the extent required by
+   GitHub's Terms of Service. Nothing in this licence restricts rights that
+   applicable law grants you and that cannot be waived.
+
+4. Customers. Organisations that have a written agreement with Unisolva may
+   use the Software as that agreement states. Their rights come from that
+   agreement, not from this file.
+
+5. Contributions. Unisolva does not accept unsolicited contributions. Any
+   contribution submitted to this repository is licensed to Unisolva
+   without restriction, unless Unisolva agrees otherwise in writing.
+
+6. No warranty. The Software is provided "as is", without warranty of any
+   kind, express or implied, including warranties of merchantability,
+   fitness for a particular purpose and non-infringement. In no event shall
+   Unisolva be liable for any claim, damages or other liability arising
+   from the Software or its use, except as a written agreement with
+   Unisolva provides.
+
+7. Third-party components. Libraries installed as dependencies (for
+   example through Composer) are licensed by their own authors under their
+   own licences. This licence does not cover them.
+
+For licensing enquiries: https://unisolva.com/
