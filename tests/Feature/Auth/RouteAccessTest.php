@@ -10,8 +10,10 @@ use App\Models\User;
 use App\Models\Visitor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route as RouteFacade;
 use Illuminate\Support\Str;
+use Tests\Support\PushFixtures;
 use Tests\TestCase;
 
 /**
@@ -21,6 +23,7 @@ use Tests\TestCase;
  */
 class RouteAccessTest extends TestCase
 {
+    use PushFixtures;
     use RefreshDatabase;
 
     /** Routes open to guests. */
@@ -78,12 +81,28 @@ class RouteAccessTest extends TestCase
         'POST staff/settings/fields' => [302, 403, 403],
         'GET staff/settings/fields/{field}/edit' => [200, 403, 403],
         'PUT staff/settings/fields/{field}' => [302, 403, 403],
+        'GET staff/batches' => [200, 200, 403],
+        'POST staff/batches/preview' => [200, 200, 403],
+        'POST staff/batches' => [302, 302, 403],
+        'GET staff/batches/{batch}' => [200, 200, 403],
+        'GET staff/batches/{batch}/status' => [200, 200, 403],
+        'POST staff/batches/{batch}/cancel' => [302, 302, 403],
+        'POST staff/items/{item}/retry' => [302, 302, 403],
+        'POST staff/items/{review_item}/review' => [302, 302, 403],
+        'GET staff/system' => [200, 403, 403],
+        'GET staff/erp' => [200, 403, 403],
+        'PUT staff/erp/settings' => [302, 403, 403],
+        'PUT staff/erp/blocks/{kind}' => [302, 403, 403],
+        'POST staff/erp/blocks/{kind}/test' => [302, 403, 403],
+        'POST staff/erp/activate' => [302, 403, 403],
+        'PUT staff/erp/push' => [302, 403, 403],
+        'POST staff/erp/cancel-waiting' => [302, 403, 403],
     ];
 
     public function test_every_staff_route_is_in_the_role_table(): void
     {
         $covered = array_map(
-            fn (string $key) => str_replace('{trashed}', '{visitor}', preg_replace('/\{(staff|super|admin)\}/', '{user}', $key)),
+            fn (string $key) => str_replace(['{trashed}', '{review_item}'], ['{visitor}', '{item}'], preg_replace('/\{(staff|super|admin)\}/', '{user}', $key)),
             array_keys(self::MATRIX),
         );
 
@@ -102,8 +121,8 @@ class RouteAccessTest extends TestCase
         foreach ($this->staffRoutes() as $key) {
             [$method, $uri] = explode(' ', $key, 2);
             $url = '/'.str_replace(
-                ['{user}', '{exhibition}', '{visitor}', '{field}'],
-                [(string) $target->id, (string) $exhibition->id, (string) $visitor->id, (string) $field->id],
+                ['{user}', '{exhibition}', '{visitor}', '{field}', '{batch}', '{item}', '{kind}'],
+                [(string) $target->id, (string) $exhibition->id, (string) $visitor->id, (string) $field->id, '1', '1', 'live'],
                 $uri,
             );
 
@@ -118,6 +137,8 @@ class RouteAccessTest extends TestCase
     public function test_the_role_table_holds_for_every_route(): void
     {
         $roles = ['super_admin', 'admin', 'staff'];
+        // ERP mode on with a tested, active connection, so the push routes exist.
+        $this->readyToPush();
 
         foreach (self::MATRIX as $key => $expected) {
             foreach ($roles as $index => $role) {
@@ -132,12 +153,19 @@ class RouteAccessTest extends TestCase
                 $visitor = Visitor::factory()->at($exhibition)->create();
                 $trashed = Visitor::factory()->at($exhibition)->trashed()->create();
                 $field = FieldDefinition::query()->where('key', 'occupation')->first();
+                $batch = $this->queue([Visitor::factory()->at($exhibition)->create()]);
+                $failedItem = $this->queue([Visitor::factory()->at($exhibition)->create()])->items()->first();
+                DB::table('erp_push_items')->where('id', $failedItem->id)->update(['state' => 'failed_final']);
+                DB::table('lead_syncs')->where('active_item_id', $failedItem->id)->update(['state' => 'failed', 'active_item_id' => null]);
+                $reviewItem = $this->queue([Visitor::factory()->at($exhibition)->create()])->items()->first();
+                DB::table('erp_push_items')->where('id', $reviewItem->id)->update(['state' => 'needs_review']);
 
                 [$method, $uri] = explode(' ', $key, 2);
                 $url = '/'.preg_replace_callback('/\{(staff|super|admin)\}/', fn ($m) => (string) $targets[$m[1]]->id, $uri);
                 $url = str_replace(
-                    ['{exhibition}', '{visitor}', '{trashed}', '{field}'],
-                    [(string) $exhibition->id, (string) $visitor->id, (string) $trashed->id, (string) $field->id],
+                    ['{exhibition}', '{visitor}', '{trashed}', '{field}', '{batch}', '{item}', '{review_item}', '{kind}'],
+                    [(string) $exhibition->id, (string) $visitor->id, (string) $trashed->id, (string) $field->id,
+                        (string) $batch->id, (string) $failedItem->id, (string) $reviewItem->id, 'live'],
                     $url,
                 );
                 $data = $this->payloadFor($key, $targets, $exhibition, $visitor);
@@ -182,6 +210,13 @@ class RouteAccessTest extends TestCase
     private function payloadFor(string $key, array $targets, Exhibition $exhibition, Visitor $visitor): array
     {
         return match (true) {
+            $key === 'POST staff/batches/preview' => ['visitor_ids' => [$visitor->id]],
+            $key === 'POST staff/batches' => ['batch_token' => (string) Str::ulid(), 'visitor_ids' => [$visitor->id]],
+            $key === 'POST staff/items/{review_item}/review' => ['decision' => 'send_again'],
+            $key === 'PUT staff/erp/settings' => ['erp_mode' => 'odoo', 'odoo_version' => '18', 'lead_name_template' => '{exhibition}: {visitor_name}'],
+            $key === 'PUT staff/erp/blocks/{kind}' => ['base_url' => 'https://live-erp.example.test', 'database' => 'live-db', 'login' => 'crm-api@example.test'],
+            $key === 'POST staff/erp/activate' => ['kind' => 'live'],
+            $key === 'PUT staff/erp/push' => ['enabled' => '1'],
             $key === 'POST staff/registrations' => ['exhibition_id' => (string) $exhibition->id, 'submission_token' => (string) Str::ulid(),
                 'name' => 'Matrix Visitor', 'phone' => '01001234567'],
             $key === 'PUT staff/visitors/{visitor}' => ['name' => 'Matrix Edit', 'phone' => $visitor->phone_raw, 'governorate' => 'C'],

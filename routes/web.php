@@ -7,13 +7,17 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\LogoController;
 use App\Http\Controllers\PublicRegistrationController;
+use App\Http\Controllers\Staff\BatchController;
 use App\Http\Controllers\Staff\BrandingController;
 use App\Http\Controllers\Staff\EntryController;
+use App\Http\Controllers\Staff\ErpController;
 use App\Http\Controllers\Staff\ExhibitionController;
 use App\Http\Controllers\Staff\ExportController;
 use App\Http\Controllers\Staff\FieldController;
 use App\Http\Controllers\Staff\HomeController;
+use App\Http\Controllers\Staff\ItemController;
 use App\Http\Controllers\Staff\SettingsController;
+use App\Http\Controllers\Staff\SystemController;
 use App\Http\Controllers\Staff\TrashController;
 use App\Http\Controllers\Staff\UserController;
 use App\Http\Controllers\Staff\VisitorController;
@@ -96,7 +100,28 @@ Route::prefix('staff')->middleware('staff.locale')->group(function () {
                 Route::get('exhibitions/{exhibition}/poster', [ExhibitionController::class, 'poster'])->name('exhibitions.poster');
             });
 
+            // Push screens (super admin and admin), absent when ERP mode is "none".
+            Route::middleware(['can:registrations.push', 'erp.enabled'])->group(function () {
+                Route::get('batches', [BatchController::class, 'index'])->name('batches.index');
+                Route::post('batches/preview', [BatchController::class, 'preview'])->name('batches.preview');
+                Route::post('batches', [BatchController::class, 'store'])->name('batches.store');
+                Route::get('batches/{batch}', [BatchController::class, 'show'])->name('batches.show');
+                Route::get('batches/{batch}/status', [BatchController::class, 'status'])->name('batches.status');
+                Route::post('batches/{batch}/cancel', [BatchController::class, 'cancel'])->name('batches.cancel');
+                Route::post('items/{item}/retry', [ItemController::class, 'retry'])->name('items.retry');
+                Route::post('items/{item}/review', [ItemController::class, 'review'])->name('items.review');
+            });
+
             Route::middleware('can:system.manage')->group(function () {
+                Route::get('system', SystemController::class)->name('system');
+                Route::get('erp', [ErpController::class, 'show'])->name('erp.show');
+                Route::put('erp/settings', [ErpController::class, 'updateSettings'])->name('erp.settings');
+                Route::put('erp/blocks/{kind}', [ErpController::class, 'saveBlock'])->whereIn('kind', ['test', 'live'])->name('erp.blocks.save');
+                Route::post('erp/blocks/{kind}/test', [ErpController::class, 'test'])->whereIn('kind', ['test', 'live'])->name('erp.blocks.test');
+                Route::post('erp/activate', [ErpController::class, 'activate'])->name('erp.activate');
+                Route::put('erp/push', [ErpController::class, 'push'])->name('erp.push');
+                Route::post('erp/cancel-waiting', [ErpController::class, 'cancelWaiting'])->name('erp.cancel-waiting');
+
                 Route::get('settings', [SettingsController::class, 'edit'])->name('settings.general');
                 Route::put('settings', [SettingsController::class, 'update'])->name('settings.general.update');
                 Route::get('settings/branding', [BrandingController::class, 'edit'])->name('settings.branding');

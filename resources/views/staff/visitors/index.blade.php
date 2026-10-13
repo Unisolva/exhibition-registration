@@ -89,14 +89,27 @@
 @if (count($page->items()) === 0)
   <p>No visitors match.</p>
 @else
+  @if ($canPush)
+  {{-- Selection lives only on this page: a new filter, search or page starts empty (work order §7). --}}
+  <form method="post" action="{{ route('batches.preview') }}" autocomplete="off" data-select>
+    @csrf
+    <div class="select-bar">
+      <label class="check"><input type="checkbox" data-select-all> Select all on this page</label>
+      <span data-select-count aria-live="polite">0 selected</span>
+      <button type="submit" class="btn" data-select-submit>Send selected to the ERP…</button>
+    </div>
+  @endif
   <table class="stack-sm visitors">
     <thead>
-      <tr><th>Name</th><th>Phone</th><th>Exhibition</th><th>Registered</th>@if ($manager)<th>Source</th>@endif<th>ERP</th><th><span class="hint">Actions</span></th></tr>
+      <tr>@if ($canPush)<th><span class="hint">Select</span></th>@endif<th>Name</th><th>Phone</th><th>Exhibition</th><th>Registered</th>@if ($manager)<th>Source</th>@endif<th>ERP</th><th><span class="hint">Actions</span></th></tr>
     </thead>
     <tbody>
     @foreach ($page->items() as $visitor)
       @php($lock = $locks[$visitor->id] ?? null)
       <tr>
+        @if ($canPush)
+          <td><input type="checkbox" name="visitor_ids[]" value="{{ $visitor->id }}" aria-label="Select {{ $visitor->name }}" data-select-row></td>
+        @endif
         <td>
           <a href="{{ route('visitors.show', $visitor) }}">{{ $visitor->name }}</a>
           @if ($visitor->possible_duplicate_of)<span class="badge" title="Same phone number earlier at this exhibition">Possible duplicate</span>@endif
@@ -117,9 +130,18 @@
     @endforeach
     </tbody>
   </table>
+  @if ($canPush)
+  </form>
+  @endif
   <nav class="actions pager" aria-label="Pages">
     @if ($page->previousPageUrl())<a href="{{ $page->previousPageUrl() }}">← Previous</a>@endif
     @if ($page->nextPageUrl())<a href="{{ $page->nextPageUrl() }}">Next →</a>@endif
   </nav>
 @endif
 @endsection
+
+@if ($canPush)
+  @push('scripts')
+  <script src="{{ \App\Support\Asset::url('select.js') }}" defer></script>
+  @endpush
+@endif
