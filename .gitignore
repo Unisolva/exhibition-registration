@@ -21,9 +21,12 @@ release-*.tgz
 /storage/*.key
 /bootstrap/cache/*.php
 
-# Browser test output
+# Browser test output and local fixtures (generated passwords, saved sessions)
 /tests/Browser/test-results
 /tests/Browser/playwright-report
+/tests/Browser/fixtures.json
+/tests/Browser/.auth
+/tests/Browser/node_modules
 
 # Tooling
 *.log
