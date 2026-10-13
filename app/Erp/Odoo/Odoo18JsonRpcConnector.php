@@ -229,7 +229,7 @@ class Odoo18JsonRpcConnector implements ErpLeadConnector
 
     private function http(): PendingRequest
     {
-        return Http::withUserAgent('ExhibitionRegistration/'.config('exhibition.version'))
+        return Http::withUserAgent('ExhibitionRegistration/'.config('app.version'))
             ->acceptJson()
             ->asJson()
             ->connectTimeout(5)

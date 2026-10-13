@@ -2,7 +2,7 @@
 
 A self-hosted web application for agricultural companies that collect visitor details at exhibitions. It replaces paper sign-up sheets that rarely get typed in, and sends only the visitors a company chooses to its CRM as leads.
 
-**Status: in development. There is no release yet.**
+**Status: version 1.0.0 is ready for its first installation.** See [CHANGELOG.md](CHANGELOG.md).
 
 ## What it does
 
@@ -16,20 +16,23 @@ A self-hosted web application for agricultural companies that collect visitor de
 
 ## CRM support
 
-Odoo 18, through its external API. The administrator enters the Odoo URL, database, user and API key in the settings screen. The API key is stored encrypted and is never shown again after saving. A connection test runs before sending is allowed.
+Odoo 18, through its external API. A super admin enters the Odoo URL, database, the login of a dedicated CRM-only Odoo user and that user's API key. The key is stored encrypted and is never shown again after saving. A connection test (version, login, lead fields, rights) must pass before sending is allowed. A separate Test connection for a staging Odoo is optional.
 
 Without a CRM, the application still works: the CRM screens are hidden and visitors are exported to CSV instead.
 
 ## Built for shared hosting
 
 - Laravel with server-rendered pages and very little JavaScript.
-- PHP 8.3 or newer, MariaDB 10.11 or MySQL.
+- PHP 8.3 or newer (releases are built for 8.4), MariaDB 10.11 or MySQL 8.
 - No background workers, no Redis, no Node.js on the server. Sending to the CRM runs from a one-minute cron job in short, bounded runs.
 - Works with PHP's process functions disabled (`exec`, `proc_open` and similar), as is common on shared hosting.
 
 ## Installation
 
-Installation and upgrade guides will be published with the first release.
+- [docs/INSTALL.md](docs/INSTALL.md): a new installation on a cPanel hosting account, step by step, with the checks to run afterwards.
+- [docs/UPGRADE.md](docs/UPGRADE.md): upgrading to a new release, and rolling back.
+
+Releases are built off the server (`bin/build-release.sh`) and installed with `bin/deploy.sh`; the server needs no Composer and no Node.
 
 ## Licence
 

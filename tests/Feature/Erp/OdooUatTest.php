@@ -91,7 +91,7 @@ class OdooUatTest extends TestCase
     {
         $url = rtrim((string) getenv('ODOO_UAT_URL'), '/').'/jsonrpc';
         $call = function (string $service, string $method, array $args) use ($url) {
-            $response = Http::withUserAgent('ExhibitionRegistration/'.config('exhibition.version'))->timeout(30)
+            $response = Http::withUserAgent('ExhibitionRegistration/'.config('app.version'))->timeout(30)
                 ->post($url, ['jsonrpc' => '2.0', 'method' => 'call', 'params' => compact('service', 'method', 'args'), 'id' => 1])->json();
             $this->assertArrayNotHasKey('error', $response, 'Admin call failed: '.($response['error']['data']['name'] ?? '?'));
 
