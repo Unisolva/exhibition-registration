@@ -68,6 +68,8 @@ class LogRedactionTest extends TestCase
 
     public function test_an_exception_during_a_request_logs_no_request_body_and_carries_the_request_id(): void
     {
+        $this->allowServerErrors = true;
+
         Route::post('/staff/__boom', function () {
             throw new \RuntimeException('boom');
         });

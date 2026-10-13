@@ -19,6 +19,31 @@ abstract class TestCase extends BaseTestCase
 
     protected string $seeder = ProductSeeder::class;
 
+    /** Tests that expect a 500 set this; otherwise any 5xx fails the test at once. */
+    protected bool $allowServerErrors = false;
+
+    /**
+     * A server error never passes silently: content assertions such as
+     * assertDontSee could otherwise succeed on a debug error page.
+     */
+    protected function createTestResponse($response, $request)
+    {
+        $testResponse = parent::createTestResponse($response, $request);
+
+        if (! $this->allowServerErrors && $testResponse->getStatusCode() >= 500) {
+            $exception = $testResponse->exception;
+            $this->fail(sprintf(
+                'Unexpected %d for %s %s%s',
+                $testResponse->getStatusCode(),
+                $request->getMethod(),
+                $request->getRequestUri(),
+                $exception ? ': '.get_class($exception).': '.$exception->getMessage() : '',
+            ));
+        }
+
+        return $testResponse;
+    }
+
     /**
      * Forget the signed-in user and session store held in memory, so the next
      * request behaves like a new PHP process that only knows its cookies.

@@ -75,6 +75,15 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Work order §16.1: drain and housekeeping lines at info, whatever LOG_LEVEL says.
+        'drain' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/drain.log'),
+            'level' => 'info',
+            'max_files' => env('LOG_DAILY_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
+
         'monthly' => [
             'driver' => 'monthly',
             'path' => storage_path('logs/laravel.log'),

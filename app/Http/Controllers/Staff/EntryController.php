@@ -1,0 +1,183 @@
+<?php
+
+// Copyright (c) 2026 Unisolva for Information Technology and App Development L.L.C. All rights reserved. See LICENSE.
+
+namespace App\Http\Controllers\Staff;
+
+use App\Http\Controllers\Controller;
+use App\Models\Exhibition;
+use App\Models\FieldDefinition;
+use App\Models\Visitor;
+use App\Registration\FormView;
+use App\Registration\Normalizer;
+use App\Registration\Submission;
+use App\Support\Settings;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+/**
+ * Save & New (work order §7), for every role. Staff may enter visitors for
+ * closed exhibitions and while public registration is off. Answers JSON to
+ * the page script and plain redirects without JavaScript.
+ */
+class EntryController extends Controller
+{
+    public const SESSION_KEY = 'entry_exhibition_id';
+
+    public function __construct(
+        private readonly Settings $settings,
+        private readonly Normalizer $normalizer,
+        private readonly FormView $formView,
+    ) {}
+
+    public function show(Request $request): Response
+    {
+        if ($request->filled('exhibition') && ($chosen = Exhibition::query()->find((int) $request->query('exhibition')))) {
+            $request->session()->put(self::SESSION_KEY, $chosen->id);
+        }
+
+        $exhibition = $request->boolean('change') ? null : $this->chosenExhibition($request);
+        if ($exhibition === null) {
+            return response()->view('staff.entry.choose', [
+                'exhibitions' => Exhibition::query()->orderByDesc('starts_on')->orderByDesc('id')->get(),
+            ]);
+        }
+
+        return $this->form($exhibition, (string) Str::ulid());
+    }
+
+    /** A fresh CSRF token for the page script after signing in again in another tab. */
+    public function session(Request $request): JsonResponse
+    {
+        return response()->json(['csrf_token' => $request->session()->token()]);
+    }
+
+    public function store(Request $request): JsonResponse|RedirectResponse|Response
+    {
+        $user = $request->user();
+        $exhibition = Exhibition::query()->find((int) $request->input('exhibition_id'));
+        if ($exhibition === null) {
+            return $this->answer($request, 422, ['errors' => ['_form' => 'Choose an exhibition first.']], null, (string) Str::ulid());
+        }
+
+        $submission = $this->normalizer->normalize(
+            $request->all(),
+            FieldDefinition::activeInOrder(),
+            (string) $this->settings->get('default_country'),
+            'en',
+        );
+
+        $token = strtoupper((string) $request->input('submission_token', ''));
+        if (! Str::isUlid($token)) {
+            return $this->answer($request, 422, ['errors' => ['_form' => 'The form was reloaded. Press Save again.']], $exhibition, (string) Str::ulid(), $submission);
+        }
+
+        // §6 step 3, with the token bound to the user who committed it.
+        if ($replay = $this->replay($request, $exhibition, $token, $submission)) {
+            return $replay;
+        }
+
+        if (! $submission->isValid()) {
+            return $this->answer($request, 422, ['errors' => $submission->errors], $exhibition, $token, $submission);
+        }
+
+        try {
+            $visitor = DB::transaction(fn () => Visitor::query()->create([
+                ...$submission->visitorAttributes(),
+                'exhibition_id' => $exhibition->id,
+                'source' => 'staff',
+                'entered_by' => $user->id,
+                'submission_token' => $token,
+                'payload_hash' => $submission->hash($exhibition->id),
+                'possible_duplicate_of' => Visitor::earliestDuplicateId($exhibition->id, $submission->phoneKey),
+                'locale' => 'en',
+                'request_id' => app('request_id'),
+            ]));
+        } catch (UniqueConstraintViolationException) {
+            return $this->replay($request, $exhibition, $token, $submission)
+                ?? $this->answer($request, 409, ['message' => 'This entry could not be saved. Press Save again.'], $exhibition, (string) Str::ulid(), $submission);
+        }
+
+        $request->session()->put(self::SESSION_KEY, $exhibition->id);
+
+        return $this->answer($request, 201, [
+            'status' => 'saved',
+            'possible_duplicate' => $visitor->possible_duplicate_of !== null,
+        ], $exhibition, (string) Str::ulid());
+    }
+
+    private function replay(Request $request, Exhibition $exhibition, string $token, Submission $submission): JsonResponse|RedirectResponse|Response|null
+    {
+        $committed = Visitor::query()->where('submission_token', $token)->first(['id', 'payload_hash', 'source', 'entered_by']);
+        if ($committed === null) {
+            return null;
+        }
+
+        $ownReplay = $committed->source === 'staff'
+            && $committed->entered_by === $request->user()->id
+            && hash_equals($committed->payload_hash, $submission->hash($exhibition->id));
+
+        if ($ownReplay) {
+            return $this->answer($request, 200, ['status' => 'replay'], $exhibition, (string) Str::ulid());
+        }
+
+        // Never reveal anything about the committed entry.
+        return $this->answer($request, 409, [
+            'message' => 'This form was already saved with different details. Saving it again creates a new entry.',
+        ], $exhibition, (string) Str::ulid(), $submission);
+    }
+
+    /**
+     * JSON for the page script; for a plain form post, a redirect to a fresh
+     * form after a save, or the form again with values and messages.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function answer(Request $request, int $status, array $payload, ?Exhibition $exhibition, string $nextToken, ?Submission $submission = null): JsonResponse|RedirectResponse|Response
+    {
+        if ($request->expectsJson()) {
+            return response()->json([...$payload, 'next_token' => $nextToken], $status);
+        }
+
+        if (in_array($status, [200, 201], true)) {
+            return redirect()->route('staff.entry')->with('status', 'Saved.');
+        }
+
+        if ($exhibition === null) {
+            return redirect()->route('staff.entry', ['change' => 1])->with('status', $payload['errors']['_form'] ?? 'Choose an exhibition.');
+        }
+
+        // 422 keeps the token (the same entry, corrected); 409 offers a new one.
+        $token = $status === 422 ? (string) $request->input('submission_token', $nextToken) : $nextToken;
+
+        return $this->form($exhibition, Str::isUlid($token) ? strtoupper($token) : $nextToken, $submission?->old ?? [], $payload['errors'] ?? [], $status, $payload['message'] ?? null);
+    }
+
+    /**
+     * @param  array<string, string>  $old
+     * @param  array<string, string>  $errors
+     */
+    private function form(Exhibition $exhibition, string $token, array $old = [], array $errors = [], int $status = 200, ?string $notice = null): Response
+    {
+        return response()->view('staff.entry.form', [
+            'exhibition' => $exhibition,
+            'fields' => $this->formView->fields('en'),
+            'old' => $old,
+            'fieldErrors' => $errors,
+            'submissionToken' => $token,
+            'notice' => $notice,
+        ], $status);
+    }
+
+    private function chosenExhibition(Request $request): ?Exhibition
+    {
+        $id = $request->session()->get(self::SESSION_KEY);
+
+        return $id ? Exhibition::query()->find($id) : null;
+    }
+}

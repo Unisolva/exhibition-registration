@@ -26,15 +26,20 @@ class GuardPublicSubmission
 
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->routeIs('public.submit')) {
+        if (! $request->routeIs('public.submit', 'staff.registrations.store')) {
             return $next($request);
         }
 
         // Declared length, raw body, and the parsed fields (a chunked request has no Content-Length).
+        // The cap applies to staff entry too (work order §7); the rate limits only to the public form.
         if ((int) $request->header('Content-Length', '0') > self::MAX_BODY_BYTES
             || strlen((string) $request->getContent()) > self::MAX_BODY_BYTES
             || strlen(http_build_query($request->request->all())) > self::MAX_BODY_BYTES) {
             abort(413);
+        }
+
+        if (! $request->routeIs('public.submit')) {
+            return $next($request);
         }
 
         $token = strtoupper((string) $request->route('token'));

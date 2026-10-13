@@ -61,9 +61,9 @@ class PublicFormTest extends TestCase
     {
         $exhibition = Exhibition::factory()->create();
 
-        $this->get('/r/'.$exhibition->public_token.'?lang=en')->assertSee('<html lang="en" dir="ltr">', false)->assertSee('Name');
-        $this->get('/r/'.$exhibition->public_token)->assertSee('<html lang="en" dir="ltr">', false);
-        $this->get('/r/'.$exhibition->public_token.'?lang=ar')->assertSee('<html lang="ar" dir="rtl">', false);
+        $this->get('/r/'.$exhibition->public_token.'?lang=en')->assertOk()->assertSee('<html lang="en" dir="ltr">', false)->assertSee('Name');
+        $this->get('/r/'.$exhibition->public_token)->assertOk()->assertSee('<html lang="en" dir="ltr">', false);
+        $this->get('/r/'.$exhibition->public_token.'?lang=ar')->assertOk()->assertSee('<html lang="ar" dir="rtl">', false);
     }
 
     public function test_a_valid_submission_is_stored_once_and_redirects_303_to_thanks(): void
@@ -185,7 +185,7 @@ class PublicFormTest extends TestCase
         $open = Exhibition::factory()->create();
         $hidden = $this->openPublicForm($open);
         app(Settings::class)->set('public_registration_enabled', false);
-        $this->get('/r/'.$open->public_token)->assertSee(__('public.closed_title', [], 'ar'));
+        $this->get('/r/'.$open->public_token)->assertOk()->assertSee(__('public.closed_title', [], 'ar'));
         $this->submitPublicForm($open, self::VISITOR, $hidden)->assertForbidden()->assertSee(__('public.closed_title', [], 'ar'));
 
         $this->assertSame(0, Visitor::query()->count());
@@ -300,7 +300,7 @@ class PublicFormTest extends TestCase
             'is_required' => true, 'is_active' => true, 'sort_order' => 60, 'send_to_erp' => true,
         ]);
 
-        $this->get('/r/'.$exhibition->public_token)->assertDontSee('name="email"', false)->assertSee('قمح');
+        $this->get('/r/'.$exhibition->public_token)->assertOk()->assertDontSee('name="email"', false)->assertSee('قمح');
 
         $this->submitPublicForm($exhibition, self::VISITOR)->assertStatus(422)->assertSee('المحصول الرئيسي');
         $this->submitPublicForm($exhibition, [...self::VISITOR, 'crop' => 'wheat', 'email' => 'ignored@example.test'])->assertStatus(303);
@@ -315,12 +315,12 @@ class PublicFormTest extends TestCase
         $exhibition = Exhibition::factory()->create();
         $url = '/r/'.$exhibition->public_token;
 
-        $this->get($url)->assertDontSee(__('public.privacy', [], 'ar'))->assertSee('Powered by Unisolva');
+        $this->get($url)->assertOk()->assertDontSee(__('public.privacy', [], 'ar'))->assertSee('Powered by Unisolva');
 
         app(Settings::class)->set('privacy_url', 'https://company.example.test/privacy');
         app(Settings::class)->set('show_powered_by', false);
 
-        $this->get($url)->assertSee('https://company.example.test/privacy')->assertDontSee('Powered by Unisolva');
+        $this->get($url)->assertOk()->assertSee('https://company.example.test/privacy')->assertDontSee('Powered by Unisolva');
     }
 
     public function test_the_page_weight_is_under_40_kb_compressed(): void

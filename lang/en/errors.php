@@ -10,5 +10,4 @@ return [
     '429' => ['title' => 'Please wait a minute', 'body' => 'Too many attempts in a short time. Wait a minute, then try again.'],
     '500' => ['title' => 'Something went wrong', 'body' => 'An error occurred on our side. Please try again in a few minutes.'],
     '503' => ['title' => 'Temporarily unavailable', 'body' => 'The service is being updated. Please try again in a few minutes.'],
-    'back' => 'Go back',
 ];

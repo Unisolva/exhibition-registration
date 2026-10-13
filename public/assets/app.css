@@ -104,6 +104,25 @@ th { font-size: .875rem; color: var(--muted); }
 .url { word-break: break-all; }
 .logo-preview { max-height: 64px; max-width: 200px; border: 1px solid var(--line); padding: 4px; background: #fff; }
 
+/* Staff: entry, lists, details */
+.entry-bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center;
+  background: var(--warn-bg); border: 1px solid #f0d49a; border-radius: var(--radius); padding: .6rem 1rem; margin-block-end: 1rem; }
+.entry-status:empty { display: none; }
+.filters { margin-block-end: 1rem; }
+.filter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); gap: 0 1rem; }
+.badge-lock { background: #e8ebef; }
+.row-actions a + a { margin-inline-start: .75rem; }
+.pager { margin-block: 1rem; }
+.details { display: grid; grid-template-columns: minmax(8rem, max-content) 1fr; gap: .4rem 1rem; margin: 0; }
+.details dt { font-weight: 600; }
+.details dd { margin: 0; }
+.changes { margin: 0; padding-inline-start: 1.1rem; }
+form.inline { display: inline-block; margin-inline-end: .5rem; vertical-align: top; }
+.purge label { font-weight: 400; font-size: .875rem; }
+.purge input { inline-size: 8rem; min-height: 36px; display: inline-block; }
+.option-row { border: 1px solid var(--line); border-radius: var(--radius); margin-block-end: .75rem; }
+@media (max-width: 40rem) { .details { grid-template-columns: 1fr; } }
+
 /* A4 poster */
 .poster { background: #fff; }
 .poster-page { max-width: 190mm; margin: 0 auto; padding: 12mm 0; text-align: center; }
