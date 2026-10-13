@@ -114,6 +114,7 @@ class BrandingTest extends TestCase
             'style url' => [$open.'<rect style="fill:url(https://evil.example/p)"/></svg>'],
             'fill url' => [$open.'<rect fill="url(https://evil.example/p#g)"/></svg>'],
             'entity' => ['<?xml version="1.0"?><!DOCTYPE svg [<!ENTITY x SYSTEM "file:///etc/passwd">]><svg xmlns="http://www.w3.org/2000/svg">&x;</svg>'],
+            'billion laughs' => ['<?xml version="1.0"?><!DOCTYPE svg [<!ENTITY a "aaaaaaaaaa"><!ENTITY b "&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;"><!ENTITY c "&b;&b;&b;&b;&b;&b;&b;&b;&b;&b;"><!ENTITY d "&c;&c;&c;&c;&c;&c;&c;&c;&c;&c;">]><svg xmlns="http://www.w3.org/2000/svg"><text>&d;&d;&d;&d;&d;&d;&d;&d;&d;&d;</text></svg>'],
             'not svg' => ['<html><body>hello</body></html>'],
         ];
     }
