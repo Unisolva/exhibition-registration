@@ -15,6 +15,10 @@ class LogoValidator
 {
     public const MAX_BYTES = 102400;
 
+    public const DOCTYPE_ERROR = 'SVG files with a DOCTYPE or entities are not accepted.';
+
+    public const ENCODING_ERROR = 'The SVG file must be UTF-8 encoded.';
+
     private const PNG_SIGNATURE = "\x89PNG\r\n\x1a\n";
 
     /** Elements that can run code, embed other documents or pull external content. */
@@ -45,16 +49,31 @@ class LogoValidator
 
     private static function svgError(string $bytes): ?string
     {
+        // The byte search below is only meaningful if libxml reads the same bytes:
+        // UTF-8 only, so UTF-16/32 or a declared UTF-7 cannot hide a DOCTYPE.
+        if (str_contains($bytes, "\0") || ! mb_check_encoding($bytes, 'UTF-8')) {
+            return self::ENCODING_ERROR;
+        }
+        if (preg_match('/^(?:\xEF\xBB\xBF)?\s*<\?xml[^>]*\bencoding\s*=\s*["\']([^"\']*)["\']/i', $bytes, $m) === 1
+            && ! in_array(strtolower($m[1]), ['utf-8', 'utf8', 'us-ascii'], true)) {
+            return self::ENCODING_ERROR;
+        }
+
+        // No DOCTYPE and no entity declarations at all: no entity expansion, internal or external.
         if (stripos($bytes, '<!DOCTYPE') !== false || stripos($bytes, '<!ENTITY') !== false) {
-            return 'SVG files with a DOCTYPE or entities are not accepted.';
+            return self::DOCTYPE_ERROR;
         }
 
         $previous = libxml_use_internal_errors(true);
         $doc = new DOMDocument;
-        // No network access and no entity substitution while parsing.
+        // No network access while parsing (entities cannot occur after the checks above).
         $loaded = $doc->loadXML($bytes, LIBXML_NONET);
         libxml_clear_errors();
         libxml_use_internal_errors($previous);
+
+        if ($loaded && $doc->doctype !== null) {
+            return self::DOCTYPE_ERROR;
+        }
 
         if (! $loaded || $doc->documentElement === null || strtolower($doc->documentElement->localName) !== 'svg') {
             return 'Upload a PNG or SVG file.';
