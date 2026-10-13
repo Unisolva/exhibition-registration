@@ -1,0 +1,13 @@
+{
+  "name": "exhibition-registration-browser-tests",
+  "private": true,
+  "description": "Browser tests run off the server (work order §10). Never part of a release.",
+  "license": "UNLICENSED",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.64.0"
+  }
+}
