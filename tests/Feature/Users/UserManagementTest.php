@@ -38,7 +38,7 @@ class UserManagementTest extends TestCase
             foreach (DB::table('sessions')->pluck('payload') as $payload) {
                 $this->assertStringNotContainsString($m[1], base64_decode($payload));
             }
-            $this->get('/staff/users')->assertDontSee($m[1]);
+            $this->get('/staff/users')->assertOk()->assertDontSee($m[1]);
             $this->assertDatabaseHas('audit_events', ['action' => 'user_created', 'target_id' => $created->id, 'user_id' => $admin->id]);
             $this->assertStringNotContainsString($m[1], (string) DB::table('audit_events')->where('target_id', $created->id)->value('meta'));
         }

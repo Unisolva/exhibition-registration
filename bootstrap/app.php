@@ -10,6 +10,7 @@ use App\Http\Middleware\RejectUnknownHost;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\UsePublicLocale;
 use App\Http\Middleware\UseStaffLocale;
+use App\Visitors\VisitorLockedException;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Database\QueryException;
@@ -76,4 +77,12 @@ return Application::configure(basePath: dirname(__DIR__))
         })->stop();
 
         $exceptions->dontFlash(['password', 'password_confirmation', 'current_password', 'api_key']);
+
+        // Work order §4: a locked visitor answers 423 with the cause-specific message.
+        $exceptions->render(function (VisitorLockedException $e, Request $request) {
+            return $request->expectsJson()
+                ? response()->json(['message' => $e->getMessage(), 'cause' => $e->cause], 423)
+                : response()->view('staff.visitors.locked', ['message' => $e->getMessage()], 423);
+        });
+        $exceptions->dontReport(VisitorLockedException::class);
     })->create();

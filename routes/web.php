@@ -8,9 +8,15 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\LogoController;
 use App\Http\Controllers\PublicRegistrationController;
 use App\Http\Controllers\Staff\BrandingController;
+use App\Http\Controllers\Staff\EntryController;
 use App\Http\Controllers\Staff\ExhibitionController;
+use App\Http\Controllers\Staff\ExportController;
+use App\Http\Controllers\Staff\FieldController;
 use App\Http\Controllers\Staff\HomeController;
+use App\Http\Controllers\Staff\SettingsController;
+use App\Http\Controllers\Staff\TrashController;
 use App\Http\Controllers\Staff\UserController;
+use App\Http\Controllers\Staff\VisitorController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -43,8 +49,32 @@ Route::prefix('staff')->middleware('staff.locale')->group(function () {
         Route::get('password', [PasswordController::class, 'edit'])->name('password.edit');
         Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
+        // Fresh CSRF token for Save & New after signing in again in another tab.
+        Route::get('session', [EntryController::class, 'session'])->name('staff.session');
+
         Route::middleware('password.changed')->group(function () {
             Route::get('/', HomeController::class)->name('staff.home');
+
+            // Save & New (every role).
+            Route::get('entry', [EntryController::class, 'show'])->name('staff.entry')->can('registrations.enter');
+            Route::post('registrations', [EntryController::class, 'store'])->name('staff.registrations.store')->can('registrations.enter');
+
+            // Visitors: staff see their own entries; the policy decides per record.
+            Route::get('visitors', [VisitorController::class, 'index'])->name('visitors.index');
+            Route::get('visitors/export', ExportController::class)->name('visitors.export')->can('registrations.export');
+            Route::whereNumber('visitor')->group(function () {
+                Route::get('visitors/{visitor}', [VisitorController::class, 'show'])->name('visitors.show');
+                Route::get('visitors/{visitor}/edit', [VisitorController::class, 'edit'])->name('visitors.edit');
+                Route::put('visitors/{visitor}', [VisitorController::class, 'update'])->name('visitors.update');
+                Route::get('visitors/{visitor}/delete', [VisitorController::class, 'confirmTrash'])->name('visitors.trash-confirm');
+                Route::delete('visitors/{visitor}', [VisitorController::class, 'destroy'])->name('visitors.destroy');
+
+                Route::middleware('can:registrations.view-all')->group(function () {
+                    Route::get('trash', [TrashController::class, 'index'])->name('trash.index');
+                    Route::post('trash/{visitor}/restore', [TrashController::class, 'restore'])->name('trash.restore');
+                    Route::delete('trash/{visitor}', [TrashController::class, 'destroy'])->name('trash.destroy');
+                });
+            });
 
             Route::get('users', [UserController::class, 'index'])->name('users.index')->can('viewAny', User::class);
             Route::get('users/create', [UserController::class, 'create'])->name('users.create')->can('create', User::class);
@@ -67,8 +97,15 @@ Route::prefix('staff')->middleware('staff.locale')->group(function () {
             });
 
             Route::middleware('can:system.manage')->group(function () {
+                Route::get('settings', [SettingsController::class, 'edit'])->name('settings.general');
+                Route::put('settings', [SettingsController::class, 'update'])->name('settings.general.update');
                 Route::get('settings/branding', [BrandingController::class, 'edit'])->name('settings.branding');
                 Route::put('settings/branding', [BrandingController::class, 'update'])->name('settings.branding.update');
+                Route::get('settings/fields', [FieldController::class, 'index'])->name('fields.index');
+                Route::get('settings/fields/create', [FieldController::class, 'create'])->name('fields.create');
+                Route::post('settings/fields', [FieldController::class, 'store'])->name('fields.store');
+                Route::get('settings/fields/{field}/edit', [FieldController::class, 'edit'])->name('fields.edit');
+                Route::put('settings/fields/{field}', [FieldController::class, 'update'])->name('fields.update');
             });
         });
     });

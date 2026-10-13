@@ -4,7 +4,9 @@
 
 namespace App\Models;
 
+use Database\Factories\VisitorFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -32,6 +34,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Visitor extends Model
 {
+    /** @use HasFactory<VisitorFactory> */
+    use HasFactory;
+
     protected $guarded = ['id'];
 
     protected function casts(): array
@@ -59,6 +64,11 @@ class Visitor extends Model
     public function enteredBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'entered_by');
+    }
+
+    public function trashedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'trashed_by');
     }
 
     /**

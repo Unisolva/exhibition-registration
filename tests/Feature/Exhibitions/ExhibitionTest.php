@@ -80,12 +80,12 @@ class ExhibitionTest extends TestCase
         $this->actingAs($admin)->post("/staff/exhibitions/{$exhibition->id}/close")->assertRedirect();
         $this->assertFalse($exhibition->fresh()->is_open);
         $this->assertDatabaseHas('audit_events', ['action' => 'exhibition_closed', 'target_id' => $exhibition->id]);
-        $this->get('/r/'.$exhibition->public_token)->assertDontSee('name="submission_token"', false);
+        $this->get('/r/'.$exhibition->public_token)->assertOk()->assertDontSee('name="submission_token"', false);
 
         $this->actingAs($admin)->post("/staff/exhibitions/{$exhibition->id}/open")->assertRedirect();
         $this->assertTrue($exhibition->fresh()->is_open);
         $this->assertDatabaseHas('audit_events', ['action' => 'exhibition_opened', 'target_id' => $exhibition->id]);
-        $this->get('/r/'.$exhibition->public_token)->assertSee('name="submission_token"', false);
+        $this->get('/r/'.$exhibition->public_token)->assertOk()->assertSee('name="submission_token"', false);
     }
 
     public function test_the_page_shows_the_url_and_an_inline_svg_qr_and_offers_a_download_and_a_poster(): void

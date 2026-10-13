@@ -75,7 +75,7 @@ class BrandingTest extends TestCase
         $this->get(str_replace('.png', '.svg', $url))->assertNotFound();
 
         $exhibition = Exhibition::factory()->create();
-        $this->get('/r/'.$exhibition->public_token)->assertSee('src="'.$url.'"', false);
+        $this->get('/r/'.$exhibition->public_token)->assertOk()->assertSee('src="'.$url.'"', false);
     }
 
     public function test_a_clean_svg_logo_is_accepted_and_served_sandboxed(): void
