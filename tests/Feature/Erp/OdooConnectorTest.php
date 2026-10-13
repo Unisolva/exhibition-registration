@@ -102,7 +102,7 @@ class OdooConnectorTest extends TestCase
             }
             $args = $params['args'];
 
-            return $request->header('User-Agent') === ['ExhibitionRegistration/'.config('exhibition.version')]
+            return $request->header('User-Agent') === ['ExhibitionRegistration/'.config('app.version')]
                 && $params['service'] === 'object'
                 && $args[0] === 'sample-db' && $args[1] === 42 && $args[2] === 'fake-api-key-1234'
                 && $args[3] === 'crm.lead' && $args[4] === 'search'

@@ -15,7 +15,7 @@ class Release
      */
     public static function current(): array
     {
-        $info = ['version' => (string) config('exhibition.version'), 'id' => null, 'commit' => null];
+        $info = ['version' => (string) config('app.version'), 'id' => null, 'commit' => null];
         $file = base_path('RELEASE');
         if (is_file($file)) {
             foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
