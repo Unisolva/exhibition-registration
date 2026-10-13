@@ -2,6 +2,10 @@
 
 All notable changes. Versions follow semantic versioning; each release is the git tag `v<version>`.
 
+## Unreleased
+
+- Release scripts only (no application change): `bin/deploy.sh` now leaves releases readable by the web server (directories 755, files 644, umask 022) and prunes old releases without process substitution, which CageFS does not support; `bin/build-release.sh` no longer packs an archive root of mode 700. Found on the first deploy, where the web server answered 404 for the whole site. Release 1.0.0 archives are deployed with the new `deploy.sh`.
+
 ## [1.0.0] - 2026-10-13
 
 First release.

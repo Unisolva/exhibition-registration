@@ -79,7 +79,7 @@ class ConcurrencyTest extends TestCase
         $admin = User::factory()->admin()->create();
         $visitor = Visitor::factory()->create(['name' => 'Before Edit', 'region_code' => 'C']);
 
-        $child = new Process([PHP_BINARY, base_path('tests/Support/race-edit.php'), (string) $visitor->id, (string) $admin->id, 'After Edit', '2'], base_path(), null, null, 60);
+        $child = new Process([PHP_BINARY, base_path('tests/Support/race-edit.php'), (string) $visitor->id, (string) $admin->id, 'After Edit', '5'], base_path(), null, null, 60);
         $child->start();
         $deadline = microtime(true) + 30;
         while (! str_contains($child->getOutput(), 'edited') && microtime(true) < $deadline) {
