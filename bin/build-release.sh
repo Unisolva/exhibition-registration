@@ -67,6 +67,8 @@ built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 EOF
 
 mkdir -p "$BUILD_DIR"
+# mktemp -d is 700; the archive root must not carry that onto the server (deploy.sh normalises too).
+chmod 755 "$WORK"
 tar -czf "$BUILD_DIR/$NAME.tgz" -C "$WORK" .
 ( cd "$BUILD_DIR" && sha256sum "$NAME.tgz" > "$NAME.tgz.sha256" )
 

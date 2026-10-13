@@ -18,7 +18,10 @@
 # data, build caches; switch "current" atomically; smoke test /healthz; keep the last releases.
 # Nothing is switched unless every step before the switch succeeded.
 set -euo pipefail
-umask 027
+# Release files must be readable by the web server, which serves static files as another user
+# (cPanel default: directories 755, files 644). Secrets stay protected by their own modes:
+# shared/.env is 600, backups/ is 700, dumps are 600.
+umask 022
 
 APP_DIR="${APP_DIR:-$HOME/apps/exhibition-registration}"
 PHP_CLI="${PHP_CLI:-/opt/cpanel/ea-php84/root/usr/bin/php}"
@@ -123,8 +126,13 @@ echo "$DUMP ($(du -h "$DUMP" | cut -f1))"
 
 say "2. Extract to releases/$TS"
 mkdir "$NEW"
-tar -xzf "$TGZ" -C "$NEW"
+tar -xzf "$TGZ" -C "$NEW" --no-same-owner
 [ -f "$NEW/artisan" ] && [ -f "$NEW/public/index.php" ] || die "The archive does not look like a release."
+# Whatever modes the archive carried: directories 755, files 644, artisan executable.
+chmod 755 "$NEW"
+find "$NEW" -type d -exec chmod 755 {} +
+find "$NEW" -type f -exec chmod 644 {} +
+chmod 755 "$NEW/artisan"
 [ ! -e "$NEW/storage" ] && [ ! -e "$NEW/.env" ] || die "The archive contains storage/ or .env; rebuild it."
 mkdir -p "$APP_DIR/shared/storage/app" "$APP_DIR/shared/storage/logs" \
   "$APP_DIR/shared/storage/framework/cache/data" "$APP_DIR/shared/storage/framework/sessions" \
@@ -169,7 +177,9 @@ echo "If it still shows the previous release (stale PHP processes), stop and rep
 say "6. Keep the last $KEEP releases"
 cd "$APP_DIR/releases"
 CURRENT_NAME="$TS"
-mapfile -t ALL < <(ls -1 | sort)
+# Plain globbing (sorted): no process substitution, which needs /dev/fd and CageFS has none.
+ALL=()
+for ENTRY in *; do [ -d "$ENTRY" ] && ALL+=("$ENTRY"); done
 COUNT="${#ALL[@]}"
 if [ "$COUNT" -gt "$KEEP" ]; then
   for OLD in "${ALL[@]:0:$((COUNT - KEEP))}"; do
