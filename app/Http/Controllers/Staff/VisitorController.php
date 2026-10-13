@@ -50,6 +50,7 @@ class VisitorController extends Controller
             'regions' => Region::forCountry((string) $this->settings->get('default_country')),
             'occupation' => FieldDefinition::query()->where('key', 'occupation')->first(),
             'timezone' => (string) $this->settings->get('display_timezone'),
+            'canPush' => Gate::allows('registrations.push') && $this->settings->get('erp_mode') === 'odoo',
         ]);
     }
 

@@ -6,7 +6,12 @@
 @section('content')
 <div class="narrow">
   <h1>Settings</h1>
-  <p class="actions"><a href="{{ route('settings.branding') }}">Branding</a> <a href="{{ route('fields.index') }}">Form fields</a></p>
+  <p class="actions">
+    <a href="{{ route('settings.branding') }}">Branding</a>
+    <a href="{{ route('fields.index') }}">Form fields</a>
+    <a href="{{ route('erp.show') }}">ERP (Odoo)</a>
+    <a href="{{ route('system') }}">System</a>
+  </p>
 
   <form method="post" action="{{ route('settings.general.update') }}" class="card" novalidate>
     @csrf

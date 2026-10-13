@@ -36,5 +36,6 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="database"/>
+        <env name="ERP_MOCK" value="true"/>
     </php>
 </phpunit>

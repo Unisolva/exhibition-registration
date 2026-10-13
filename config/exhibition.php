@@ -11,6 +11,9 @@ return [
     // Release version shown on the System page and sent as the ERP User-Agent.
     'version' => '0.1.0-dev',
 
+    // Developer-only mock ERP (work order §1a). Refused when APP_ENV=production; never shown in the UI.
+    'erp_mock' => (bool) env('ERP_MOCK', false),
+
     // Initial value of the default_country setting on a fresh installation.
     'default_country' => env('DEFAULT_COUNTRY', 'EG'),
 

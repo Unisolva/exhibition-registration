@@ -123,6 +123,21 @@ form.inline { display: inline-block; margin-inline-end: .5rem; vertical-align: t
 .option-row { border: 1px solid var(--line); border-radius: var(--radius); margin-block-end: .75rem; }
 @media (max-width: 40rem) { .details { grid-template-columns: 1fr; } }
 
+/* ERP */
+.test-banner { background: #7a1f00; color: #fff; text-align: center; font-weight: 700; padding: .5rem 1rem; }
+.select-bar { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; align-items: center; margin-block: .5rem 1rem; }
+.destination { border: 3px solid var(--brand); border-radius: var(--radius); padding: .75rem 1rem; margin-block: 1rem; background: #fff; }
+.destination-test { border-color: #7a1f00; }
+.destination-kind { font-size: 2rem; font-weight: 800; letter-spacing: .05em; }
+.destination-test .destination-kind { color: #7a1f00; }
+.badge-test { background: #fbe3d9; color: #7a1f00; }
+.badge-live { background: var(--ok-bg); color: var(--ok); }
+.erp-blocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1rem; }
+.erp-block.is-active { border-color: var(--brand); border-width: 2px; }
+.erp-block h3 { margin-block-start: 0; display: flex; gap: .75rem; align-items: center; }
+.totals { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+input.short { inline-size: 7rem; display: inline-block; min-height: 36px; }
+
 /* A4 poster */
 .poster { background: #fff; }
 .poster-page { max-width: 190mm; margin: 0 auto; padding: 12mm 0; text-align: center; }

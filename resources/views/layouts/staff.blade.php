@@ -11,6 +11,10 @@
 </head>
 <body>
 @auth
+@php($activeErp = \App\Models\ErpConnection::active())
+@if ($activeErp?->kind === 'test')
+  <div class="test-banner" role="note">TEST ERP: leads go to {{ $activeErp->base_url }} / {{ $activeErp->database }}</div>
+@endif
 <header class="topbar">
   <div class="wrap">
     <a class="brand" href="{{ route('staff.home') }}">{{ config('app.name') }}</a>
@@ -18,6 +22,9 @@
       <a href="{{ route('staff.entry') }}">Save &amp; New</a>
       <a href="{{ route('visitors.index') }}">{{ auth()->user()->isManager() ? 'Visitors' : 'My entries' }}</a>
       @can('exhibitions.manage')<a href="{{ route('exhibitions.index') }}">Exhibitions</a>@endcan
+      @if (app(\App\Support\Settings::class)->get('erp_mode') === 'odoo')
+        @can('registrations.push')<a href="{{ route('batches.index') }}">Batches</a>@endcan
+      @endif
       @can('registrations.view-all')<a href="{{ route('trash.index') }}">Trash</a>@endcan
       @can('users.manage')<a href="{{ route('users.index') }}">Users</a>@endcan
       @can('system.manage')<a href="{{ route('settings.general') }}">Settings</a>@endcan

@@ -2,7 +2,9 @@
 
 // Copyright (c) 2026 Unisolva for Information Technology and App Development L.L.C. All rights reserved. See LICENSE.
 
+use App\Http\Controllers\HealthController;
 use App\Http\Middleware\AssignRequestId;
+use App\Http\Middleware\EnsureErpMode;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\GuardPublicSubmission;
@@ -22,12 +24,17 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
+        // Outside the web group: a monitor polling /healthz must not create sessions.
+        then: function () {
+            Route::get('healthz', HealthController::class)->name('healthz');
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // Outermost first: headers wrap everything, including the 404 for a wrong host.
@@ -57,6 +64,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'password.changed' => EnsurePasswordChanged::class,
             'staff.locale' => UseStaffLocale::class,
             'public.locale' => UsePublicLocale::class,
+            'erp.enabled' => EnsureErpMode::class,
         ]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));
