@@ -57,8 +57,12 @@ class OdooUatTest extends TestCase
     protected function tearDown(): void
     {
         if ($this->created !== []) {
+            // A merge deletes one of the merged leads, so delete only those that still exist.
             $ids = array_values(array_unique($this->created));
-            $this->admin('crm.lead', 'unlink', [$ids]);
+            $existing = $this->admin('crm.lead', 'search', [[['id', 'in', $ids]]], ['context' => ['active_test' => false]]);
+            if ($existing !== []) {
+                $this->admin('crm.lead', 'unlink', [$existing]);
+            }
             $left = $this->admin('crm.lead', 'search', [[['id', 'in', $ids]]], ['context' => ['active_test' => false]]);
             $this->assertSame([], $left, 'UAT cleanup left leads behind.');
         }
