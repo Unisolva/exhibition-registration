@@ -141,6 +141,10 @@
       // Hidden, not removed, so the form below does not move.
       savedTimer = setTimeout(function () { notice.style.visibility = 'hidden'; }, SAVED_MS);
     }
+    // On a phone the page may be scrolled down to the button: keep the message below the sticky exhibition bar.
+    var bar = document.querySelector('.entry-bar');
+    var hidden = statusBox.getBoundingClientRect().top - (bar ? bar.getBoundingClientRect().bottom : 0);
+    if (hidden < 0) { window.scrollBy(0, hidden - 8); }
     savedCount += 1;
     if (countLine) {
       countLine.textContent = savedCount + ' saved in this session';

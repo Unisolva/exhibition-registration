@@ -233,3 +233,18 @@ test('a manager sees "View earlier entry" on a possible duplicate (M8 CO-4)', as
   await expect(link).toHaveAttribute('href', /\/staff\/visitors\/\d+$/);
   await page.context().close();
 });
+
+test('on a phone the message after a save is not hidden under the sticky exhibition bar (M8 CO-4)', async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.endsWith('-360'), 'phone layout');
+  await openEntry(page, fixture(testInfo));
+  const first = uniqueVisitor(testInfo, 'barA');
+  await type(page, first);
+  await page.locator('[data-save]').click();
+  await expectSaved(page);
+  await type(page, { name: `${first.name} again`, phone: first.phone });
+  await page.locator('[data-save]').click();
+  await expect(page.locator('#entry-status .notice-warn')).toBeVisible();
+  const gap = await page.evaluate(() => document.querySelector('#entry-status .notice').getBoundingClientRect().top
+    - document.querySelector('.entry-bar').getBoundingClientRect().bottom);
+  expect(gap).toBeGreaterThanOrEqual(0);
+});
