@@ -10,9 +10,7 @@
 @if ($notice)
   <div class="notice notice-warn" role="alert">{{ $notice }}</div>
 @endif
-@if ($fieldErrors)
-  <div class="notice notice-err" role="alert">{{ $fieldErrors['_form'] ?? __('public.errors_heading') }}</div>
-@endif
+@include('partials.error-summary')
 
 <form method="post" action="{{ route('public.submit', ['token' => $exhibition->public_token]) }}" class="card" novalidate data-once>
   @csrf

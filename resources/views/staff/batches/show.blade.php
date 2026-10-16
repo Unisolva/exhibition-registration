@@ -32,17 +32,17 @@
   <tbody>
   @foreach ($items as $item)
     <tr>
-      <td>
+      <td data-label="Visitor">
         @if ($item->visitor && $item->visitor->deleted_at === null)
           <a href="{{ route('visitors.show', $item->visitor_id) }}">{{ $item->visitor->name }}</a>
         @else
           <span class="hint">(deleted)</span>
         @endif
       </td>
-      <td>{{ str_replace('_', ' ', $item->state) }}</td>
-      <td>{{ $item->attempts }}</td>
-      <td>@if ($item->error_class)<code>{{ $item->error_class }}</code> {{ $item->error_message }}@endif</td>
-      <td>
+      <td data-label="State">{{ str_replace('_', ' ', $item->state) }}</td>
+      <td data-label="Attempts">{{ $item->attempts }}</td>
+      <td data-label="Error">@if ($item->error_class)<code>{{ $item->error_class }}</code> {{ $item->error_message }}@endif</td>
+      <td data-label="ERP lead">
         @if ($item->erp_lead_id)
           <a href="{{ $connection->base_url }}/web#id={{ $item->erp_lead_id }}&amp;model=crm.lead&amp;view_type=form" rel="noopener" target="_blank">{{ $item->erp_lead_id }}</a>
         @endif

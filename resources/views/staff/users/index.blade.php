@@ -13,14 +13,14 @@
   <tbody>
   @foreach ($users as $user)
     <tr>
-      <td>{{ $user->name }}</td>
-      <td>{{ $user->email }}</td>
-      <td>{{ $user->role->label() }}</td>
-      <td>
+      <td data-label="Name">{{ $user->name }}</td>
+      <td data-label="Email">{{ $user->email }}</td>
+      <td data-label="Role">{{ $user->role->label() }}</td>
+      <td data-label="Status">
         @if ($user->is_active)<span class="badge">Active</span>@else<span class="badge badge-off">Deactivated</span>@endif
         @if ($user->must_change_password)<span class="badge">One-time password</span>@endif
       </td>
-      <td>{{ $user->last_login_at?->timezone(app(\App\Support\Settings::class)->get('display_timezone'))->format('Y-m-d H:i') ?? 'Never' }}</td>
+      <td data-label="Last sign-in">{{ $user->last_login_at?->timezone(app(\App\Support\Settings::class)->get('display_timezone'))->format('Y-m-d H:i') ?? 'Never' }}</td>
       <td>
         @can('update', $user)<a href="{{ route('users.edit', $user) }}">Edit</a>@endcan
       </td>

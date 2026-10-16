@@ -1,28 +1,18 @@
 {{-- Copyright (c) 2026 Unisolva for Information Technology and App Development L.L.C. All rights reserved. See LICENSE. --}}
-{{-- Fields of a registration form. Expects $fields (FormView::fields), $old and $fieldErrors. --}}
+{{-- Fields of a registration form. Expects $fields (FormView::fields), $old and $fieldErrors.
+     After a failed submit the first invalid field gets autofocus (M8 CO-10). --}}
+@php($firstInvalid = collect($fields)->first(fn ($field) => isset($fieldErrors[$field['key']]))['key'] ?? null)
 @foreach ($fields as $field)
-  @php($id = 'f-'.$field['key'])
-  @php($error = $fieldErrors[$field['key']] ?? null)
-  <div class="field">
-    <label for="{{ $id }}">{{ $field['label'] }}@if ($field['required'])<span class="req" aria-hidden="true"> *</span>@endif</label>
-    @if ($field['control'] === 'select')
-      <select id="{{ $id }}" name="{{ $field['key'] }}"
-              @if ($field['required']) required aria-required="true" @endif
-              @if ($error) aria-invalid="true" aria-describedby="{{ $id }}-error" @endif>
-        <option value="">{{ __('public.choose') }}</option>
-        @foreach ($field['options'] as $value => $label)
-          <option value="{{ $value }}" @selected(($old[$field['key']] ?? '') === (string) $value)>{{ $label }}</option>
-        @endforeach
-      </select>
-    @else
-      <input id="{{ $id }}" name="{{ $field['key'] }}" type="{{ $field['type'] }}" value="{{ $old[$field['key']] ?? '' }}"
-             maxlength="{{ $field['maxlength'] }}"
-             @if ($field['autocomplete']) autocomplete="{{ $field['autocomplete'] }}" @endif
-             @if ($field['inputmode']) inputmode="{{ $field['inputmode'] }}" @endif
-             @if ($field['dir']) dir="{{ $field['dir'] }}" @endif
-             @if ($field['required']) required aria-required="true" @endif
-             @if ($error) aria-invalid="true" aria-describedby="{{ $id }}-error" @endif>
-    @endif
-    @if ($error)<div class="error" id="{{ $id }}-error">{{ $error }}</div>@endif
-  </div>
+  @if ($field['control'] === 'select')
+    <x-field type="select" :name="$field['key']" :id="'f-'.$field['key']" :label="$field['label']"
+             :value="$old[$field['key']] ?? ''" :options="$field['options']" :placeholder="__('public.choose')"
+             :error="$fieldErrors[$field['key']] ?? null" :required="$field['required']" :mark="$field['required']"
+             :autofocus="$firstInvalid === $field['key']" />
+  @else
+    <x-field :type="$field['type']" :name="$field['key']" :id="'f-'.$field['key']" :label="$field['label']"
+             :value="$old[$field['key']] ?? ''" :maxlength="$field['maxlength']"
+             :autocomplete="$field['autocomplete'] ?: false" :inputmode="$field['inputmode'] ?: false" :dir="$field['dir'] ?: false"
+             :error="$fieldErrors[$field['key']] ?? null" :required="$field['required']" :mark="$field['required']"
+             :autofocus="$firstInvalid === $field['key']" />
+  @endif
 @endforeach

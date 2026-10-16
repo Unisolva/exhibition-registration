@@ -13,11 +13,11 @@
     <tbody>
     @foreach ($batches as $batch)
       <tr>
-        <td><a href="{{ route('batches.show', $batch) }}">#{{ $batch->id }}</a> · {{ $batch->created_at->format('Y-m-d H:i') }}</td>
-        <td><span class="badge badge-{{ $batch->connection->kind }}">{{ $batch->connection->label() }}</span></td>
-        <td>{{ $batch->item_count }}</td>
-        <td>{{ $batch->status() }}</td>
-        <td>{{ $batch->creator?->name }}</td>
+        <td data-label="Batch"><a href="{{ route('batches.show', $batch) }}">#{{ $batch->id }}</a> · {{ $batch->created_at->format('Y-m-d H:i') }}</td>
+        <td data-label="Destination"><span class="badge badge-{{ $batch->connection->kind }}">{{ $batch->connection->label() }}</span></td>
+        <td data-label="Items">{{ $batch->item_count }}</td>
+        <td data-label="Status">{{ $batch->status() }}</td>
+        <td data-label="By">{{ $batch->creator?->name }}</td>
       </tr>
     @endforeach
     </tbody>

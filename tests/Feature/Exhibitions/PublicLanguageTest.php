@@ -53,7 +53,7 @@ class PublicLanguageTest extends TestCase
         $exhibition = Exhibition::query()->sole();
         $this->assertSame('en', $exhibition->default_locale);
 
-        $this->actingAs($admin)->get('/staff/exhibitions')->assertSee('Form language')->assertSee('<td>English</td>', false);
+        $this->actingAs($admin)->get('/staff/exhibitions')->assertSee('Form language')->assertSee('<td data-label="Form language">English</td>', false);
         $this->actingAs($admin)->get("/staff/exhibitions/{$exhibition->id}")->assertSee('Public form language: English');
         $this->actingAs($admin)->get("/staff/exhibitions/{$exhibition->id}/edit")->assertSee('<option value="en" selected>English</option>', false);
 

@@ -14,11 +14,11 @@
     <tbody>
     @foreach ($exhibitions as $exhibition)
       <tr>
-        <td><a href="{{ route('exhibitions.show', $exhibition) }}">{{ $exhibition->name }}</a></td>
-        <td>{{ $exhibition->starts_on->format('Y-m-d') }}@if ($exhibition->ends_on) – {{ $exhibition->ends_on->format('Y-m-d') }}@endif</td>
-        <td>{{ $exhibition->default_locale === 'en' ? 'English' : 'Arabic' }}</td>
-        <td>@if ($exhibition->is_open)<span class="badge">Open</span>@else<span class="badge badge-off">Closed</span>@endif</td>
-        <td>{{ $exhibition->visitors_count }}</td>
+        <td data-label="Name"><a href="{{ route('exhibitions.show', $exhibition) }}">{{ $exhibition->name }}</a></td>
+        <td data-label="Dates">{{ $exhibition->starts_on->format('Y-m-d') }}@if ($exhibition->ends_on) – {{ $exhibition->ends_on->format('Y-m-d') }}@endif</td>
+        <td data-label="Form language">{{ $exhibition->default_locale === 'en' ? 'English' : 'Arabic' }}</td>
+        <td data-label="Registration">@if ($exhibition->is_open)<span class="badge">Open</span>@else<span class="badge badge-off">Closed</span>@endif</td>
+        <td data-label="Visitors">{{ $exhibition->visitors_count }}</td>
       </tr>
     @endforeach
     </tbody>

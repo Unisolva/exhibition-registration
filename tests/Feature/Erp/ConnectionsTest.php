@@ -104,7 +104,7 @@ class ConnectionsTest extends TestCase
         $super = $this->super();
         $this->odooMode();
         foreach (['http://erp.example.test', 'https://erp.example.test/odoo', 'ftp://erp.example.test', 'erp.example.test', 'https://user@erp.example.test'] as $url) {
-            $this->saveBlock($super, 'test', ['base_url' => $url])->assertSessionHasErrors('base_url');
+            $this->saveBlock($super, 'test', ['base_url' => $url])->assertSessionHasErrorsIn('block_test', 'base_url');
         }
         $this->saveBlock($super, 'test', ['base_url' => 'https://ERP.example.test:8443/'])->assertSessionHasNoErrors();
         $this->assertSame('https://erp.example.test:8443', ErpConnection::current('test')->base_url);
@@ -144,7 +144,7 @@ class ConnectionsTest extends TestCase
         $itemId = $this->queue([$visitor])->items()->value('id');
 
         $this->actingAs($super)->post('/staff/erp/activate', ['kind' => 'test'])->assertSessionHasErrors('kind');
-        $this->saveBlock($super, 'live', ['database' => 'moved-db'])->assertSessionHasErrors('base_url');
+        $this->saveBlock($super, 'live', ['database' => 'moved-db'])->assertSessionHasErrorsIn('block_live', 'base_url');
         $this->actingAs($super)->get('/staff/erp')->assertSee('Unfinished items on the active connection');
 
         $this->actingAs($super)->post('/staff/erp/cancel-waiting')->assertRedirect();

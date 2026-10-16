@@ -15,6 +15,7 @@ use App\Support\Settings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -80,13 +81,18 @@ class ErpController extends Controller
 
     public function saveBlock(Request $request, string $kind): RedirectResponse
     {
-        $data = $request->validate([
-            'base_url' => ['required', 'string', 'max:255'],
-            'database' => ['required', 'string', 'max:100'],
-            'login' => ['required', 'string', 'max:254'],
-            'api_key' => ['nullable', 'string', 'max:255'],
-        ]);
-        $this->connections->saveBlock($kind, $data, $request->user());
+        // Errors go to the block's own bag, so they show inline in that block only (M8 CO-9).
+        try {
+            $data = $request->validate([
+                'base_url' => ['required', 'string', 'max:255'],
+                'database' => ['required', 'string', 'max:100'],
+                'login' => ['required', 'string', 'max:254'],
+                'api_key' => ['nullable', 'string', 'max:255'],
+            ]);
+            $this->connections->saveBlock($kind, $data, $request->user());
+        } catch (ValidationException $e) {
+            throw $e->errorBag('block_'.$kind);
+        }
 
         return redirect()->route('erp.show')->with('status', ucfirst($kind).' connection saved. Run a connection test before using it.');
     }

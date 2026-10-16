@@ -62,3 +62,16 @@ test('errors are shown next to the fields and the typed values stay', async ({ p
   await expect(page.locator('#f-email')).toHaveValue('not-an-email');
   await noHorizontalScroll(page);
 });
+
+test('after an empty submit the first field has focus and the summary links each field (M8 CO-10)', async ({ page }, testInfo) => {
+  const f = fixture(testInfo);
+  await page.goto(publicFormUrl(f, testInfo));
+  await page.locator('form button[type=submit]').click();
+
+  await expect(page.locator('#f-name')).toHaveAttribute('aria-invalid', 'true');
+  expect(await page.evaluate(() => document.activeElement && document.activeElement.id)).toBe('f-name');
+  const links = page.locator('.error-summary a');
+  await expect(links.first()).toHaveAttribute('href', '#f-name');
+  await expect(links.nth(1)).toHaveAttribute('href', '#f-phone');
+  await expect(page.locator('.error-summary p')).toHaveText(isArabic(testInfo) ? 'يرجى تصحيح الحقول التالية (2):' : 'Please fix 2 fields:');
+});

@@ -16,71 +16,51 @@
     @if ($editing)
       <p>Key <code>{{ $field->key }}</code> · type {{ $field->type }}@if ($field->is_system) · system field @endif <span class="hint">(key and type never change)</span></p>
     @else
-      <div class="field">
-        <label for="key">Key <span class="hint">(lower-case letters, digits and _, starting with a letter; cannot be changed later)</span></label>
-        <input id="key" name="key" type="text" required maxlength="40" dir="ltr" value="{{ old('key') }}">
-        @error('key')<div class="error">{{ $message }}</div>@enderror
-      </div>
-      <div class="field">
-        <label for="type">Type</label>
-        <select id="type" name="type">
-          <option value="text" @selected(old('type', 'text') === 'text')>Short text</option>
-          <option value="select" @selected(old('type') === 'select')>List of choices</option>
-        </select>
-        @error('type')<div class="error">{{ $message }}</div>@enderror
-      </div>
+      <x-field name="key" label="Key" hint="Lower-case letters, digits and _, starting with a letter. Cannot be changed later."
+               :value="old('key')" required maxlength="40" dir="ltr" />
+      <x-field type="select" name="type" label="Type" :value="old('type', 'text')" :options="['text' => 'Short text', 'select' => 'List of choices']" />
     @endif
 
-    <div class="field">
-      <label for="label_en">Label in English</label>
-      <input id="label_en" name="label_en" type="text" required maxlength="100" value="{{ old('label_en', $field->label_en) }}">
-      @error('label_en')<div class="error">{{ $message }}</div>@enderror
-    </div>
-    <div class="field">
-      <label for="label_ar">Label in Arabic</label>
-      <input id="label_ar" name="label_ar" type="text" required maxlength="100" dir="rtl" lang="ar" value="{{ old('label_ar', $field->label_ar) }}">
-      @error('label_ar')<div class="error">{{ $message }}</div>@enderror
-    </div>
-    <div class="field">
-      <label for="sort_order">Order <span class="hint">(lower comes first)</span></label>
-      <input id="sort_order" name="sort_order" type="number" min="0" max="100000" required value="{{ old('sort_order', $field->sort_order) }}">
-      @error('sort_order')<div class="error">{{ $message }}</div>@enderror
-    </div>
+    <x-field name="label_en" label="Label in English" :value="old('label_en', $field->label_en)" required maxlength="100" />
+    <x-field name="label_ar" label="Label in Arabic" :value="old('label_ar', $field->label_ar)" required maxlength="100" dir="rtl" lang="ar" />
+    <x-field type="number" name="sort_order" label="Order" hint="Lower comes first." :value="old('sort_order', $field->sort_order)" required min="0" max="100000" />
 
     @if ($alwaysOn)
       <p class="hint">Name and phone are always active and required.</p>
     @else
-      <label class="check"><input type="checkbox" name="is_required" value="1" @checked(old('is_required', $field->is_required))> Required</label>
-      <label class="check"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $field->is_active))> Active (shown on the forms)</label>
-      @error('is_active')<div class="error">{{ $message }}</div>@enderror
+      <x-field type="checkbox" name="is_required" label="Required" :checked="(bool) old('is_required', $field->is_required)" />
+      <x-field type="checkbox" name="is_active" label="Active (shown on the forms)" :checked="(bool) old('is_active', $field->is_active)" />
     @endif
-    <label class="check"><input type="checkbox" name="send_to_erp" value="1" @checked(old('send_to_erp', $field->send_to_erp))> Send to the ERP with the lead</label>
+    <x-field type="checkbox" name="send_to_erp" label="Send to the ERP with the lead" :checked="(bool) old('send_to_erp', $field->send_to_erp)" />
 
     @if (! $editing || $field->type === 'select')
-      <h2>Choices</h2>
-      <p class="hint">For a list of choices. A list with no active choices is shown as a free-text box. Choice values cannot change once added; deactivate a choice to hide it.</p>
-      @error('new_options')<div class="error">{{ $message }}</div>@enderror
-      @foreach ($field->options ?? [] as $i => $option)
-        <fieldset class="option-row">
-          <legend><code>{{ $option['value'] }}</code></legend>
-          <label for="opt-{{ $i }}-en">English</label>
-          <input id="opt-{{ $i }}-en" name="options[{{ $i }}][label_en]" type="text" maxlength="100" value="{{ $option['label_en'] }}">
-          <label for="opt-{{ $i }}-ar">Arabic</label>
-          <input id="opt-{{ $i }}-ar" name="options[{{ $i }}][label_ar]" type="text" maxlength="100" dir="rtl" lang="ar" value="{{ $option['label_ar'] }}">
-          <label class="check"><input type="checkbox" name="options[{{ $i }}][is_active]" value="1" @checked($option['is_active'] ?? true)> Active</label>
-        </fieldset>
-      @endforeach
-      @for ($i = 0; $i < 3; $i++)
-        <fieldset class="option-row">
-          <legend>New choice</legend>
-          <label for="new-{{ $i }}-value">Value <span class="hint">(a-z, 0-9, _ or -)</span></label>
-          <input id="new-{{ $i }}-value" name="new_options[{{ $i }}][value]" type="text" maxlength="40" dir="ltr">
-          <label for="new-{{ $i }}-en">English</label>
-          <input id="new-{{ $i }}-en" name="new_options[{{ $i }}][label_en]" type="text" maxlength="100">
-          <label for="new-{{ $i }}-ar">Arabic</label>
-          <input id="new-{{ $i }}-ar" name="new_options[{{ $i }}][label_ar]" type="text" maxlength="100" dir="rtl" lang="ar">
-        </fieldset>
-      @endfor
+      <section class="choices" aria-labelledby="choices-title" data-choices>
+        <h2 id="choices-title">Choices</h2>
+        <p class="hint" id="choices-hint">For a list of choices. A list with no active choices is shown as a free-text box. Choice values cannot change once added; deactivate a choice to hide it.</p>
+        @error('new_options')<p class="notice notice-err" role="alert">{{ $message }}</p>@enderror
+        @foreach ($field->options ?? [] as $i => $option)
+          <fieldset class="option-row">
+            <legend><code>{{ $option['value'] }}</code></legend>
+            <x-field :name="'options['.$i.'][label_en]'" :id="'opt-'.$i.'-en'" :error-key="'options.'.$i.'.label_en'" label="English"
+                     :value="old('options.'.$i.'.label_en', $option['label_en'])" maxlength="100" />
+            <x-field :name="'options['.$i.'][label_ar]'" :id="'opt-'.$i.'-ar'" :error-key="'options.'.$i.'.label_ar'" label="Arabic"
+                     :value="old('options.'.$i.'.label_ar', $option['label_ar'])" maxlength="100" dir="rtl" lang="ar" />
+            <x-field type="checkbox" :name="'options['.$i.'][is_active]'" :id="'opt-'.$i.'-active'" label="Active"
+                     :checked="(bool) old('options.'.$i.'.is_active', $option['is_active'] ?? true)" />
+          </fieldset>
+        @endforeach
+        @for ($i = 0; $i < 3; $i++)
+          <fieldset class="option-row">
+            <legend>New choice</legend>
+            <x-field :name="'new_options['.$i.'][value]'" :id="'new-'.$i.'-value'" :error-key="'new_options.'.$i.'.value'" label="Value"
+                     hint="a-z, 0-9, _ or -" :value="old('new_options.'.$i.'.value')" maxlength="40" dir="ltr" />
+            <x-field :name="'new_options['.$i.'][label_en]'" :id="'new-'.$i.'-en'" :error-key="'new_options.'.$i.'.label_en'" label="English"
+                     :value="old('new_options.'.$i.'.label_en')" maxlength="100" />
+            <x-field :name="'new_options['.$i.'][label_ar]'" :id="'new-'.$i.'-ar'" :error-key="'new_options.'.$i.'.label_ar'" label="Arabic"
+                     :value="old('new_options.'.$i.'.label_ar')" maxlength="100" dir="rtl" lang="ar" />
+          </fieldset>
+        @endfor
+      </section>
     @endif
 
     <div class="actions">
