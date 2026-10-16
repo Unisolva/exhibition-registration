@@ -9,9 +9,7 @@
   @if ($lock)
     <div class="notice notice-warn" role="status">🔒 {{ \App\Visitors\VisitorLock::message($lock) }}. Saving will be refused.</div>
   @endif
-  @if ($fieldErrors)
-    <div class="notice notice-err" role="alert">Please check the fields marked below.</div>
-  @endif
+  @include('partials.error-summary')
   <form method="post" action="{{ route('visitors.update', $visitor) }}" class="card" novalidate data-once>
     @csrf
     @method('PUT')

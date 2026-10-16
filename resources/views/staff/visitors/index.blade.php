@@ -108,22 +108,21 @@
       @php($lock = $locks[$visitor->id] ?? null)
       <tr>
         @if ($canPush)
-          <td><input type="checkbox" name="visitor_ids[]" value="{{ $visitor->id }}" aria-label="Select {{ $visitor->name }}" data-select-row></td>
+          <td class="select-cell"><label class="select-hit"><input type="checkbox" name="visitor_ids[]" value="{{ $visitor->id }}" aria-label="Select {{ $visitor->name }}" data-select-row></label></td>
         @endif
-        <td>
+        <td data-label="Name">
           <a href="{{ route('visitors.show', $visitor) }}">{{ $visitor->name }}</a>
           @if ($visitor->possible_duplicate_of)<span class="badge" title="Same phone number earlier at this exhibition">Possible duplicate</span>@endif
           @if ($lock)<span class="badge badge-lock" title="{{ \App\Visitors\VisitorLock::message($lock) }}">🔒 Locked</span>@endif
         </td>
-        <td dir="ltr">{{ $visitor->phone_raw }}</td>
-        <td>{{ $visitor->exhibition?->name }}</td>
-        <td>{{ $visitor->created_at->timezone($timezone)->format('Y-m-d H:i') }}</td>
-        @if ($manager)<td>{{ $visitor->source === 'public' ? 'QR form' : 'Staff: '.($visitor->enteredBy?->name ?? '?') }}</td>@endif
-        <td>{{ str_replace('_', ' ', $visitor->sync_state) }}</td>
+        <td data-label="Phone" dir="ltr">{{ $visitor->phone_raw }}</td>
+        <td data-label="Exhibition">{{ $visitor->exhibition?->name }}</td>
+        <td data-label="Registered">{{ $visitor->created_at->timezone($timezone)->format('Y-m-d H:i') }}</td>
+        @if ($manager)<td data-label="Source">{{ $visitor->source === 'public' ? 'QR form' : 'Staff: '.($visitor->enteredBy?->name ?? '?') }}</td>@endif
+        <td data-label="ERP">{{ str_replace('_', ' ', $visitor->sync_state) }}</td>
         <td class="row-actions">
           @if (! $lock)
             @can('update', $visitor)<a href="{{ route('visitors.edit', $visitor) }}">Edit</a>@endcan
-            @can('trash', $visitor)<a href="{{ route('visitors.trash-confirm', $visitor) }}">Delete</a>@endcan
           @endif
         </td>
       </tr>

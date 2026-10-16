@@ -12,7 +12,7 @@ return [
     'powered_by' => 'Powered by Unisolva',
     'switch_language' => 'العربية',
     'switch_language_code' => 'ar',
-    'errors_heading' => 'Please check the fields marked below.',
+    'errors_summary' => '{1} Please fix 1 field:|[2,*] Please fix :count fields:',
     'error' => [
         'required' => ':field is required.',
         'too_long' => ':field must be at most :max characters.',

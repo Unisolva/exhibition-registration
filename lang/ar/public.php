@@ -13,7 +13,7 @@ return [
     'powered_by' => 'Powered by Unisolva',
     'switch_language' => 'English',
     'switch_language_code' => 'en',
-    'errors_heading' => 'يرجى مراجعة الحقول المشار إليها أدناه.',
+    'errors_summary' => '{1} يرجى تصحيح الحقل التالي:|[2,*] يرجى تصحيح الحقول التالية (:count):',
     'error' => [
         'required' => 'حقل :field مطلوب.',
         'too_long' => 'يجب ألا يزيد :field عن :max حرفًا.',

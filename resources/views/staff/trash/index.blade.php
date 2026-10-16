@@ -16,10 +16,10 @@
     @foreach ($visitors as $visitor)
       @php($left = max(0, \App\Http\Controllers\Staff\TrashController::DAYS - (int) $visitor->trashed_at->diffInDays(now())))
       <tr>
-        <td>{{ $visitor->name }}</td>
-        <td>{{ $visitor->exhibition?->name }}</td>
-        <td>{{ $visitor->trashed_at->timezone($timezone)->format('Y-m-d H:i') }} by {{ $visitor->trashedBy?->name ?? '?' }}</td>
-        <td>{{ $left }}</td>
+        <td data-label="Name">{{ $visitor->name }}</td>
+        <td data-label="Exhibition">{{ $visitor->exhibition?->name }}</td>
+        <td data-label="Deleted">{{ $visitor->trashed_at->timezone($timezone)->format('Y-m-d H:i') }} by {{ $visitor->trashedBy?->name ?? '?' }}</td>
+        <td data-label="Days left">{{ $left }}</td>
         <td>
           <form method="post" action="{{ route('trash.restore', $visitor) }}" class="inline">
             @csrf
@@ -29,9 +29,8 @@
             <form method="post" action="{{ route('trash.destroy', $visitor) }}" class="inline purge">
               @csrf
               @method('DELETE')
-              <label for="confirm-{{ $visitor->id }}">Type {{ \App\Http\Controllers\Staff\TrashController::CONFIRM_WORD }} to delete permanently</label>
-              <input id="confirm-{{ $visitor->id }}" name="confirm" type="text" autocomplete="off" maxlength="10">
-              @error('confirm', 'delete'.$visitor->id)<div class="error">{{ $message }}</div>@enderror
+              <x-field name="confirm" :id="'confirm-'.$visitor->id" :bag="'delete'.$visitor->id" autocomplete="off" maxlength="10"
+                       :label="'Type '.\App\Http\Controllers\Staff\TrashController::CONFIRM_WORD.' to delete permanently'" />
               <button type="submit" class="btn btn-secondary">Delete permanently</button>
             </form>
           @endcan

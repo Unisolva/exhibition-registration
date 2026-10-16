@@ -99,7 +99,32 @@ async function smallControls(page) {
   });
 }
 
+/**
+ * Visible interactive elements smaller than 24 x 24 px (WCAG 2.5.8, M8 §4). A link inside running text
+ * (its block holds other text too) takes the 2.5.8 inline exception.
+ */
+async function smallTargets(page) {
+  return page.evaluate(() => {
+    const out = [];
+    const selector = 'a[href], button, input:not([type=hidden]), select, textarea, summary';
+    for (const el of document.querySelectorAll(selector)) {
+      const box = el.getBoundingClientRect();
+      if (box.width === 0 && box.height === 0) { continue; }
+      if (getComputedStyle(el).visibility === 'hidden') { continue; }
+      if (el.tagName === 'A') {
+        const block = el.closest('p, li, dd, td, .notice, .hint');
+        const own = el.textContent.trim().length;
+        if (block && block.textContent.replace(/\s+/g, ' ').trim().length > own + 3) { continue; }
+      }
+      if (box.width < 23.5 || box.height < 23.5) {
+        out.push(`${el.tagName.toLowerCase()} "${(el.textContent || el.name || el.type).trim().slice(0, 30)}" ${Math.round(box.width)}x${Math.round(box.height)}`);
+      }
+    }
+    return out;
+  });
+}
+
 module.exports = {
   fixture, isArabic, publicFormUrl, signIn, watchRequests, seriousViolations, noHorizontalScroll, countEntries,
-  adminPage, axeIssues, smallControls,
+  adminPage, axeIssues, smallControls, smallTargets,
 };

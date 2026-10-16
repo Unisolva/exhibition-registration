@@ -59,9 +59,9 @@
     <tbody>
     @foreach ($edits as $edit)
       <tr>
-        <td>{{ \Illuminate\Support\Carbon::parse($edit->at, 'UTC')->timezone($timezone)->format('Y-m-d H:i') }}</td>
-        <td>{{ $edit->user_name }}</td>
-        <td>
+        <td data-label="When">{{ \Illuminate\Support\Carbon::parse($edit->at, 'UTC')->timezone($timezone)->format('Y-m-d H:i') }}</td>
+        <td data-label="Who">{{ $edit->user_name }}</td>
+        <td data-label="Changes">
           <ul class="changes">
           @foreach (json_decode($edit->changes, true) as $key => [$old, $new])
             <li><strong>{{ $fields->firstWhere('key', $key)?->label_en ?? $key }}</strong>: {{ $old === null || $old === '' ? '—' : $old }} → {{ $new === null || $new === '' ? '—' : $new }}</li>

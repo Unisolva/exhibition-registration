@@ -12,6 +12,11 @@ Release 1.1.0 (in progress): interface fixes from a usability and accessibility 
 - The TEST ERP banner is inside the page header landmark.
 - Each exhibition has a public form language, Arabic or English, chosen when it is created and editable later; it shows in the exhibitions list and on the exhibition page. The public pages open in that language; a visitor's switch is remembered for that exhibition only. Database: one additive column, `exhibitions.default_locale` (existing exhibitions get Arabic).
 - The poster shows the organisation's name in the exhibition's language first, then the other language.
+- Every form uses one field component: the label, an optional hint, the control and its error, with the error tied to the control for screen readers. The ERP connection blocks now show their errors next to the field, in that block only.
+- After a failed submit of the public form or the visitor edit form, the first wrong field has the focus, and the message at the top lists each problem as a link to its field.
+- A two-tone focus ring (yellow next to the control, dark outside it) is visible on white, grey and the brand-coloured bar.
+- On phones, stacked table rows show each column's name; visitor checkboxes are larger, Edit is easier to tap, and Delete is on the visitor page only. Every link and button is at least 24 px tall.
+- Staff navigation marks the current page. On phones it shows Save & New and a Menu; the settings pages share one sub-menu (Settings, Branding, Form fields, ERP, System). The forced password change page shows no navigation.
 
 - Release scripts only (no application change): `bin/deploy.sh` now leaves releases readable by the web server (directories 755, files 644, umask 022) and prunes old releases without process substitution, which CageFS does not support; `bin/build-release.sh` no longer packs an archive root of mode 700. Found on the first deploy, where the web server answered 404 for the whole site. Release 1.0.0 archives are deployed with the new `deploy.sh`.
 

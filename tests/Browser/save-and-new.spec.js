@@ -26,7 +26,8 @@ async function type(page, visitor) {
 }
 
 async function expectSaved(page) {
-  await expect(page.locator('#entry-status')).toContainText('Saved');
+  // Generous: the local server is shared with the other browser projects running in parallel.
+  await expect(page.locator('#entry-status')).toContainText('Saved', { timeout: 15000 });
   await expect(page.locator('#f-name')).toHaveValue('');
   await expect(page.locator('#f-phone')).toHaveValue('');
   await expect(page.locator('#f-name')).toBeFocused();

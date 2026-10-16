@@ -12,43 +12,24 @@
     @csrf
     @if ($editing) @method('PUT') @endif
 
-    <div class="field">
-      <label for="name">Name</label>
-      <input id="name" name="name" type="text" required maxlength="100" value="{{ old('name', $user->name) }}"
-             @error('name') aria-invalid="true" aria-describedby="name-error" @enderror>
-      @error('name')<div class="error" id="name-error">{{ $message }}</div>@enderror
-    </div>
+    <x-field name="name" label="Name" :value="old('name', $user->name)" required maxlength="100" />
+    <x-field type="email" name="email" label="Email" :value="old('email', $user->email)" required maxlength="254" />
 
-    <div class="field">
-      <label for="email">Email</label>
-      <input id="email" name="email" type="email" required maxlength="254" value="{{ old('email', $user->email) }}"
-             @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
-      @error('email')<div class="error" id="email-error">{{ $message }}</div>@enderror
-    </div>
-
-    <div class="field">
-      <label for="role">Role</label>
-      @if ($editing && auth()->user()->is($user) && ! auth()->user()->isSuperAdmin())
+    @if ($editing && auth()->user()->is($user) && ! auth()->user()->isSuperAdmin())
+      <div class="field">
         <input type="hidden" name="role" value="{{ $user->role->value }}">
-        <p>{{ $user->role->label() }} <span class="hint">(you cannot change your own role)</span></p>
-      @else
-        <select id="role" name="role" required @error('role') aria-invalid="true" aria-describedby="role-error" @enderror>
-          @foreach ($roles as $role)
-            <option value="{{ $role->value }}" @selected(old('role', $user->role?->value ?? 'staff') === $role->value)>{{ $role->label() }}</option>
-          @endforeach
-        </select>
-      @endif
-      @error('role')<div class="error" id="role-error">{{ $message }}</div>@enderror
-    </div>
+        <p><strong>Role:</strong> {{ $user->role->label() }} <span class="hint">(you cannot change your own role)</span></p>
+      </div>
+    @else
+      <x-field type="select" name="role" label="Role" :value="old('role', $user->role?->value ?? 'staff')" required
+               :options="collect($roles)->mapWithKeys(fn ($role) => [$role->value => $role->label()])->all()" />
+    @endif
 
     @if ($editing)
       <input type="hidden" name="is_active" value="0">
-      <label class="check">
-        <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $user->is_active)) @disabled(auth()->user()->is($user))>
-        Active <span class="hint">(deactivating signs the user out everywhere)</span>
-      </label>
+      <x-field type="checkbox" name="is_active" label="Active" hint="Deactivating signs the user out everywhere."
+               :checked="(bool) old('is_active', $user->is_active)" :disabled="auth()->user()->is($user)" />
       @if (auth()->user()->is($user))<input type="hidden" name="is_active" value="1">@endif
-      @error('is_active')<div class="error">{{ $message }}</div>@enderror
     @else
       <p class="hint">A one-time password is generated and shown once after saving. The user must change it at first sign-in.</p>
     @endif

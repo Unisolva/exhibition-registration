@@ -8,17 +8,9 @@
   <h1>Sign in</h1>
   <form method="post" action="{{ url('/staff/login') }}" class="card" novalidate>
     @csrf
-    <div class="field">
-      <label for="email">Email</label>
-      <input id="email" name="email" type="email" autocomplete="username" required maxlength="254"
-             value="{{ old('email') }}" @error('email') aria-invalid="true" aria-describedby="email-error" @enderror autofocus>
-      @error('email')<div class="error" id="email-error">{{ $message }}</div>@enderror
-    </div>
-    <div class="field">
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="128">
-    </div>
-    <label class="check"><input type="checkbox" name="remember" value="1"> Keep me signed in on this device</label>
+    <x-field type="email" name="email" label="Email" :value="old('email')" autocomplete="username" required maxlength="254" autofocus />
+    <x-field type="password" name="password" label="Password" autocomplete="current-password" required maxlength="128" />
+    <x-field type="checkbox" name="remember" label="Keep me signed in on this device" />
     <div class="actions"><button type="submit" class="btn">Sign in</button></div>
   </form>
 </div>

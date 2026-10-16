@@ -12,22 +12,9 @@
   <form method="post" action="{{ route('password.update') }}" class="card" novalidate>
     @csrf
     @method('PUT')
-    <div class="field">
-      <label for="current_password">Current password</label>
-      <input id="current_password" name="current_password" type="password" autocomplete="current-password" required
-             @error('current_password') aria-invalid="true" aria-describedby="current_password-error" @enderror>
-      @error('current_password')<div class="error" id="current_password-error">{{ $message }}</div>@enderror
-    </div>
-    <div class="field">
-      <label for="password">New password <span class="hint">(at least 10 characters)</span></label>
-      <input id="password" name="password" type="password" autocomplete="new-password" required minlength="10" maxlength="128"
-             @error('password') aria-invalid="true" aria-describedby="password-error" @enderror>
-      @error('password')<div class="error" id="password-error">{{ $message }}</div>@enderror
-    </div>
-    <div class="field">
-      <label for="password_confirmation">Repeat new password</label>
-      <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" required>
-    </div>
+    <x-field type="password" name="current_password" label="Current password" autocomplete="current-password" required />
+    <x-field type="password" name="password" label="New password" hint="At least 10 characters." autocomplete="new-password" required minlength="10" maxlength="128" />
+    <x-field type="password" name="password_confirmation" label="Repeat new password" autocomplete="new-password" required />
     <p class="hint">Changing your password signs you out on every other device.</p>
     <div class="actions"><button type="submit" class="btn">Change password</button></div>
   </form>
