@@ -2,7 +2,7 @@
 
 A self-hosted web application for agricultural companies that collect visitor details at exhibitions. It replaces paper sign-up sheets that rarely get typed in, and sends only the visitors a company chooses to its CRM as leads.
 
-**Status: version 1.0.0 is ready for its first installation.** See [CHANGELOG.md](CHANGELOG.md).
+**Status: version 1.1.0.** See [CHANGELOG.md](CHANGELOG.md).
 
 ## What it does
 

@@ -85,6 +85,7 @@ Route::prefix('staff')->middleware('staff.locale')->group(function () {
             Route::post('users', [UserController::class, 'store'])->name('users.store')->can('create', User::class);
             Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('users.edit')->can('update', 'user');
             Route::put('users/{user}', [UserController::class, 'update'])->name('users.update')->can('update', 'user');
+            Route::get('users/{user}/reset-password', [UserController::class, 'confirmResetPassword'])->name('users.reset-password-confirm')->can('resetPassword', 'user');
             Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password')->can('resetPassword', 'user');
 
             Route::middleware('can:exhibitions.manage')->group(function () {
@@ -95,6 +96,7 @@ Route::prefix('staff')->middleware('staff.locale')->group(function () {
                 Route::get('exhibitions/{exhibition}/edit', [ExhibitionController::class, 'edit'])->name('exhibitions.edit');
                 Route::put('exhibitions/{exhibition}', [ExhibitionController::class, 'update'])->name('exhibitions.update');
                 Route::post('exhibitions/{exhibition}/open', [ExhibitionController::class, 'open'])->name('exhibitions.open');
+                Route::get('exhibitions/{exhibition}/close', [ExhibitionController::class, 'confirmClose'])->name('exhibitions.close-confirm');
                 Route::post('exhibitions/{exhibition}/close', [ExhibitionController::class, 'close'])->name('exhibitions.close');
                 Route::get('exhibitions/{exhibition}/qr.svg', [ExhibitionController::class, 'qr'])->name('exhibitions.qr');
                 Route::get('exhibitions/{exhibition}/poster', [ExhibitionController::class, 'poster'])->name('exhibitions.poster');
@@ -118,6 +120,7 @@ Route::prefix('staff')->middleware('staff.locale')->group(function () {
                 Route::put('erp/settings', [ErpController::class, 'updateSettings'])->name('erp.settings');
                 Route::put('erp/blocks/{kind}', [ErpController::class, 'saveBlock'])->whereIn('kind', ['test', 'live'])->name('erp.blocks.save');
                 Route::post('erp/blocks/{kind}/test', [ErpController::class, 'test'])->whereIn('kind', ['test', 'live'])->name('erp.blocks.test');
+                Route::get('erp/activate', [ErpController::class, 'confirmActivate'])->name('erp.activate-confirm');
                 Route::post('erp/activate', [ErpController::class, 'activate'])->name('erp.activate');
                 Route::put('erp/push', [ErpController::class, 'push'])->name('erp.push');
                 Route::post('erp/cancel-waiting', [ErpController::class, 'cancelWaiting'])->name('erp.cancel-waiting');

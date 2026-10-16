@@ -78,6 +78,12 @@ class ExhibitionController extends Controller
         return $this->setOpen($exhibition, true);
     }
 
+    /** M8 CO-20: closing mid-show stops the public form, so it is confirmed first. */
+    public function confirmClose(Exhibition $exhibition): View
+    {
+        return view('staff.exhibitions.close-confirm', ['exhibition' => $exhibition]);
+    }
+
     public function close(Exhibition $exhibition): RedirectResponse
     {
         return $this->setOpen($exhibition, false);

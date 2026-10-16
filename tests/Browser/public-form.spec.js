@@ -75,3 +75,15 @@ test('after an empty submit the first field has focus and the summary links each
   await expect(links.nth(1)).toHaveAttribute('href', '#f-phone');
   await expect(page.locator('.error-summary p')).toHaveText(isArabic(testInfo) ? 'يرجى تصحيح الحقول التالية (2):' : 'Please fix 2 fields:');
 });
+
+test('Arabic at 360x740 with the five default fields and no logo: Send ends within the screen (M8 CO-14)', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'ar-360', 'the measured case is Arabic at 360 px');
+  const f = fixture(testInfo);
+  await page.goto(publicFormUrl(f, testInfo));
+  await expect(page.locator('h1.exhibition-title')).toHaveText(f.exhibitionName);
+  await expect(page.locator('.public-head img')).toHaveCount(0);
+  await expect(page.locator('form .field')).toHaveCount(5);
+  const bottom = await page.locator('form button[type=submit]').evaluate((b) => b.getBoundingClientRect().bottom);
+  testInfo.annotations.push({ type: 'Send bottom at 360x740 Arabic (px)', description: String(Math.round(bottom)) });
+  expect(bottom).toBeLessThanOrEqual(740);
+});

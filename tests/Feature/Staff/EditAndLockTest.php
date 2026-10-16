@@ -155,7 +155,7 @@ class EditAndLockTest extends TestCase
             $itemId = $this->activeItem($visitor, $this->erpConnection('test'), $state);
 
             $this->actingAs($admin)->putJson("/staff/visitors/{$visitor->id}", ['name' => 'X', 'phone' => $visitor->phone_raw])
-                ->assertStatus(423)->assertJson(['message' => 'Being sent to the ERP; try again when the push finishes']);
+                ->assertStatus(423)->assertJson(['message' => 'Being sent to the ERP; try again when sending has finished']);
             $this->actingAs($admin)->deleteJson("/staff/visitors/{$visitor->id}")->assertStatus(423);
 
             // The item finishes: active_item_id is cleared and the visitor is editable again.

@@ -18,6 +18,8 @@ class Settings
         'org_name_ar' => '',
         'logo' => null,
         'logo_hash' => null,
+        'logo_width' => null,
+        'logo_height' => null,
         'brand_color' => '#1F4E79',
         'show_powered_by' => true,
         'display_timezone' => 'Africa/Cairo',

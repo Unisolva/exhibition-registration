@@ -9,6 +9,9 @@
 <h1>{{ $manager ? 'Visitors' : 'My entries' }}</h1>
 
 <form method="get" action="{{ route('visitors.index') }}" class="card filters" role="search">
+  {{-- On phones the filters fold away; they open by themselves when one is set (M8 CO-19). --}}
+  <details class="filter-details" @if ($activeFilters > 0) open @endif>
+  <summary>Filters @if ($activeFilters > 0)<span class="hint">({{ $activeFilters }} active)</span>@endif</summary>
   <div class="filter-grid">
     <div class="field">
       <label for="q">Name or phone</label>
@@ -57,15 +60,17 @@
         </select>
       </div>
     @endif
-    <div class="field">
-      <label for="sync">ERP state</label>
-      <select id="sync" name="sync">
-        <option value="">All</option>
-        @foreach (\App\Visitors\VisitorQuery::SYNC_STATES as $state)
-          <option value="{{ $state }}" @selected($filters['sync'] === $state)>{{ str_replace('_', ' ', ucfirst($state)) }}</option>
-        @endforeach
-      </select>
-    </div>
+    @if ($showErp)
+      <div class="field">
+        <label for="sync">ERP state</label>
+        <select id="sync" name="sync">
+          <option value="">All</option>
+          @foreach (\App\Visitors\VisitorQuery::SYNC_STATES as $state)
+            <option value="{{ $state }}" @selected($filters['sync'] === $state)>{{ \App\Visitors\VisitorQuery::syncLabel($state, $syncKind) }}</option>
+          @endforeach
+        </select>
+      </div>
+    @endif
     <div class="field">
       <label for="sort">Sort</label>
       <select id="sort" name="sort">
@@ -76,7 +81,7 @@
       </select>
     </div>
   </div>
-  <label class="check"><input type="checkbox" name="duplicate" value="1" @checked($filters['duplicate'])> Possible duplicates only</label>
+  <x-field type="checkbox" name="duplicate" label="Possible duplicates only" :checked="$filters['duplicate']" />
   <div class="actions">
     <button type="submit" class="btn">Apply</button>
     <a href="{{ route('visitors.index') }}">Clear</a>
@@ -84,11 +89,17 @@
       <a class="btn btn-secondary" href="{{ route('visitors.export', request()->except('cursor')) }}">Export CSV</a>
     @endcan
   </div>
+  </details>
 </form>
 
 @if (count($page->items()) === 0)
-  <p>No visitors match.</p>
+  @if ($activeFilters > 0)
+    <p>No visitors match these filters. <a href="{{ route('visitors.index') }}">Clear filters</a></p>
+  @else
+    <p>No visitors yet. Entries from the QR form and Save &amp; New appear here.</p>
+  @endif
 @else
+  <p class="result-count" role="status">{{ $total }} {{ $total === 1 ? 'visitor' : 'visitors' }}</p>
   @if ($canPush)
   {{-- Selection lives only on this page: a new filter, search or page starts empty (work order §7). --}}
   <form method="post" action="{{ route('batches.preview') }}" autocomplete="off" data-select>
@@ -96,12 +107,12 @@
     <div class="select-bar">
       <label class="check"><input type="checkbox" data-select-all> Select all on this page</label>
       <span data-select-count aria-live="polite">0 selected</span>
-      <button type="submit" class="btn" data-select-submit>Send selected to the ERP…</button>
+      <button type="submit" class="btn" data-select-submit>Send selected to Odoo…</button>
     </div>
   @endif
   <table class="stack-sm visitors">
     <thead>
-      <tr>@if ($canPush)<th><span class="hint">Select</span></th>@endif<th>Name</th><th>Phone</th><th>Exhibition</th><th>Registered</th>@if ($manager)<th>Source</th>@endif<th>ERP</th><th><span class="hint">Actions</span></th></tr>
+      <tr>@if ($canPush)<th><span class="hint">Select</span></th>@endif<th>Name</th><th>Phone</th><th>Exhibition</th><th>Registered</th>@if ($manager)<th>Source</th>@endif @if ($showErp)<th>ERP</th>@endif<th><span class="hint">Actions</span></th></tr>
     </thead>
     <tbody>
     @foreach ($page->items() as $visitor)
@@ -112,14 +123,14 @@
         @endif
         <td data-label="Name">
           <a href="{{ route('visitors.show', $visitor) }}">{{ $visitor->name }}</a>
-          @if ($visitor->possible_duplicate_of)<span class="badge" title="Same phone number earlier at this exhibition">Possible duplicate</span>@endif
-          @if ($lock)<span class="badge badge-lock" title="{{ \App\Visitors\VisitorLock::message($lock) }}">🔒 Locked</span>@endif
+          @if ($visitor->possible_duplicate_of)<span class="badge">Possible duplicate</span>@endif
+          @if ($lock)<span class="badge badge-lock"><x-lock-icon /> Locked</span>@endif
         </td>
         <td data-label="Phone" dir="ltr">{{ $visitor->phone_raw }}</td>
         <td data-label="Exhibition">{{ $visitor->exhibition?->name }}</td>
         <td data-label="Registered">{{ $visitor->created_at->timezone($timezone)->format('Y-m-d H:i') }}</td>
         @if ($manager)<td data-label="Source">{{ $visitor->source === 'public' ? 'QR form' : 'Staff: '.($visitor->enteredBy?->name ?? '?') }}</td>@endif
-        <td data-label="ERP">{{ str_replace('_', ' ', $visitor->sync_state) }}</td>
+        @if ($showErp)<td data-label="ERP">{{ \App\Visitors\VisitorQuery::syncLabel($visitor->sync_state, $syncKind) }}</td>@endif
         <td class="row-actions">
           @if (! $lock)
             @can('update', $visitor)<a href="{{ route('visitors.edit', $visitor) }}">Edit</a>@endcan

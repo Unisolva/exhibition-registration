@@ -22,7 +22,8 @@ module.exports = async (config) => {
       await page.locator('#email').fill(email);
       await page.locator('#password').fill(password);
       await page.getByRole('button', { name: 'Sign in' }).click();
-      await page.waitForURL(/\/staff$/);
+      // Staff land on Save & New (M8 CO-16), managers on the overview.
+      await page.waitForURL(/\/staff(\/entry)?$/);
       await context.storageState({ path: path.join(__dirname, '.auth', `${file}.json`) });
       await context.close();
     }

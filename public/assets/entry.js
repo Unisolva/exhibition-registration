@@ -141,6 +141,10 @@
       // Hidden, not removed, so the form below does not move.
       savedTimer = setTimeout(function () { notice.style.visibility = 'hidden'; }, SAVED_MS);
     }
+    // On a phone the page may be scrolled down to the button: keep the message below the sticky exhibition bar.
+    var bar = document.querySelector('.entry-bar');
+    var hidden = statusBox.getBoundingClientRect().top - (bar ? bar.getBoundingClientRect().bottom : 0);
+    if (hidden < 0) { window.scrollBy(0, hidden - 8); }
     savedCount += 1;
     if (countLine) {
       countLine.textContent = savedCount + ' saved in this session';
@@ -181,7 +185,7 @@
           showFieldErrors(json.errors || {});
         } else if (status === 401 || status === 419) {
           needsFreshCsrf = true;
-          retryState('Session expired. Sign in in a new tab, then press Retry. Your values are kept.');
+          retryState('You were signed out. Sign in again in a new tab, then come back and press Retry. What you typed is still here.');
         } else if (status === 409) {
           // The token was already used with other values: saving again needs a new token.
           replacementToken = json.next_token || null;

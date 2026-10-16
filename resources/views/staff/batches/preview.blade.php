@@ -15,7 +15,7 @@
       <div dir="ltr">{{ $connection->base_url }} / {{ $connection->database }}</div>
     </div>
 
-    <p><strong>{{ $counts['eligible'] }}</strong> of {{ count($ids) }} selected visitor(s) will be sent as leads.
+    <p><strong>{{ $counts['eligible'] }}</strong> of {{ count($ids) }} selected {{ count($ids) === 1 ? 'visitor' : 'visitors' }} will be sent as leads.
       @if ($counts['skipped'])<br>{{ $counts['skipped'] }} will be skipped: already sent, already queued, or deleted.@endif</p>
 
     <h2>Fields sent</h2>
@@ -25,7 +25,7 @@
     <p class="hint">Each lead also carries the exhibition, the source, the registration time and a reference line, so a retry never creates it twice.</p>
 
     @if (! $pushEnabled)
-      <div class="notice notice-err" role="alert">Pushing is switched off. A super admin switches it on on the ERP screen.</div>
+      <div class="notice notice-err" role="alert">Sending to Odoo is off. A super admin switches it on on the ERP screen.</div>
     @elseif ($counts['eligible'] === 0)
       <div class="notice notice-warn" role="status">Nothing to send.</div>
     @else
@@ -34,7 +34,7 @@
         <input type="hidden" name="batch_token" value="{{ $batchToken }}">
         @foreach ($ids as $id)<input type="hidden" name="visitor_ids[]" value="{{ $id }}">@endforeach
         <div class="actions">
-          <button type="submit" class="btn">Push {{ $counts['eligible'] }} lead(s) to {{ $connection->label() }}</button>
+          <button type="submit" class="btn">Send {{ trans_choice('{1} 1 lead|[2,*] :count leads', $counts['eligible'], ['count' => $counts['eligible']]) }} to {{ $connection->label() }}</button>
           <a href="{{ route('visitors.index') }}">Cancel</a>
         </div>
       </form>

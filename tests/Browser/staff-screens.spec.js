@@ -37,14 +37,16 @@ function adminScreens(f) {
     ['field-create', '/staff/settings/fields/create'],
     ['field-edit', `/staff/settings/fields/${f.fieldId}/edit`],
     ['password', '/staff/password'],
+    ['erp-activate-confirm', '/staff/erp/activate?kind=live'],
+    ['exhibition-close-confirm', `/staff/exhibitions/${f.exhibitionId}/close`],
+    ['user-reset-confirm', `/staff/users/${f.staffId}/reset-password`],
   ];
 }
 
 const STAFF_SCREENS = [['staffrole-home', '/staff'], ['staffrole-entry', '/staff/entry?change=1'], ['staffrole-visitors', '/staff/visitors']];
 
-// The A4 poster is a print page without the staff header; its small-screen overflow is CO-15 (PR 4).
+// The A4 poster is a print page without the staff header.
 const WITHOUT_HEADER = ['poster'];
-const OVERFLOW_UNTIL_CO15 = ['poster'];
 
 async function checkScreen(page, name, url) {
   const response = await page.goto(url);
@@ -55,10 +57,8 @@ async function checkScreen(page, name, url) {
   expect(await axeIssues(page), `${name} axe`).toEqual([]);
   expect(await smallControls(page), `${name} controls`).toEqual([]);
   expect(await smallTargets(page), `${name} targets`).toEqual([]);
-  if (!OVERFLOW_UNTIL_CO15.includes(name)) {
-    const { scroll, width } = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, width: window.innerWidth }));
-    expect(scroll, `${name} overflow`).toBeLessThanOrEqual(width);
-  }
+  const { scroll, width } = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, width: window.innerWidth }));
+  expect(scroll, `${name} overflow`).toBeLessThanOrEqual(width);
 }
 
 test('every staff screen as super admin: axe, overflow, target size and control size', async ({ browser }, testInfo) => {
@@ -141,5 +141,49 @@ test('the focus ring is two-tone: 2 px yellow inside 3 px ink (M8 CO-11)', async
   expect(ring.outline).toBe('solid 3px rgb(27, 31, 36)');
   expect(ring.offset).toBe('2px');
   expect(ring.shadow).toBe('rgb(242, 183, 5) 0px 0px 0px 5px');
+  await page.context().close();
+});
+
+test('the poster prints on one A4 page (M8 CO-15)', async ({ browser }, testInfo) => {
+  test.skip(testInfo.project.name !== 'en-1280', 'one print run is enough');
+  const f = fixture(testInfo);
+  const page = await adminPage(browser, testInfo);
+  await page.goto(`/staff/exhibitions/${f.exhibitionId}/poster`);
+  await page.emulateMedia({ media: 'print' });
+  const pdf = (await page.pdf({ format: 'A4', preferCSSPageSize: true })).toString('latin1');
+  const pages = (pdf.match(/\/Type\s*\/Page(?!s)/g) || []).length;
+  testInfo.annotations.push({ type: 'poster PDF pages', description: String(pages) });
+  expect(pages).toBe(1);
+  await page.context().close();
+});
+
+test('on a phone the first visitor row starts above the fold (M8 CO-19)', async ({ browser }, testInfo) => {
+  test.skip(testInfo.project.name !== 'en-360', 'phone layout');
+  const page = await adminPage(browser, testInfo);
+  await page.goto('/staff/visitors');
+  await expect(page.locator('.filter-details')).not.toHaveAttribute('open', '');
+  const top = await page.locator('table.visitors tbody tr').first().evaluate((tr) => tr.getBoundingClientRect().top);
+  testInfo.annotations.push({ type: 'first visitor row top at 360x740 (px)', description: String(Math.round(top)) });
+  expect(top).toBeLessThan(740);
+  await expect(page.locator('.result-count')).toHaveText(/^\d+ visitors?$/);
+  await page.context().close();
+});
+
+test('password fields have a Show button; the field form hides Choices for short text (M8 L13, L3)', async ({ browser }, testInfo) => {
+  test.skip(testInfo.project.name !== 'en-1280', 'one width is enough');
+  const page = await adminPage(browser, testInfo);
+  await page.goto('/staff/password');
+  const input = page.locator('#current_password');
+  await input.fill('typed-secret');
+  await page.locator('#current_password + .password-toggle').click();
+  await expect(input).toHaveAttribute('type', 'text');
+  await expect(page.locator('#current_password + .password-toggle')).toHaveText('Hide');
+  await page.locator('#current_password + .password-toggle').click();
+  await expect(input).toHaveAttribute('type', 'password');
+
+  await page.goto('/staff/settings/fields/create');
+  await expect(page.locator('[data-choices]')).toBeHidden();
+  await page.locator('#type').selectOption('select');
+  await expect(page.locator('[data-choices]')).toBeVisible();
   await page.context().close();
 });

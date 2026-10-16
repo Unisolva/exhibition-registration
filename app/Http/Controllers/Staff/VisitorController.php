@@ -39,8 +39,11 @@ class VisitorController extends Controller
     {
         $user = $request->user();
         $filters = $this->visitorQuery->filters($request);
-        $page = $this->visitorQuery->build($user, $filters)->cursorPaginate(50)->withQueryString();
+        $query = $this->visitorQuery->build($user, $filters);
+        $page = (clone $query)->cursorPaginate(50)->withQueryString();
         $ids = collect($page->items())->pluck('id')->all();
+        $erp = $this->settings->get('erp_mode') === 'odoo';
+        $reference = VisitorQuery::referenceConnectionId();
 
         return view('staff.visitors.index', [
             'page' => $page,
@@ -50,7 +53,15 @@ class VisitorController extends Controller
             'regions' => Region::forCountry((string) $this->settings->get('default_country')),
             'occupation' => FieldDefinition::query()->where('key', 'occupation')->first(),
             'timezone' => (string) $this->settings->get('display_timezone'),
-            'canPush' => Gate::allows('registrations.push') && $this->settings->get('erp_mode') === 'odoo',
+            'canPush' => Gate::allows('registrations.push') && $erp,
+            // M8 CO-17: no ERP column or filter in mode "none"; CO-19: the number of matches.
+            'showErp' => $erp,
+            'syncKind' => $reference !== null ? DB::table('erp_connections')->where('id', $reference)->value('kind') : null,
+            'total' => $query->toBase()->getCountForPagination(),
+            'activeFilters' => count(array_filter([
+                $filters['q'] !== '', $filters['exhibition'] !== null, $filters['occupation'] !== '', $filters['region'] !== '',
+                $filters['source'] !== '', $erp && $filters['sync'] !== '', $filters['duplicate'],
+            ])),
         ]);
     }
 

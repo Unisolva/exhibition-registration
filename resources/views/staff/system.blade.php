@@ -24,11 +24,11 @@
   </dl>
 </div>
 
-<h2>Pushing to the ERP</h2>
+<h2>Sending to the ERP</h2>
 <div class="card">
   <dl class="details">
     <dt>ERP mode</dt><dd>{{ $erpMode }}</dd>
-    <dt>Pushing</dt>
+    <dt>Sending to Odoo</dt>
     <dd>
       {{ $pushEnabled ? 'on' : 'off' }}
       @if (! $pushEnabled && $lastDisable)

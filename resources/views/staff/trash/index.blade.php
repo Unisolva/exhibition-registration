@@ -31,7 +31,7 @@
               @method('DELETE')
               <x-field name="confirm" :id="'confirm-'.$visitor->id" :bag="'delete'.$visitor->id" autocomplete="off" maxlength="10"
                        :label="'Type '.\App\Http\Controllers\Staff\TrashController::CONFIRM_WORD.' to delete permanently'" />
-              <button type="submit" class="btn btn-secondary">Delete permanently</button>
+              <button type="submit" class="btn btn-danger">Delete permanently</button>
             </form>
           @endcan
         </td>

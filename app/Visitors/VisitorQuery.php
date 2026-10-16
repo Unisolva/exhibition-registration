@@ -30,6 +30,21 @@ class VisitorQuery
 
     public const SYNC_STATES = ['never', 'queued', 'succeeded', 'failed', 'needs_review'];
 
+    /**
+     * Plain words for a sync state (M8 CO-17). The state is the one for the
+     * reference connection (the active one, or Live), so "Sent to" names its kind.
+     */
+    public static function syncLabel(string $state, ?string $kind): string
+    {
+        return match ($state) {
+            'queued' => 'Waiting',
+            'succeeded' => 'Sent to '.strtoupper($kind ?? 'live'),
+            'failed' => 'Failed',
+            'needs_review' => 'Check in Odoo',
+            default => 'Not sent',
+        };
+    }
+
     public function __construct(private readonly Settings $settings) {}
 
     /**

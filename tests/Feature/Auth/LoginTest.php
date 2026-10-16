@@ -64,7 +64,7 @@ class LoginTest extends TestCase
         ])->assertRedirect(route('staff.home'));
 
         $this->assertFalse($user->fresh()->must_change_password);
-        $this->get('/staff')->assertOk();
+        $this->get('/staff/entry')->assertOk();
         $this->assertDatabaseHas('audit_events', ['action' => 'password_changed', 'user_id' => $user->id]);
     }
 
@@ -113,7 +113,7 @@ class LoginTest extends TestCase
         $this->withCookies($cookies)->post('/staff/logout')->assertRedirect(route('login'));
         $this->assertDatabaseHas('audit_events', ['action' => 'logout', 'user_id' => $user->id]);
 
-        $this->getWithCookies('/staff', $cookies)->assertRedirect(route('login'));
+        $this->getWithCookies('/staff/entry', $cookies)->assertRedirect(route('login'));
     }
 
     public function test_signed_in_users_are_sent_away_from_the_login_page(): void

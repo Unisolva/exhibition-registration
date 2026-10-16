@@ -38,8 +38,8 @@ class KillSwitchAndHealthTest extends TestCase
 
         $other = Visitor::factory()->create();
         $this->actingAs($admin)->post('/staff/batches', ['batch_token' => (string) Str::ulid(), 'visitor_ids' => [$other->id]])
-            ->assertRedirect(route('visitors.index'))->assertSessionHas('status', 'Pushing is switched off. Nothing was sent.');
-        $this->actingAs($admin)->post('/staff/batches/preview', ['visitor_ids' => [$other->id]])->assertOk()->assertSee('Pushing is switched off');
+            ->assertRedirect(route('visitors.index'))->assertSessionHas('status', 'Sending to Odoo is off. Nothing was sent.');
+        $this->actingAs($admin)->post('/staff/batches/preview', ['visitor_ids' => [$other->id]])->assertOk()->assertSee('Sending to Odoo is off');
         $this->assertSame(1, ErpBatch::query()->count());
     }
 

@@ -61,7 +61,7 @@ class BatchController extends Controller
         $connection = ErpConnection::active();
 
         if (! $this->settings->get('erp_push_enabled') || $connection === null) {
-            return redirect()->route('visitors.index')->with('status', 'Pushing is switched off. Nothing was sent.');
+            return redirect()->route('visitors.index')->with('status', 'Sending to Odoo is off. Nothing was sent.');
         }
 
         $result = $this->push->createBatch($request->user(), $connection, $ids, strtoupper((string) $request->input('batch_token')));
@@ -71,7 +71,7 @@ class BatchController extends Controller
 
         $message = $result['replay']
             ? 'This batch was already created.'
-            : "{$result['queued']} visitor(s) queued".($result['skipped'] ? ", {$result['skipped']} skipped" : '').'.';
+            : $result['queued'].' '.Str::plural('visitor', $result['queued']).' queued'.($result['skipped'] ? ", {$result['skipped']} skipped" : '').'.';
 
         return redirect()->route('batches.show', $result['batch'])->with('status', $message);
     }
@@ -104,7 +104,7 @@ class BatchController extends Controller
         $ids = $batch->items()->whereIn('state', ['queued', 'failed_retry'])->pluck('id')->all();
         $count = $this->push->cancel($ids, $request->user());
 
-        return redirect()->route('batches.show', $batch)->with('status', "{$count} waiting item(s) cancelled.");
+        return redirect()->route('batches.show', $batch)->with('status', $count.' waiting '.Str::plural('item', $count).' cancelled.');
     }
 
     /**

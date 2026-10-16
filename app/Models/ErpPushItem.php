@@ -29,6 +29,41 @@ class ErpPushItem extends Model
     /** States that keep a visitor locked and block connection changes. */
     public const UNFINISHED = ['queued', 'processing', 'failed_retry', 'needs_review'];
 
+    /** Plain words for item states and error classes on staff screens (M8 L6). */
+    public const STATE_LABELS = [
+        'queued' => 'Waiting',
+        'processing' => 'Sending now',
+        'succeeded' => 'Sent',
+        'failed_retry' => 'Failed, will retry',
+        'failed_final' => 'Failed',
+        'needs_review' => 'Check in Odoo',
+        'cancelled' => 'Cancelled',
+    ];
+
+    public const ERROR_LABELS = [
+        'network' => 'No connection to Odoo',
+        'timeout' => 'Odoo took too long to answer',
+        'http_5xx' => 'Odoo server error',
+        'rate_limited' => 'Odoo asked to slow down',
+        'auth' => 'Login or API key refused',
+        'validation' => 'Odoo refused the data',
+        'ambiguous' => 'More than one lead with this reference',
+        'version' => 'The Odoo version changed',
+        'stale_claim' => 'Interrupted; will retry',
+        'unknown' => 'Unexpected answer from Odoo',
+        'exception' => 'Unexpected error',
+    ];
+
+    public static function stateLabel(string $state): string
+    {
+        return self::STATE_LABELS[$state] ?? ucfirst(str_replace('_', ' ', $state));
+    }
+
+    public static function errorLabel(string $class): string
+    {
+        return self::ERROR_LABELS[$class] ?? ucfirst(str_replace('_', ' ', $class));
+    }
+
     protected $guarded = ['id'];
 
     protected function casts(): array

@@ -43,11 +43,10 @@
   @if ($editing)
     @can('resetPassword', $user)
       <h2>Reset password</h2>
-      <form method="post" action="{{ route('users.reset-password', $user) }}" class="card">
-        @csrf
+      <div class="card">
         <p>Generates a new one-time password and signs {{ $user->name }} out everywhere.</p>
-        <button type="submit" class="btn btn-secondary">Reset password</button>
-      </form>
+        <a class="btn btn-secondary" href="{{ route('users.reset-password-confirm', $user) }}">Reset password…</a>
+      </div>
     @endcan
   @endif
 </div>

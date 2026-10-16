@@ -6,7 +6,7 @@
 @section('content')
 <h1>{{ $visitor->name }}</h1>
 @if ($lock)
-  <div class="notice notice-warn" role="status">🔒 {{ \App\Visitors\VisitorLock::message($lock) }}. It cannot be edited or deleted.</div>
+  <div class="notice notice-warn" role="status"><x-lock-icon /> {{ \App\Visitors\VisitorLock::message($lock) }}. It cannot be edited or deleted.</div>
 @endif
 
 <div class="card">

@@ -38,22 +38,36 @@
     <x-field type="number" name="odoo_source_id" label="Source ID (optional)" min="1" :value="old('odoo_source_id', $settings->get('odoo_source_id'))" />
     <x-field name="odoo_tag_ids" label="Tag IDs (comma-separated, optional)" :value="old('odoo_tag_ids', implode(', ', (array) $settings->get('odoo_tag_ids')))" />
   </div>
-  <p class="hint">Changing the version marks both connections untested and switches pushing off.</p>
+  <p class="hint">Changing the version marks both connections untested and switches sending off.</p>
   <div class="actions"><button type="submit" class="btn">Save</button></div>
 </form>
 
 @if ($settings->get('erp_mode') === 'odoo')
   <h2>Connections</h2>
-  <form method="post" action="{{ route('erp.activate') }}" id="activate-form">@csrf</form>
+  {{-- The choice and its button together (M8 CO-18); the button opens a confirmation page. --}}
+  <form method="get" action="{{ route('erp.activate-confirm') }}" class="card activate-choice">
+    <fieldset>
+      <legend>Active connection</legend>
+      <div class="choice-row">
+        @foreach ($blocks as $kind => $block)
+          <label class="check">
+            <input type="radio" name="kind" value="{{ $kind }}" @checked($block?->is_active) @disabled(! $block)>
+            {{ strtoupper($kind) }}@if ($block?->is_active) <span class="badge">Active</span>@elseif (! $block) <span class="hint">(not saved yet)</span>@endif
+          </label>
+        @endforeach
+      </div>
+    </fieldset>
+    <div class="actions">
+      <button type="submit" class="btn">Use the selected connection…</button>
+      <span class="hint">You confirm on the next page. Allowed only after a passing test, and only when the active connection has no unfinished items.</span>
+    </div>
+  </form>
   <div class="erp-blocks">
     @foreach ($blocks as $kind => $block)
       @php($key = $block?->keyStatus() ?? ['status' => 'none', 'ends' => null])
       <section class="card erp-block {{ $block?->is_active ? 'is-active' : '' }}" aria-labelledby="block-{{ $kind }}">
         <h3 id="block-{{ $kind }}">
-          <label class="check">
-            <input type="radio" name="kind" value="{{ $kind }}" form="activate-form" @checked($block?->is_active) @disabled(! $block)>
-            {{ strtoupper($kind) }}
-          </label>
+          {{ strtoupper($kind) }}
           @if ($block?->is_active)<span class="badge">Active</span>@endif
         </h3>
 
@@ -91,18 +105,14 @@
       </section>
     @endforeach
   </div>
-  <div class="actions spaced">
-    <button type="submit" class="btn" form="activate-form">Use the selected connection</button>
-    <span class="hint">Allowed only after a passing test, and only when the active connection has no unfinished items.</span>
-  </div>
 
-  <h2>Pushing</h2>
+  <h2>Sending to Odoo</h2>
   <form method="post" action="{{ route('erp.push') }}" class="card">
     @csrf
     @method('PUT')
-    <p>Pushing is <strong>{{ $settings->get('erp_push_enabled') ? 'on' : 'off' }}</strong>.</p>
+    <p>Sending to Odoo is <strong>{{ $settings->get('erp_push_enabled') ? 'on' : 'off' }}</strong>.</p>
     <input type="hidden" name="enabled" value="{{ $settings->get('erp_push_enabled') ? '0' : '1' }}">
-    <button type="submit" class="btn">{{ $settings->get('erp_push_enabled') ? 'Switch pushing off' : 'Switch pushing on' }}</button>
+    <button type="submit" class="btn btn-secondary">{{ $settings->get('erp_push_enabled') ? 'Stop sending' : 'Start sending' }}</button>
   </form>
 
   @if ($active && $unfinished->isNotEmpty())
@@ -112,7 +122,7 @@
       <thead><tr><th>Item</th><th>Visitor</th><th>State</th><th>Batch</th></tr></thead>
       <tbody>
       @foreach ($unfinished as $item)
-        <tr><td data-label="Item">{{ $item->id }}</td><td data-label="Visitor">{{ $item->visitor?->name }}</td><td data-label="State">{{ str_replace('_', ' ', $item->state) }}</td>
+        <tr><td data-label="Item">{{ $item->id }}</td><td data-label="Visitor">{{ $item->visitor?->name }}</td><td data-label="State">{{ \App\Models\ErpPushItem::stateLabel($item->state) }}</td>
           <td data-label="Batch"><a href="{{ route('batches.show', $item->batch_id) }}">Batch #{{ $item->batch_id }}</a></td></tr>
       @endforeach
       </tbody>

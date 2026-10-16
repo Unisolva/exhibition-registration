@@ -7,7 +7,7 @@
 <div class="narrow">
   <h1>Edit {{ $visitor->name }}</h1>
   @if ($lock)
-    <div class="notice notice-warn" role="status">🔒 {{ \App\Visitors\VisitorLock::message($lock) }}. Saving will be refused.</div>
+    <div class="notice notice-warn" role="status"><x-lock-icon /> {{ \App\Visitors\VisitorLock::message($lock) }}. Saving will be refused.</div>
   @endif
   @include('partials.error-summary')
   <form method="post" action="{{ route('visitors.update', $visitor) }}" class="card" novalidate data-once>
