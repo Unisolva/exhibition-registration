@@ -24,6 +24,7 @@ class ExhibitionFactory extends Factory
             'starts_on' => $start->format('Y-m-d'),
             'ends_on' => (clone $start)->modify('+2 days')->format('Y-m-d'),
             'is_open' => true,
+            'default_locale' => 'ar',
             'created_by' => User::factory()->admin(),
         ];
     }
@@ -31,5 +32,10 @@ class ExhibitionFactory extends Factory
     public function closed(): static
     {
         return $this->state(fn () => ['is_open' => false]);
+    }
+
+    public function english(): static
+    {
+        return $this->state(fn () => ['default_locale' => 'en']);
     }
 }

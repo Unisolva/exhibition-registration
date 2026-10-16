@@ -10,6 +10,8 @@ Release 1.1.0 (in progress): interface fixes from a usability and accessibility 
 - Save & New: the Retry and "Save as a new entry" buttons stay hidden until needed. After a save the message names the visitor and stays 4 seconds; a possible duplicate is a warning that stays until the next save, with a link to the earlier entry for admins and super admins. The message area keeps its height, so the form no longer jumps. A counter shows how many entries were saved on the page.
 - Every date, number, URL and file field now has the same 44 px height and 16 px text as the other fields.
 - The TEST ERP banner is inside the page header landmark.
+- Each exhibition has a public form language, Arabic or English, chosen when it is created and editable later; it shows in the exhibitions list and on the exhibition page. The public pages open in that language; a visitor's switch is remembered for that exhibition only. Database: one additive column, `exhibitions.default_locale` (existing exhibitions get Arabic).
+- The poster shows the organisation's name in the exhibition's language first, then the other language.
 
 - Release scripts only (no application change): `bin/deploy.sh` now leaves releases readable by the web server (directories 755, files 644, umask 022) and prunes old releases without process substitution, which CageFS does not support; `bin/build-release.sh` no longer packs an archive root of mode 700. Found on the first deploy, where the web server answered 404 for the whole site. Release 1.0.0 archives are deployed with the new `deploy.sh`.
 

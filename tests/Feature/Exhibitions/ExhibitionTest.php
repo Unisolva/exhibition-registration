@@ -23,7 +23,7 @@ class ExhibitionTest extends TestCase
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)->post('/staff/exhibitions', [
-            'name' => 'Upper Egypt Agri Days', 'starts_on' => '2026-11-03', 'ends_on' => '2026-11-05',
+            'name' => 'Upper Egypt Agri Days', 'starts_on' => '2026-11-03', 'ends_on' => '2026-11-05', 'default_locale' => 'ar',
         ])->assertRedirect();
 
         $exhibition = Exhibition::query()->sole();
@@ -51,7 +51,7 @@ class ExhibitionTest extends TestCase
         $token = $exhibition->public_token;
 
         $this->actingAs($admin)->put("/staff/exhibitions/{$exhibition->id}", [
-            'name' => 'Renamed Fair', 'starts_on' => '2026-12-01', 'ends_on' => '',
+            'name' => 'Renamed Fair', 'starts_on' => '2026-12-01', 'ends_on' => '', 'default_locale' => 'ar',
         ])->assertRedirect();
 
         $exhibition->refresh();
@@ -65,7 +65,7 @@ class ExhibitionTest extends TestCase
     {
         $admin = User::factory()->admin()->create();
 
-        $this->actingAs($admin)->post('/staff/exhibitions', ['name' => 'X', 'starts_on' => '2026-11-05', 'ends_on' => '2026-11-03'])
+        $this->actingAs($admin)->post('/staff/exhibitions', ['name' => 'X', 'starts_on' => '2026-11-05', 'ends_on' => '2026-11-03', 'default_locale' => 'ar'])
             ->assertSessionHasErrors('ends_on');
         $this->actingAs($admin)->post('/staff/exhibitions', ['name' => '', 'starts_on' => 'tomorrow'])
             ->assertSessionHasErrors(['name', 'starts_on']);
