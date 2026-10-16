@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property CarbonImmutable|Carbon|null $ends_on
  * @property string $public_token
  * @property bool $is_open
+ * @property string $default_locale ar or en: the public form's language unless the visitor chose one
  */
 class Exhibition extends Model
 {
@@ -27,7 +28,9 @@ class Exhibition extends Model
 
     public const TOKEN_LENGTH = 10;
 
-    protected $fillable = ['name', 'starts_on', 'ends_on'];
+    public const LOCALES = ['ar', 'en'];
+
+    protected $fillable = ['name', 'starts_on', 'ends_on', 'default_locale'];
 
     protected function casts(): array
     {
@@ -44,6 +47,7 @@ class Exhibition extends Model
         static::creating(function (Exhibition $exhibition) {
             $exhibition->public_token ??= static::uniqueToken();
             $exhibition->is_open ??= true;
+            $exhibition->default_locale ??= 'ar';
         });
     }
 

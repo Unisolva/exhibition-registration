@@ -150,6 +150,7 @@ input.short { inline-size: 7rem; display: inline-block; }
 .poster-page { max-width: 190mm; margin: 0 auto; padding: 12mm 0; text-align: center; }
 .poster-logo { max-height: 40mm; max-width: 120mm; }
 .poster-org { font-size: 2rem; font-weight: 700; margin: 0; }
+.poster-org-second { font-size: 1.4rem; font-weight: 600; margin: 0; }
 .poster-title { font-size: 2.6rem; margin: 8mm 0; }
 .poster-qr { inline-size: 150mm; block-size: 150mm; margin: 0 auto; }
 .poster-url { font-family: ui-monospace, Consolas, monospace; font-size: 1.9rem; font-weight: 700; margin-block: 6mm; word-break: break-all; }

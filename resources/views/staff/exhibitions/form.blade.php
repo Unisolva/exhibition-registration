@@ -30,6 +30,17 @@
              @error('ends_on') aria-invalid="true" aria-describedby="ends_on-error" @enderror>
       @error('ends_on')<div class="error" id="ends_on-error">{{ $message }}</div>@enderror
     </div>
+    <div class="field">
+      <label for="default_locale">Public form language</label>
+      <select id="default_locale" name="default_locale" aria-describedby="default_locale-hint @error('default_locale') default_locale-error @enderror"
+              @error('default_locale') aria-invalid="true" @enderror>
+        @foreach (['ar' => 'Arabic', 'en' => 'English'] as $value => $label)
+          <option value="{{ $value }}" @selected(old('default_locale', $exhibition->default_locale ?? 'ar') === $value)>{{ $label }}</option>
+        @endforeach
+      </select>
+      <div class="hint" id="default_locale-hint">The language the registration page opens in. Visitors can still switch.</div>
+      @error('default_locale')<div class="error" id="default_locale-error">{{ $message }}</div>@enderror
+    </div>
     @if ($editing)
       <p class="hint">Renaming keeps the same registration link and QR code.</p>
     @endif

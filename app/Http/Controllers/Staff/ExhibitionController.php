@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -113,7 +114,7 @@ class ExhibitionController extends Controller
     }
 
     /**
-     * @return array{name: string, starts_on: string, ends_on: string|null}
+     * @return array{name: string, starts_on: string, ends_on: string|null, default_locale: string}
      */
     private function validated(Request $request): array
     {
@@ -121,12 +122,14 @@ class ExhibitionController extends Controller
             'name' => ['required', 'string', 'max:150'],
             'starts_on' => ['required', 'date_format:Y-m-d'],
             'ends_on' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:starts_on'],
-        ]);
+            'default_locale' => ['required', Rule::in(Exhibition::LOCALES)],
+        ], ['default_locale.*' => 'Choose Arabic or English.']);
 
         return [
             'name' => trim($data['name']),
             'starts_on' => $data['starts_on'],
             'ends_on' => $data['ends_on'] ?? null,
+            'default_locale' => $data['default_locale'],
         ];
     }
 }

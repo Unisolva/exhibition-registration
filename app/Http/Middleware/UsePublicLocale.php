@@ -4,17 +4,20 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Exhibition;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Public pages: Arabic by default, English via ?lang=en, remembered in the
- * session (decision D3).
+ * Public pages (M8 decision 3): `?lang=` in the URL, then the visitor's
+ * choice for this exhibition, then the exhibition's default language. A
+ * choice is stored per exhibition token, so it never carries to another
+ * exhibition. An unknown token gets no stored choice; its 404 is bilingual.
  */
 class UsePublicLocale
 {
-    public const LOCALES = ['ar', 'en'];
+    public const LOCALES = Exhibition::LOCALES;
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -25,13 +28,24 @@ class UsePublicLocale
 
     public static function apply(Request $request): string
     {
-        $requested = $request->query('lang');
-        if (is_string($requested) && in_array($requested, self::LOCALES, true)) {
-            $request->session()->put('public_locale', $requested);
+        $token = $request->route('token');
+        $exhibition = is_string($token) ? Exhibition::findByPublicToken($token) : null;
+
+        if ($exhibition === null) {
+            $locale = in_array(config('app.locale'), self::LOCALES, true) ? config('app.locale') : 'ar';
+            app()->setLocale($locale);
+
+            return $locale;
         }
 
-        $default = in_array(config('app.locale'), self::LOCALES, true) ? config('app.locale') : 'ar';
-        $locale = $request->session()->get('public_locale', $default);
+        $key = 'public_locale.'.$exhibition->public_token;
+        $requested = $request->query('lang');
+        if (is_string($requested) && in_array($requested, self::LOCALES, true)) {
+            $request->session()->put($key, $requested);
+        }
+
+        $chosen = $request->session()->get($key);
+        $locale = is_string($chosen) && in_array($chosen, self::LOCALES, true) ? $chosen : $exhibition->default_locale;
         app()->setLocale($locale);
 
         return $locale;

@@ -8,6 +8,7 @@
 <p>
   {{ $exhibition->starts_on->format('Y-m-d') }}@if ($exhibition->ends_on) – {{ $exhibition->ends_on->format('Y-m-d') }}@endif
   · @if ($exhibition->is_open)<span class="badge">Registration open</span>@else<span class="badge badge-off">Registration closed</span>@endif
+  · Public form language: {{ $exhibition->default_locale === 'en' ? 'English' : 'Arabic' }}
 </p>
 
 <div class="card qr-card">
@@ -22,7 +23,7 @@
 </div>
 
 <div class="actions spaced">
-  <a class="btn btn-secondary" href="{{ route('exhibitions.edit', $exhibition) }}">Edit name and dates</a>
+  <a class="btn btn-secondary" href="{{ route('exhibitions.edit', $exhibition) }}">Edit name, dates and language</a>
   @if ($exhibition->is_open)
     <form method="post" action="{{ route('exhibitions.close', $exhibition) }}">@csrf<button type="submit" class="btn btn-secondary">Close registration</button></form>
   @else
