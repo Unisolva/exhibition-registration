@@ -26,7 +26,7 @@ async function signIn(page, f) {
   await page.locator('#email').fill(f.staffEmail);
   await page.locator('#password').fill(f.staffPassword);
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await expect(page).toHaveURL(/\/staff$/);
+  await expect(page).toHaveURL(/\/staff(\/entry)?$/);
 }
 
 /** Records every request; the app must never load anything from another host. */

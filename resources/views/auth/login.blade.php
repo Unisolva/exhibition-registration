@@ -5,6 +5,8 @@
 
 @section('content')
 <div class="narrow">
+  {{-- Whose system this is (M8 L5). --}}
+  <p class="org-line">{{ app(\App\Support\Branding::class)->orgName('en') }}</p>
   <h1>Sign in</h1>
   <form method="post" action="{{ url('/staff/login') }}" class="card" novalidate>
     @csrf

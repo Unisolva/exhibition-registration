@@ -76,7 +76,7 @@ test('forced 419: values kept, Retry gets a fresh token and saves once', async (
   await page.locator('[data-save]').click();
   expect((await first).status()).toBe(419);
 
-  await expect(page.locator('#entry-status')).toContainText('Session expired');
+  await expect(page.locator('#entry-status')).toContainText('You were signed out');
   await expect(page.locator('#f-name')).toHaveValue(visitor.name);
   await expect(page.locator('[data-retry]')).toBeVisible();
 
@@ -138,7 +138,7 @@ test('signed out while typing: sign in in a new tab, Retry saves once', async ({
 
   await context.clearCookies();
   await page.locator('[data-save]').click();
-  await expect(page.locator('#entry-status')).toContainText('Session expired');
+  await expect(page.locator('#entry-status')).toContainText('You were signed out');
   await expect(page.locator('#f-name')).toHaveValue(visitor.name);
 
   // Retry before signing in again keeps the values and says so.

@@ -24,7 +24,7 @@
     <h2>Retention</h2>
     <x-field type="number" name="retention_months" label="Keep visitor details for (months)" min="1" max="120" required
              :value="old('retention_months', $settings->get('retention_months'))"
-             hint="Older visitors are deleted for good by the nightly housekeeping, even if they were sent to the ERP. Visitors still being sent wait until the push finishes." />
+             hint="Older visitors are deleted for good by the nightly housekeeping, even if they were sent to the ERP. Visitors still being sent wait until sending has finished." />
 
     <div class="actions"><button type="submit" class="btn">Save</button></div>
   </form>

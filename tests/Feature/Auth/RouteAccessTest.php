@@ -34,7 +34,8 @@ class RouteAccessTest extends TestCase
      * {staff} is a staff user, {super} a super admin, {admin} another admin.
      */
     private const MATRIX = [
-        'GET staff' => [200, 200, 200],
+        // Staff go straight to Save & New (M8 CO-16).
+        'GET staff' => [200, 200, 302],
         'POST staff/logout' => [302, 302, 302],
         'GET staff/password' => [200, 200, 200],
         'PUT staff/password' => [302, 302, 302],
@@ -46,6 +47,8 @@ class RouteAccessTest extends TestCase
         'GET staff/users/{admin}/edit' => [200, 200, 403],
         'PUT staff/users/{staff}' => [302, 302, 403],
         'PUT staff/users/{super}' => [302, 403, 403],
+        'GET staff/users/{staff}/reset-password' => [200, 200, 403],
+        'GET staff/users/{super}/reset-password' => [200, 403, 403],
         'POST staff/users/{staff}/reset-password' => [200, 200, 403],
         'POST staff/users/{super}/reset-password' => [200, 403, 403],
         'GET staff/exhibitions' => [200, 200, 403],
@@ -55,6 +58,7 @@ class RouteAccessTest extends TestCase
         'GET staff/exhibitions/{exhibition}/edit' => [200, 200, 403],
         'PUT staff/exhibitions/{exhibition}' => [302, 302, 403],
         'POST staff/exhibitions/{exhibition}/open' => [302, 302, 403],
+        'GET staff/exhibitions/{exhibition}/close' => [200, 200, 403],
         'POST staff/exhibitions/{exhibition}/close' => [302, 302, 403],
         'GET staff/exhibitions/{exhibition}/qr.svg' => [200, 200, 403],
         'GET staff/exhibitions/{exhibition}/poster' => [200, 200, 403],
@@ -94,6 +98,8 @@ class RouteAccessTest extends TestCase
         'PUT staff/erp/settings' => [302, 403, 403],
         'PUT staff/erp/blocks/{kind}' => [302, 403, 403],
         'POST staff/erp/blocks/{kind}/test' => [302, 403, 403],
+        // Without ?kind the confirmation step sends the user back to the ERP screen.
+        'GET staff/erp/activate' => [302, 403, 403],
         'POST staff/erp/activate' => [302, 403, 403],
         'PUT staff/erp/push' => [302, 403, 403],
         'POST staff/erp/cancel-waiting' => [302, 403, 403],

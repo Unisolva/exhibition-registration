@@ -63,9 +63,13 @@ class BrandingController extends Controller
             }
             $values['logo'] = ['mime' => $result['mime'], 'data' => base64_encode($bytes)];
             $values['logo_hash'] = substr(hash('sha256', $bytes), 0, 16);
+            // Stored once, so the img tags carry width and height and the header does not jump (M8 L12).
+            [$values['logo_width'], $values['logo_height']] = LogoValidator::dimensions($bytes, $result['mime']) ?? [null, null];
         } elseif ($request->boolean('remove_logo')) {
             $values['logo'] = null;
             $values['logo_hash'] = null;
+            $values['logo_width'] = null;
+            $values['logo_height'] = null;
         }
 
         $changed = [];
@@ -77,7 +81,7 @@ class BrandingController extends Controller
         }
 
         if ($changed !== []) {
-            Audit::record('settings_updated', meta: ['keys' => array_values(array_diff($changed, ['logo_hash']))]);
+            Audit::record('settings_updated', meta: ['keys' => array_values(array_diff($changed, ['logo_hash', 'logo_width', 'logo_height']))]);
         }
 
         return redirect()->route('settings.branding')->with('status', 'Branding saved.');

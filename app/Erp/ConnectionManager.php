@@ -152,7 +152,7 @@ class ConnectionManager
         if ($on) {
             $active = ErpConnection::active();
             if ($this->settings->get('erp_mode') !== 'odoo' || $active === null || ! $active->isTested()) {
-                throw ValidationException::withMessages(['push' => 'Pushing can be switched on only after the active connection passed a test since its last change.']);
+                throw ValidationException::withMessages(['push' => 'Sending can be switched on only after the active connection passed a test since its last change.']);
             }
         }
 

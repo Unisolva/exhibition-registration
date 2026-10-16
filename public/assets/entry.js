@@ -181,7 +181,7 @@
           showFieldErrors(json.errors || {});
         } else if (status === 401 || status === 419) {
           needsFreshCsrf = true;
-          retryState('Session expired. Sign in in a new tab, then press Retry. Your values are kept.');
+          retryState('You were signed out. Sign in again in a new tab, then come back and press Retry. What you typed is still here.');
         } else if (status === 409) {
           // The token was already used with other values: saving again needs a new token.
           replacementToken = json.next_token || null;

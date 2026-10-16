@@ -47,6 +47,37 @@ class LogoValidator
         return $error === null ? ['mime' => 'image/svg+xml'] : $error;
     }
 
+    /**
+     * Intrinsic size of a logo that passed check(), for the img width and height
+     * (M8 L12): a PNG from its header, an SVG from its viewBox, else its width
+     * and height attributes. Null when the file does not say.
+     *
+     * @return array{0: int, 1: int}|null
+     */
+    public static function dimensions(string $bytes, string $mime): ?array
+    {
+        if ($mime === 'image/png') {
+            $info = @getimagesizefromstring($bytes);
+
+            return $info !== false && $info[0] > 0 && $info[1] > 0 ? [(int) $info[0], (int) $info[1]] : null;
+        }
+
+        $dom = new DOMDocument;
+        if (! @$dom->loadXML($bytes, LIBXML_NONET) || $dom->documentElement === null) {
+            return null;
+        }
+        $root = $dom->documentElement;
+        $numbers = preg_split('/[\s,]+/', trim($root->getAttribute('viewBox')), -1, PREG_SPLIT_NO_EMPTY);
+        if (count($numbers) === 4 && is_numeric($numbers[2]) && is_numeric($numbers[3])) {
+            [$width, $height] = [(float) $numbers[2], (float) $numbers[3]];
+        } else {
+            $width = (float) $root->getAttribute('width');
+            $height = (float) $root->getAttribute('height');
+        }
+
+        return $width > 0 && $height > 0 ? [max(1, (int) round($width)), max(1, (int) round($height))] : null;
+    }
+
     private static function svgError(string $bytes): ?string
     {
         // The byte search below is only meaningful if libxml reads the same bytes:

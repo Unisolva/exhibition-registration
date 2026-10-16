@@ -84,6 +84,7 @@
   @endif
   @yield('content')
 </main>
+<script src="{{ \App\Support\Asset::url('staff.js') }}" defer></script>
 @stack('scripts')
 </body>
 </html>

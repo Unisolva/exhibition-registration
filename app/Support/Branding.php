@@ -41,6 +41,20 @@ class Branding
         return '/logo/'.$hash.'.'.($logo['mime'] === 'image/svg+xml' ? 'svg' : 'png');
     }
 
+    /**
+     * The logo's stored width and height, or null for a logo uploaded before
+     * 1.1.0 (it renders without them until it is uploaded again).
+     *
+     * @return array{0: int, 1: int}|null
+     */
+    public function logoSize(): ?array
+    {
+        $width = $this->settings->get('logo_width');
+        $height = $this->settings->get('logo_height');
+
+        return $this->logoUrl() !== null && is_int($width) && is_int($height) && $width > 0 && $height > 0 ? [$width, $height] : null;
+    }
+
     public function showPoweredBy(): bool
     {
         return (bool) $this->settings->get('show_powered_by');

@@ -69,7 +69,7 @@ class VisitorLock
     {
         return $cause === self::LIVE
             ? 'Already sent to the live ERP'
-            : 'Being sent to the ERP; try again when the push finishes';
+            : 'Being sent to the ERP; try again when sending has finished';
     }
 
     /**

@@ -128,6 +128,12 @@ class UserController extends Controller
             ->with('status', $deactivated ? "{$user->name} was deactivated and signed out everywhere." : "{$user->name} was saved.");
     }
 
+    /** M8 CO-20: a reset signs the user out everywhere, so it is confirmed first. */
+    public function confirmResetPassword(User $user): View
+    {
+        return view('staff.users.reset-confirm', ['user' => $user]);
+    }
+
     public function resetPassword(User $user): View
     {
         $password = OneTimePassword::generate();

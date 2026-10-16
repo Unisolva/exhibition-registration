@@ -4,7 +4,7 @@
 
 return [
     'register_title' => 'Register your visit',
-    'intro' => 'Leave your details and our team will contact you.',
+    'intro' => 'Register your visit: leave your details and our team will contact you.',
     'required_note' => 'Fields marked * are required.',
     'choose' => 'Choose…',
     'submit' => 'Send',
@@ -22,10 +22,12 @@ return [
         'form_expired' => 'The form was reloaded. Please press Send again.',
     ],
     'thanks_title' => 'Thank you',
-    'thanks_body' => 'Your registration has been received.',
+    'thanks_body' => "You're registered for :exhibition. Our team will contact you soon.",
     'thanks_again' => 'Register another person',
     'closed_title' => 'Registration is closed',
     'closed_body' => 'Registration for this exhibition is not open at the moment.',
+    'closed_ask' => 'Ask our team at the stand to register you.',
+    'poster_cta' => 'Scan to register',
     'conflict_title' => 'This form was already sent',
     'conflict_body' => 'This form was already used for a different registration. Please open the registration page again to start a new one.',
     'conflict_again' => 'Open the registration page',

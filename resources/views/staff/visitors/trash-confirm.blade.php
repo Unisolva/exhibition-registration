@@ -7,14 +7,14 @@
 <div class="narrow">
   <h1>Delete {{ $visitor->name }}?</h1>
   @if ($lock)
-    <div class="notice notice-warn" role="status">🔒 {{ \App\Visitors\VisitorLock::message($lock) }}. It cannot be deleted.</div>
+    <div class="notice notice-warn" role="status"><x-lock-icon /> {{ \App\Visitors\VisitorLock::message($lock) }}. It cannot be deleted.</div>
   @else
     <form method="post" action="{{ route('visitors.destroy', $visitor) }}" class="card">
       @csrf
       @method('DELETE')
       <p>The visitor moves to the trash. An admin can restore it for 30 days; after that it is deleted for good.</p>
       <div class="actions">
-        <button type="submit" class="btn">Move to trash</button>
+        <button type="submit" class="btn btn-danger">Move to trash</button>
         <a href="{{ route('visitors.show', $visitor) }}">Cancel</a>
       </div>
     </form>

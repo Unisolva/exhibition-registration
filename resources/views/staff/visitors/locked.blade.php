@@ -6,7 +6,7 @@
 @section('content')
 <div class="narrow">
   <h1>This visitor is locked</h1>
-  <div class="notice notice-warn" role="alert">🔒 {{ $message }}.</div>
+  <div class="notice notice-warn" role="alert"><x-lock-icon /> {{ $message }}.</div>
   <p><a href="{{ route('visitors.index') }}">Back to the list</a></p>
 </div>
 @endsection

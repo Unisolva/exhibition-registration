@@ -14,6 +14,7 @@ use App\Support\Audit;
 use App\Support\Settings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -107,9 +108,27 @@ class ErpController extends Controller
         return redirect()->route('erp.show')->with('connection_report', ['kind' => $kind, 'ok' => $report->ok, 'message' => $report->message]);
     }
 
+    /**
+     * M8 CO-18: the chosen block in large type, its URL and database, and the
+     * rule; confirming posts to activate(). The active block changes nothing.
+     */
+    public function confirmActivate(Request $request): View|RedirectResponse
+    {
+        $data = $request->validate(['kind' => ['required', Rule::in(['test', 'live'])]]);
+        $connection = ErpConnection::current($data['kind']);
+        if ($connection === null) {
+            return redirect()->route('erp.show')->withErrors(['kind' => 'Save this connection first.']);
+        }
+
+        return view('staff.erp.activate-confirm', ['connection' => $connection]);
+    }
+
     public function activate(Request $request): RedirectResponse
     {
         $data = $request->validate(['kind' => ['required', Rule::in(['test', 'live'])]]);
+        if (ErpConnection::active()?->kind === $data['kind']) {
+            return redirect()->route('erp.show')->with('status', strtoupper($data['kind']).' is already active. Nothing changed.');
+        }
         $this->connections->activate($data['kind'], $request->user());
 
         return redirect()->route('erp.show')->with('status', strtoupper($data['kind']).' is now the active connection.');
@@ -120,7 +139,7 @@ class ErpController extends Controller
         $on = $request->boolean('enabled');
         $this->connections->setPushEnabled($on, $request->user());
 
-        return redirect()->route('erp.show')->with('status', $on ? 'Pushing is on.' : 'Pushing is off.');
+        return redirect()->route('erp.show')->with('status', $on ? 'Sending to Odoo is on.' : 'Sending to Odoo is off.');
     }
 
     public function cancelWaiting(Request $request, PushService $push): RedirectResponse
@@ -131,6 +150,6 @@ class ErpController extends Controller
         $ids = ErpPushItem::query()->where('connection_id', $active->id)->whereIn('state', ['queued', 'failed_retry'])->pluck('id')->all();
         $count = $push->cancel($ids, $request->user());
 
-        return redirect()->route('erp.show')->with('status', "{$count} waiting item(s) cancelled.");
+        return redirect()->route('erp.show')->with('status', $count.' waiting '.Str::plural('item', $count).' cancelled.');
     }
 }

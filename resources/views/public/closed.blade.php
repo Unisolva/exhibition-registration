@@ -7,5 +7,6 @@
 <div class="card">
   <h1>{{ __('public.closed_title') }}</h1>
   <p>{{ __('public.closed_body') }}</p>
+  <p>{{ __('public.closed_ask') }}</p>
 </div>
 @endsection

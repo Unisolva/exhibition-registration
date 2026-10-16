@@ -15,7 +15,8 @@
 <header class="public-head">
   <div class="wrap narrow public-head-inner">
     @if ($logo = $branding->logoUrl())
-      <img class="logo" src="{{ $logo }}" alt="{{ $branding->orgName($locale) }}">
+      {{-- The organisation's name follows, so the logo needs no text of its own (M8 CO-14). --}}
+      <img class="logo" src="{{ $logo }}" alt=""@if ($size = $branding->logoSize()) width="{{ $size[0] }}" height="{{ $size[1] }}"@endif>
     @endif
     <span class="org">{{ $branding->orgName($locale) }}</span>
     <a class="lang" href="{{ url()->current() }}?lang={{ __('public.switch_language_code') }}"
@@ -24,15 +25,15 @@
 </header>
 <main class="wrap narrow">
   @isset($exhibition)
-    <p class="exhibition">
-      <strong>{{ $exhibition->name }}</strong><br>
-      <span class="hint">
-        {{ $exhibition->starts_on->locale($locale)->translatedFormat('j F Y') }}
-        @if ($exhibition->ends_on && ! $exhibition->ends_on->equalTo($exhibition->starts_on))
-          – {{ $exhibition->ends_on->locale($locale)->translatedFormat('j F Y') }}
-        @endif
-      </span>
-    </p>
+    @php($dates = $exhibition->starts_on->locale($locale)->translatedFormat('j F Y')
+        .($exhibition->ends_on && ! $exhibition->ends_on->equalTo($exhibition->starts_on) ? ' – '.$exhibition->ends_on->locale($locale)->translatedFormat('j F Y') : ''))
+    {{-- On the form the exhibition name is the page heading (M8 CO-14); other pages have their own. --}}
+    @hasSection('exhibition-heading')
+      <h1 class="exhibition-title">{{ $exhibition->name }}</h1>
+      <p class="exhibition-dates hint">{{ $dates }}</p>
+    @else
+      <p class="exhibition"><strong>{{ $exhibition->name }}</strong><br><span class="hint">{{ $dates }}</span></p>
+    @endif
   @endisset
   @yield('content')
 </main>

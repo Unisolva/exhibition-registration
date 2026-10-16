@@ -25,7 +25,7 @@
 <div class="actions spaced">
   <a class="btn btn-secondary" href="{{ route('exhibitions.edit', $exhibition) }}">Edit name, dates and language</a>
   @if ($exhibition->is_open)
-    <form method="post" action="{{ route('exhibitions.close', $exhibition) }}">@csrf<button type="submit" class="btn btn-secondary">Close registration</button></form>
+    <a class="btn btn-secondary" href="{{ route('exhibitions.close-confirm', $exhibition) }}">Close registration…</a>
   @else
     <form method="post" action="{{ route('exhibitions.open', $exhibition) }}">@csrf<button type="submit" class="btn">Open registration</button></form>
   @endif

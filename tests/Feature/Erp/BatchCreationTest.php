@@ -62,7 +62,7 @@ class BatchCreationTest extends TestCase
         $this->actingAs($admin)->post('/staff/batches', [
             'batch_token' => (string) Str::ulid(),
             'visitor_ids' => [$sent->id, $queued->id, $fresh->id, $trashed->id],
-        ])->assertRedirect()->assertSessionHas('status', '1 visitor(s) queued, 3 skipped.');
+        ])->assertRedirect()->assertSessionHas('status', '1 visitor queued, 3 skipped.');
 
         $this->assertSame(3, ErpPushItem::query()->count());
         $this->assertSame(1, ErpPushItem::query()->where('visitor_id', $fresh->id)->count());
@@ -123,7 +123,7 @@ class BatchCreationTest extends TestCase
             ->assertSee('TEST')
             ->assertSee('https://test-erp.example.test / test-db')
             ->assertSee('1 will be skipped')
-            ->assertSee('Push 1 lead(s) to TEST');
+            ->assertSee('Send 1 lead to TEST');
     }
 
     public function test_the_list_offers_selection_only_to_managers_in_odoo_mode(): void

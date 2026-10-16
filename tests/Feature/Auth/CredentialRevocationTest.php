@@ -27,8 +27,8 @@ class CredentialRevocationTest extends TestCase
         $rememberOnly = [$this->rememberCookieName() => $device[$this->rememberCookieName()]];
 
         // Both credentials work before the change.
-        $this->getWithCookies('/staff', $device)->assertOk();
-        $this->getWithCookies('/staff', $rememberOnly)->assertOk();
+        $this->getWithCookies('/staff/entry', $device)->assertOk();
+        $this->getWithCookies('/staff/entry', $rememberOnly)->assertOk();
         $this->assertGreaterThan(0, DB::table('sessions')->where('user_id', $staff->id)->count());
 
         $this->newProcess();
@@ -37,8 +37,8 @@ class CredentialRevocationTest extends TestCase
         ])->assertRedirect(route('users.index'));
 
         $this->assertSame(0, DB::table('sessions')->where('user_id', $staff->id)->count());
-        $this->getWithCookies('/staff', $device)->assertRedirect(route('login'));
-        $this->getWithCookies('/staff', $rememberOnly)->assertRedirect(route('login'));
+        $this->getWithCookies('/staff/entry', $device)->assertRedirect(route('login'));
+        $this->getWithCookies('/staff/entry', $rememberOnly)->assertRedirect(route('login'));
         $this->assertDatabaseHas('audit_events', ['action' => 'user_deactivated', 'target_id' => $staff->id, 'user_id' => $admin->id]);
     }
 
@@ -46,13 +46,13 @@ class CredentialRevocationTest extends TestCase
     {
         $staff = User::factory()->staff()->create();
         $device = $this->browserLogin($staff);
-        $this->getWithCookies('/staff', $device)->assertOk();
+        $this->getWithCookies('/staff/entry', $device)->assertOk();
 
         // Deactivated directly in the database: the session row still exists, the active check still stops it.
         DB::table('users')->where('id', $staff->id)->update(['is_active' => false]);
 
-        $this->getWithCookies('/staff', $device)->assertRedirect(route('login'));
-        $this->getWithCookies('/staff', $device)->assertRedirect(route('login'));
+        $this->getWithCookies('/staff/entry', $device)->assertRedirect(route('login'));
+        $this->getWithCookies('/staff/entry', $device)->assertRedirect(route('login'));
     }
 
     public function test_own_password_change_keeps_this_device_and_ends_all_others(): void
@@ -73,12 +73,12 @@ class CredentialRevocationTest extends TestCase
         // This device continues with the cookies it was just given (new session ID, new remember token).
         $updated = array_merge($current, $this->cookiesFrom($response));
         $this->assertNotSame($current[config('session.cookie')], $updated[config('session.cookie')]);
-        $this->getWithCookies('/staff', $updated)->assertOk();
-        $this->getWithCookies('/staff', [$this->rememberCookieName() => $updated[$this->rememberCookieName()]])->assertOk();
+        $this->getWithCookies('/staff/entry', $updated)->assertOk();
+        $this->getWithCookies('/staff/entry', [$this->rememberCookieName() => $updated[$this->rememberCookieName()]])->assertOk();
 
         // The other device's session and remember cookie are dead.
-        $this->getWithCookies('/staff', $other)->assertRedirect(route('login'));
-        $this->getWithCookies('/staff', $otherRemember)->assertRedirect(route('login'));
+        $this->getWithCookies('/staff/entry', $other)->assertRedirect(route('login'));
+        $this->getWithCookies('/staff/entry', $otherRemember)->assertRedirect(route('login'));
 
         // The old session ID of this device is gone too.
         $this->assertSame(0, DB::table('sessions')->where('id', $current[config('session.cookie')])->count());
@@ -93,8 +93,8 @@ class CredentialRevocationTest extends TestCase
         $this->newProcess();
         $this->actingAs($admin)->post("/staff/users/{$staff->id}/reset-password")->assertOk();
 
-        $this->getWithCookies('/staff', $device)->assertRedirect(route('login'));
-        $this->getWithCookies('/staff', [$this->rememberCookieName() => $device[$this->rememberCookieName()]])
+        $this->getWithCookies('/staff/entry', $device)->assertRedirect(route('login'));
+        $this->getWithCookies('/staff/entry', [$this->rememberCookieName() => $device[$this->rememberCookieName()]])
             ->assertRedirect(route('login'));
         $this->assertTrue($staff->fresh()->must_change_password);
     }

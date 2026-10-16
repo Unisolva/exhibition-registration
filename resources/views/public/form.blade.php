@@ -2,10 +2,10 @@
 @extends('layouts.public')
 
 @section('title', __('public.register_title'))
+@section('exhibition-heading', '1')
 
 @section('content')
-<h1>{{ __('public.register_title') }}</h1>
-<p>{{ __('public.intro') }} <span class="hint">{{ __('public.required_note') }}</span></p>
+<p class="intro">{{ __('public.intro') }} <span class="hint">{{ __('public.required_note') }}</span></p>
 
 @if ($notice)
   <div class="notice notice-warn" role="alert">{{ $notice }}</div>

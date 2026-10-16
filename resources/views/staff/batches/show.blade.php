@@ -16,7 +16,7 @@
 
 <ul class="totals" data-batch-status="{{ route('batches.status', $batch) }}" data-in-flight="{{ $inFlight ? '1' : '0' }}" data-totals="{{ json_encode($totals) }}">
   @foreach ($totals as $state => $count)
-    @if ($count > 0)<li><span class="badge">{{ str_replace('_', ' ', $state) }}: {{ $count }}</span></li>@endif
+    @if ($count > 0)<li><span class="badge">{{ \App\Models\ErpPushItem::stateLabel($state) }}: {{ $count }}</span></li>@endif
   @endforeach
 </ul>
 
@@ -39,9 +39,9 @@
           <span class="hint">(deleted)</span>
         @endif
       </td>
-      <td data-label="State">{{ str_replace('_', ' ', $item->state) }}</td>
+      <td data-label="State">{{ \App\Models\ErpPushItem::stateLabel($item->state) }}</td>
       <td data-label="Attempts">{{ $item->attempts }}</td>
-      <td data-label="Error">@if ($item->error_class)<code>{{ $item->error_class }}</code> {{ $item->error_message }}@endif</td>
+      <td data-label="Error">@if ($item->error_class)<strong>{{ \App\Models\ErpPushItem::errorLabel($item->error_class) }}</strong> <span class="hint">{{ $item->error_message }}</span>@endif</td>
       <td data-label="ERP lead">
         @if ($item->erp_lead_id)
           <a href="{{ $connection->base_url }}/web#id={{ $item->erp_lead_id }}&amp;model=crm.lead&amp;view_type=form" rel="noopener" target="_blank">{{ $item->erp_lead_id }}</a>
