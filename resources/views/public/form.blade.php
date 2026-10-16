@@ -17,11 +17,6 @@
 <form method="post" action="{{ route('public.submit', ['token' => $exhibition->public_token]) }}" class="card" novalidate data-once>
   @csrf
   <input type="hidden" name="submission_token" value="{{ $submissionToken }}">
-  <input type="hidden" name="rendered_at" value="{{ $renderedAt }}">
-  <div class="hp" aria-hidden="true">
-    <label for="f-website">Website</label>
-    <input id="f-website" type="text" name="{{ \App\Http\Controllers\PublicRegistrationController::HONEYPOT }}" tabindex="-1" autocomplete="off">
-  </div>
 
   @include('partials.registration-fields')
 

@@ -4,7 +4,6 @@
 
 namespace Tests\Feature\Registration;
 
-use App\Http\Controllers\PublicRegistrationController;
 use App\Http\Middleware\GuardPublicSubmission;
 use App\Models\Exhibition;
 use App\Models\FieldDefinition;
@@ -13,14 +12,12 @@ use App\Support\Asset;
 use App\Support\Settings;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
-use Mockery;
 use Tests\Support\PublicForm;
 use Tests\TestCase;
 
 /**
- * Work order §6 and §10.3, §10.4 (public), §10.5, §10.13, §10.17 (public half).
+ * Work order §6 and §10.3, §10.4 (public), §10.13, §10.17 (public half). §10.5 (M8): SpamCheckRemovedTest.
  */
 class PublicFormTest extends TestCase
 {
@@ -178,8 +175,7 @@ class PublicFormTest extends TestCase
         $closed = Exhibition::factory()->closed()->create();
         $this->get('/r/'.$closed->public_token)->assertOk()->assertSee(__('public.closed_title', [], 'ar'))->assertDontSee('name="submission_token"', false);
         // A form rendered before the exhibition closed (the closed page has no form to take fields from).
-        $rendered = PublicRegistrationController::signRenderedAt(now()->getTimestamp(), $closed);
-        $this->submitPublicForm($closed, self::VISITOR, ['submission_token' => (string) str()->ulid(), 'rendered_at' => $rendered, '_token' => ''])
+        $this->submitPublicForm($closed, self::VISITOR, ['submission_token' => (string) str()->ulid(), '_token' => ''])
             ->assertForbidden();
 
         $open = Exhibition::factory()->create();
@@ -191,32 +187,10 @@ class PublicFormTest extends TestCase
         $this->assertSame(0, Visitor::query()->count());
     }
 
-    public function test_honeypot_and_too_fast_submissions_write_nothing_show_thanks_and_log(): void
-    {
-        $exhibition = Exhibition::factory()->create();
-        Log::spy();
-
-        // Honeypot filled.
-        $this->submitPublicForm($exhibition, [...self::VISITOR, 'website' => 'http://spam.example'])
-            ->assertStatus(303)->assertRedirect('/r/'.$exhibition->public_token.'/thanks');
-
-        // Sent within three seconds of the page being rendered.
-        $this->submitPublicForm($exhibition, self::VISITOR, wait: false)->assertStatus(303);
-
-        // A forged or missing render time.
-        $hidden = $this->openPublicForm($exhibition);
-        $this->submitPublicForm($exhibition, self::VISITOR, [...$hidden, 'rendered_at' => '1.'.str_repeat('0', 64)])->assertStatus(303);
-        $this->submitPublicForm($exhibition, self::VISITOR, [...$hidden, 'rendered_at' => ''])->assertStatus(303);
-
-        $this->assertSame(0, Visitor::query()->count());
-        Log::shouldHaveReceived('info')->with('spam_blocked', Mockery::type('array'))->times(4);
-    }
-
     public function test_more_than_20_posts_a_minute_from_one_client_get_a_friendly_429_with_values_kept(): void
     {
         $exhibition = Exhibition::factory()->create();
         $hidden = $this->openPublicForm($exhibition);
-        $this->travel(5)->seconds();
 
         for ($i = 1; $i <= GuardPublicSubmission::PER_CLIENT_PER_MINUTE; $i++) {
             $this->post('/r/'.$exhibition->public_token, [...$hidden, 'name' => '', 'phone' => ''])->assertStatus(422);
@@ -229,7 +203,7 @@ class PublicFormTest extends TestCase
 
         // Another client at the same exhibition is not affected.
         $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.20'])
-            ->post('/r/'.$exhibition->public_token, [...$hidden, 'website' => '', ...self::VISITOR])
+            ->post('/r/'.$exhibition->public_token, [...$hidden, ...self::VISITOR])
             ->assertStatus(303);
     }
 
@@ -279,7 +253,7 @@ class PublicFormTest extends TestCase
         $this->newProcess();
         $second = $this->get('/r/'.$exhibition->public_token);
 
-        foreach (['submission_token', '_token', 'rendered_at'] as $name) {
+        foreach (['submission_token', '_token'] as $name) {
             $this->assertNotSame('', $this->hiddenValue($first->getContent(), $name));
         }
         $this->assertNotSame($this->hiddenValue($first->getContent(), 'submission_token'), $this->hiddenValue($second->getContent(), 'submission_token'));

@@ -2,6 +2,7 @@
 // Shared helpers for the browser tests.
 
 const fs = require('fs');
+const path = require('path');
 const { expect } = require('@playwright/test');
 const { default: AxeBuilder } = require('@axe-core/playwright');
 
@@ -63,4 +64,42 @@ async function countEntries(context, name) {
   return rows;
 }
 
-module.exports = { fixture, isArabic, publicFormUrl, signIn, watchRequests, seriousViolations, noHorizontalScroll, countEntries };
+/** A page signed in as the project's super admin (saved by global-setup). */
+async function adminPage(browser, testInfo) {
+  const context = await browser.newContext({
+    ...testInfo.project.use,
+    baseURL: testInfo.project.use.baseURL || process.env.BASE_URL,
+    storageState: path.join(__dirname, '.auth', `${testInfo.project.name}-admin.json`),
+  });
+  return context.newPage();
+}
+
+/** Serious or critical axe issues, plus any landmark ("region") issue, which is moderate. */
+async function axeIssues(page) {
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']).analyze();
+  return results.violations
+    .filter((v) => v.impact === 'serious' || v.impact === 'critical' || v.id === 'region')
+    .map((v) => `${v.id} (${v.impact}): ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`);
+}
+
+/** Visible text-like controls (not checkboxes, radios or hidden inputs) under 44 px tall or 16 px text (M8 CO-3). */
+async function smallControls(page) {
+  return page.evaluate(() => {
+    const out = [];
+    for (const el of document.querySelectorAll('input, select, textarea')) {
+      if (['checkbox', 'radio', 'hidden'].includes(el.type)) { continue; }
+      const box = el.getBoundingClientRect();
+      if (box.width === 0 && box.height === 0) { continue; }
+      const font = parseFloat(getComputedStyle(el).fontSize);
+      if (box.height < 43.5 || font < 16) {
+        out.push(`${el.tagName.toLowerCase()}#${el.id || el.name} ${Math.round(box.width)}x${Math.round(box.height)} font ${font}px`);
+      }
+    }
+    return out;
+  });
+}
+
+module.exports = {
+  fixture, isArabic, publicFormUrl, signIn, watchRequests, seriousViolations, noHorizontalScroll, countEntries,
+  adminPage, axeIssues, smallControls,
+};

@@ -17,7 +17,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -26,10 +25,6 @@ use Illuminate\Support\Str;
  */
 class PublicRegistrationController extends Controller
 {
-    public const MIN_FILL_SECONDS = 3;
-
-    public const HONEYPOT = 'website';
-
     public function __construct(
         private readonly Settings $settings,
         private readonly Normalizer $normalizer,
@@ -72,24 +67,17 @@ class PublicRegistrationController extends Controller
             return $replay;
         }
 
-        // Step 4: spam traps fail silently.
-        if ($this->looksLikeSpam($request, $exhibition)) {
-            Log::info('spam_blocked', ['exhibition_id' => $exhibition->id]);
-
-            return $this->toThanks($exhibition);
-        }
-
-        // Step 5.
+        // Step 4.
         if (! $this->accepting($exhibition)) {
             return $this->closed($exhibition, 403);
         }
 
-        // Step 6: errors inline, values kept, same token.
+        // Step 5: errors inline, values kept, same token.
         if (! $submission->isValid()) {
             return $this->form($exhibition, $submissionToken, $submission->old, $submission->errors, 422);
         }
 
-        // Step 7.
+        // Step 6. A unique-key violation re-enters step 3.
         try {
             DB::transaction(function () use ($exhibition, $submission, $submissionToken, $locale) {
                 Visitor::query()->create([
@@ -109,7 +97,7 @@ class PublicRegistrationController extends Controller
             return $this->replay($exhibition, $submissionToken, $submission) ?? $this->conflict($exhibition);
         }
 
-        // Step 8.
+        // Step 7.
         return $this->toThanks($exhibition);
     }
 
@@ -170,31 +158,6 @@ class PublicRegistrationController extends Controller
             : $this->conflict($exhibition);
     }
 
-    private function looksLikeSpam(Request $request, Exhibition $exhibition): bool
-    {
-        if (trim((string) $request->input(self::HONEYPOT, '')) !== '') {
-            return true;
-        }
-
-        $renderedAt = self::verifyRenderedAt((string) $request->input('rendered_at', ''), $exhibition);
-
-        return $renderedAt === null || now()->getTimestamp() - $renderedAt < self::MIN_FILL_SECONDS;
-    }
-
-    public static function signRenderedAt(int $timestamp, Exhibition $exhibition): string
-    {
-        return $timestamp.'.'.hash_hmac('sha256', $timestamp.'|'.$exhibition->public_token, (string) config('app.key'));
-    }
-
-    private static function verifyRenderedAt(string $value, Exhibition $exhibition): ?int
-    {
-        if (preg_match('/^(\d{1,12})\.([0-9a-f]{64})$/', $value, $m) !== 1) {
-            return null;
-        }
-
-        return hash_equals(self::signRenderedAt((int) $m[1], $exhibition), $value) ? (int) $m[1] : null;
-    }
-
     private function toThanks(Exhibition $exhibition): RedirectResponse
     {
         return redirect()->route('public.thanks', ['token' => $exhibition->public_token], 303);
@@ -224,7 +187,6 @@ class PublicRegistrationController extends Controller
             'old' => $old,
             'fieldErrors' => $errors,
             'submissionToken' => $submissionToken,
-            'renderedAt' => self::signRenderedAt(now()->getTimestamp(), $exhibition),
             'notice' => $notice,
         ], $status);
     }

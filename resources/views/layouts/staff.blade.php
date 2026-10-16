@@ -12,10 +12,10 @@
 <body>
 @auth
 @php($activeErp = \App\Models\ErpConnection::active())
-@if ($activeErp?->kind === 'test')
-  <div class="test-banner" role="note">TEST ERP: leads go to {{ $activeErp->base_url }} / {{ $activeErp->database }}</div>
-@endif
 <header class="topbar">
+  @if ($activeErp?->kind === 'test')
+    <div class="test-banner" role="note">TEST ERP: leads go to {{ $activeErp->base_url }} / {{ $activeErp->database }}</div>
+  @endif
   <div class="wrap">
     <a class="brand" href="{{ route('staff.home') }}">{{ config('app.name') }}</a>
     <nav aria-label="Main">
@@ -40,6 +40,9 @@
 <main class="wrap">
   @if (session('status'))
     <div class="notice notice-ok" role="status">{{ session('status') }}</div>
+  @endif
+  @if (session('warning'))
+    <div class="notice notice-warn" role="status">{{ session('warning') }}</div>
   @endif
   @yield('content')
 </main>

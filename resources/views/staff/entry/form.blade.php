@@ -34,6 +34,7 @@
       <button type="button" class="btn btn-secondary" data-save-new hidden>Save as a new entry</button>
     </div>
   </form>
+  <p class="saved-count" data-saved-count hidden></p>
   <p class="hint">Typed values stay on this page until they are saved. Nothing is kept in the browser.</p>
 </div>
 @endsection

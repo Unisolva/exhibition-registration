@@ -39,7 +39,8 @@ class SaveAndNewTest extends TestCase
 
         $response = $this->actingAs($staff)->postJson('/staff/registrations', $this->body($exhibition, token: $token))
             ->assertCreated()
-            ->assertJson(['status' => 'saved', 'possible_duplicate' => false]);
+            ->assertJson(['status' => 'saved', 'possible_duplicate' => false, 'visitor_name' => 'Paper Form Person'])
+            ->assertJsonMissingPath('duplicate_url');
 
         $this->assertTrue(Str::isUlid($response->json('next_token')));
         $this->assertNotSame($token, $response->json('next_token'));
@@ -126,7 +127,7 @@ class SaveAndNewTest extends TestCase
         $exhibition = Exhibition::factory()->create();
 
         $this->actingAs($staff)->post('/staff/registrations', $this->body($exhibition))
-            ->assertRedirect(route('staff.entry'))->assertSessionHas('status', 'Saved.');
+            ->assertRedirect(route('staff.entry'))->assertSessionHas('status', 'Saved Paper Form Person.');
 
         $token = (string) Str::ulid();
         $html = $this->actingAs($staff)->post('/staff/registrations', $this->body($exhibition, ['name' => 'Kept', 'phone' => '1'], $token))
@@ -134,6 +135,43 @@ class SaveAndNewTest extends TestCase
             ->assertSee('value="Kept"', false)
             ->getContent();
         $this->assertStringContainsString('name="submission_token" value="'.$token.'"', $html);
+    }
+
+    public function test_a_possible_duplicate_names_the_visitor_and_only_managers_get_the_earlier_entry_link(): void
+    {
+        $exhibition = Exhibition::factory()->create();
+        $earlier = Visitor::factory()->for($exhibition)->create(['phone_raw' => '01005551234', 'phone_key' => '+201005551234']);
+
+        foreach (['superAdmin', 'admin'] as $role) {
+            $this->actingAs(User::factory()->{$role}()->create())->postJson('/staff/registrations', $this->body($exhibition))
+                ->assertCreated()
+                ->assertJson(['possible_duplicate' => true, 'visitor_name' => 'Paper Form Person', 'duplicate_url' => route('visitors.show', $earlier)]);
+        }
+
+        // Staff see the flag on their own entry but never the matching record (§7).
+        $staff = User::factory()->staff()->create();
+        $token = (string) Str::ulid();
+        $this->actingAs($staff)->postJson('/staff/registrations', $this->body($exhibition, token: $token))
+            ->assertCreated()
+            ->assertJson(['possible_duplicate' => true, 'visitor_name' => 'Paper Form Person'])
+            ->assertJsonMissingPath('duplicate_url');
+
+        // A replay answers the same way.
+        $this->actingAs($staff)->postJson('/staff/registrations', $this->body($exhibition, token: $token))
+            ->assertOk()
+            ->assertJson(['status' => 'replay', 'possible_duplicate' => true, 'visitor_name' => 'Paper Form Person'])
+            ->assertJsonMissingPath('duplicate_url');
+        $admin = User::factory()->admin()->create();
+        $adminToken = (string) Str::ulid();
+        $this->actingAs($admin)->postJson('/staff/registrations', $this->body($exhibition, token: $adminToken))->assertCreated();
+        $this->actingAs($admin)->postJson('/staff/registrations', $this->body($exhibition, token: $adminToken))
+            ->assertOk()
+            ->assertJson(['status' => 'replay', 'duplicate_url' => route('visitors.show', $earlier)]);
+
+        // Without JavaScript the warning comes back as a flash message.
+        $this->actingAs($staff)->post('/staff/registrations', $this->body($exhibition))
+            ->assertRedirect(route('staff.entry'))
+            ->assertSessionHas('warning', 'Saved Paper Form Person. This phone number is already registered at this exhibition.');
     }
 
     public function test_the_exhibition_choice_is_kept_in_the_session(): void
