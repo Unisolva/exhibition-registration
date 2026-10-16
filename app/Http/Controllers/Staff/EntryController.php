@@ -29,6 +29,8 @@ class EntryController extends Controller
 {
     public const SESSION_KEY = 'entry_exhibition_id';
 
+    public const DUPLICATE_NOTE = 'This phone number is already registered at this exhibition.';
+
     public function __construct(
         private readonly Settings $settings,
         private readonly Normalizer $normalizer,
@@ -105,15 +107,32 @@ class EntryController extends Controller
 
         $request->session()->put(self::SESSION_KEY, $exhibition->id);
 
-        return $this->answer($request, 201, [
-            'status' => 'saved',
+        return $this->answer($request, 201, ['status' => 'saved', ...$this->savedDetails($request, $visitor)], $exhibition, (string) Str::ulid());
+    }
+
+    /**
+     * What the page shows after a save (M8 CO-4): the name, and whether the
+     * phone is already registered here. Only managers get the link to the
+     * earlier entry; staff never see the matching record (work order §7).
+     *
+     * @return array{possible_duplicate: bool, visitor_name: string, duplicate_url?: string}
+     */
+    private function savedDetails(Request $request, Visitor $visitor): array
+    {
+        $details = [
             'possible_duplicate' => $visitor->possible_duplicate_of !== null,
-        ], $exhibition, (string) Str::ulid());
+            'visitor_name' => (string) $visitor->name,
+        ];
+        if ($visitor->possible_duplicate_of !== null && $request->user()->isManager()) {
+            $details['duplicate_url'] = route('visitors.show', $visitor->possible_duplicate_of);
+        }
+
+        return $details;
     }
 
     private function replay(Request $request, Exhibition $exhibition, string $token, Submission $submission): JsonResponse|RedirectResponse|Response|null
     {
-        $committed = Visitor::query()->where('submission_token', $token)->first(['id', 'payload_hash', 'source', 'entered_by']);
+        $committed = Visitor::query()->where('submission_token', $token)->first(['id', 'name', 'payload_hash', 'source', 'entered_by', 'possible_duplicate_of']);
         if ($committed === null) {
             return null;
         }
@@ -123,7 +142,7 @@ class EntryController extends Controller
             && hash_equals($committed->payload_hash, $submission->hash($exhibition->id));
 
         if ($ownReplay) {
-            return $this->answer($request, 200, ['status' => 'replay'], $exhibition, (string) Str::ulid());
+            return $this->answer($request, 200, ['status' => 'replay', ...$this->savedDetails($request, $committed)], $exhibition, (string) Str::ulid());
         }
 
         // Never reveal anything about the committed entry.
@@ -145,7 +164,11 @@ class EntryController extends Controller
         }
 
         if (in_array($status, [200, 201], true)) {
-            return redirect()->route('staff.entry')->with('status', 'Saved.');
+            $saved = 'Saved '.$payload['visitor_name'].'.';
+
+            return $payload['possible_duplicate']
+                ? redirect()->route('staff.entry')->with('warning', $saved.' '.self::DUPLICATE_NOTE)
+                : redirect()->route('staff.entry')->with('status', $saved);
         }
 
         if ($exhibition === null) {

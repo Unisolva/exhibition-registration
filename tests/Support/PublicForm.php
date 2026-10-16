@@ -8,13 +8,13 @@ use App\Models\Exhibition;
 use Illuminate\Testing\TestResponse;
 
 /**
- * Opens the public form and submits it the way a browser does: hidden fields
- * from the rendered page, and a pause longer than the minimum fill time.
+ * Opens the public form and submits it the way a browser does, with the
+ * hidden fields from the rendered page.
  */
 trait PublicForm
 {
     /**
-     * @return array{_token: string, submission_token: string, rendered_at: string}
+     * @return array{_token: string, submission_token: string}
      */
     protected function openPublicForm(Exhibition $exhibition): array
     {
@@ -23,7 +23,6 @@ trait PublicForm
         return [
             '_token' => $this->hiddenValue($html, '_token'),
             'submission_token' => $this->hiddenValue($html, 'submission_token'),
-            'rendered_at' => $this->hiddenValue($html, 'rendered_at'),
         ];
     }
 
@@ -31,14 +30,11 @@ trait PublicForm
      * @param  array<string, string>  $values
      * @param  array<string, string>|null  $hidden  hidden fields of an earlier render (a replay)
      */
-    protected function submitPublicForm(Exhibition $exhibition, array $values, ?array $hidden = null, bool $wait = true): TestResponse
+    protected function submitPublicForm(Exhibition $exhibition, array $values, ?array $hidden = null): TestResponse
     {
         $hidden ??= $this->openPublicForm($exhibition);
-        if ($wait) {
-            $this->travel(5)->seconds();
-        }
 
-        return $this->post('/r/'.$exhibition->public_token, [...$hidden, 'website' => '', ...$values]);
+        return $this->post('/r/'.$exhibition->public_token, [...$hidden, ...$values]);
     }
 
     protected function hiddenValue(string $html, string $name): string

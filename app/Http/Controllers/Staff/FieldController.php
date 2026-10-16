@@ -23,7 +23,7 @@ class FieldController extends Controller
 {
     /** Request keys the forms already use; a custom field may not take them. */
     private const RESERVED_KEYS = [
-        'submission_token', 'rendered_at', 'website', 'exhibition_id', 'confirm', 'lang', 'remember',
+        'submission_token', 'exhibition_id', 'confirm', 'lang', 'remember',
         'password', 'email_address', 'phone_raw', 'phone_key', 'phone_e164', 'source', 'extra',
     ];
 

@@ -4,7 +4,7 @@
 // ended while typing. Each case must leave exactly one row, and values are never lost.
 
 const { test, expect } = require('@playwright/test');
-const { fixture, signIn, watchRequests, noHorizontalScroll, countEntries } = require('./helpers');
+const { fixture, signIn, watchRequests, noHorizontalScroll, countEntries, adminPage } = require('./helpers');
 
 const ENDPOINT = /\/staff\/registrations$/;
 
@@ -152,4 +152,83 @@ test('signed out while typing: sign in in a new tab, Retry saves once', async ({
   await page.locator('[data-retry]').click();
   await expectSaved(page);
   expect(await countEntries(context, visitor.name)).toBe(1);
+});
+
+test('Retry and "Save as a new entry" are hidden until needed (M8 CO-2)', async ({ page }, testInfo) => {
+  await openEntry(page, fixture(testInfo));
+  for (const selector of ['[data-retry]', '[data-save-new]']) {
+    expect(await page.locator(selector).evaluate((el) => getComputedStyle(el).display)).toBe('none');
+  }
+  await expect(page.locator('[data-save]')).toBeVisible();
+});
+
+/** Saves what is typed, then returns the name field's top edge 0.5 s and 5 s after the answer. */
+async function saveAndWatch(page) {
+  const answer = page.waitForResponse(ENDPOINT);
+  await page.locator('[data-save]').click();
+  expect([200, 201]).toContain((await answer).status());
+  await page.waitForTimeout(500);
+  const early = (await page.locator('#f-name').boundingBox()).y;
+  await page.waitForTimeout(4500);
+  const late = (await page.locator('#f-name').boundingBox()).y;
+  return { early, late };
+}
+
+test('a plain save names the visitor, clears after 4 seconds and nothing moves (M8 CO-4)', async ({ page }, testInfo) => {
+  await openEntry(page, fixture(testInfo));
+  const visitor = uniqueVisitor(testInfo, 'plain');
+  await type(page, visitor);
+
+  const answer = page.waitForResponse(ENDPOINT);
+  await page.locator('[data-save]').click();
+  await answer;
+  await expect(page.locator('#entry-status .notice-ok')).toHaveText(`Saved ${visitor.name}.`);
+  await page.waitForTimeout(500);
+  const early = (await page.locator('#f-name').boundingBox()).y;
+  await page.waitForTimeout(4000);
+  await expect(page.locator('#entry-status .notice-ok')).toBeHidden();
+  expect((await page.locator('#f-name').boundingBox()).y).toBe(early);
+  await expect(page.locator('[data-saved-count]')).toHaveText('1 saved in this session');
+});
+
+test('a possible duplicate is a warning that stays, names the visitor, and staff get no link (M8 CO-4)', async ({ page }, testInfo) => {
+  await openEntry(page, fixture(testInfo));
+  const first = uniqueVisitor(testInfo, 'dupA');
+  await type(page, first);
+  await page.locator('[data-save]').click();
+  await expectSaved(page);
+
+  const second = { name: `${first.name} again`, phone: first.phone };
+  await type(page, second);
+  const { early, late } = await saveAndWatch(page);
+
+  const warning = page.locator('#entry-status .notice-warn');
+  await expect(warning).toBeVisible();
+  await expect(warning).toHaveText(`Saved ${second.name}. This phone number is already registered at this exhibition.`);
+  await expect(warning.locator('a')).toHaveCount(0);
+  expect(late).toBe(early);
+  await expect(page.locator('[data-saved-count]')).toHaveText('2 saved in this session');
+
+  // It goes when the next save starts.
+  await type(page, uniqueVisitor(testInfo, 'dupC'));
+  await page.locator('[data-save]').click();
+  await expect(page.locator('#entry-status .notice-ok')).toBeVisible();
+  await expect(warning).toHaveCount(0);
+});
+
+test('a manager sees "View earlier entry" on a possible duplicate (M8 CO-4)', async ({ browser }, testInfo) => {
+  const f = fixture(testInfo);
+  const page = await adminPage(browser, testInfo);
+  await openEntry(page, f);
+  const first = uniqueVisitor(testInfo, 'mgrA');
+  await type(page, first);
+  await page.locator('[data-save]').click();
+  await expectSaved(page);
+
+  await type(page, { name: `${first.name} again`, phone: first.phone });
+  await page.locator('[data-save]').click();
+  const link = page.locator('#entry-status .notice-warn a');
+  await expect(link).toHaveText('View earlier entry');
+  await expect(link).toHaveAttribute('href', /\/staff\/visitors\/\d+$/);
+  await page.context().close();
 });

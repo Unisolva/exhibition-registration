@@ -49,7 +49,7 @@ class FieldEditorTest extends TestCase
     public function test_keys_follow_the_pattern_are_unique_and_avoid_system_and_reserved_names(): void
     {
         $super = $this->super();
-        foreach (['Farm', '1farm', 'f', 'farm-size', str_repeat('a', 41), 'name', 'phone', 'submission_token', 'website'] as $key) {
+        foreach (['Farm', '1farm', 'f', 'farm-size', str_repeat('a', 41), 'name', 'phone', 'submission_token'] as $key) {
             $this->actingAs($super)->post('/staff/settings/fields', $this->custom(['key' => $key]))->assertSessionHasErrors('key');
         }
         $this->actingAs($super)->post('/staff/settings/fields', $this->custom())->assertSessionHasNoErrors();

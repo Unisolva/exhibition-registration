@@ -37,7 +37,6 @@ test('a visitor typing Arabic digits is registered and sees the thank-you page',
   await page.locator('#f-name').fill(`زائر تجريبي ${testInfo.project.name}`);
   await page.locator('#f-phone').fill('٠١٠٠ ٢٢٢ ٣٣٣٣');
   await page.locator('#f-governorate').selectOption('ALX');
-  await page.waitForTimeout(3200); // the form refuses submissions faster than 3 seconds
   await page.locator('form button[type=submit]').click();
 
   await expect(page).toHaveURL(/\/thanks$/);
@@ -54,7 +53,6 @@ test('errors are shown next to the fields and the typed values stay', async ({ p
   await page.locator('#f-name').fill('Kept Value');
   await page.locator('#f-phone').fill('12');
   await page.locator('#f-email').fill('not-an-email');
-  await page.waitForTimeout(3200);
   await page.locator('form button[type=submit]').click();
 
   await expect(page.locator('#f-phone')).toHaveAttribute('aria-invalid', 'true');

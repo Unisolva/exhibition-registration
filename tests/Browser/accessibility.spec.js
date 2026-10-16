@@ -15,7 +15,6 @@ test('public form with errors has no serious or critical accessibility issues', 
   const f = fixture(testInfo);
   await page.goto(publicFormUrl(f, testInfo));
   await page.locator('#f-phone').fill('1');
-  await page.waitForTimeout(3200);
   await page.locator('form button[type=submit]').click();
   await expect(page.locator('#f-name')).toHaveAttribute('aria-invalid', 'true');
   expect(await seriousViolations(page)).toEqual([]);

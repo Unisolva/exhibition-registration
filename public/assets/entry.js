@@ -4,7 +4,8 @@
  * POST and redirect). Rules: values are cleared only after the server answers
  * 201 (saved) or 200 (replay of a saved entry); every retry resends the same
  * submission token, so a lost response never creates a second visitor.
- * Nothing is written to browser storage.
+ * Nothing is written to browser storage. After a save the name is shown; a
+ * possible duplicate stays as a warning until the next save starts (M8 CO-4).
  */
 (function () {
   'use strict';
@@ -13,6 +14,7 @@
   if (!form) { return; }
 
   var TIMEOUT_MS = 10000;
+  var SAVED_MS = 4000;
   var saveButton = form.querySelector('[data-save]');
   var retryButton = form.querySelector('[data-retry]');
   var saveNewButton = form.querySelector('[data-save-new]');
@@ -23,6 +25,8 @@
   var needsFreshCsrf = false;
   var replacementToken = null;
   var savedTimer = null;
+  var savedCount = 0;
+  var countLine = document.querySelector('[data-saved-count]');
 
   function csrfToken() { return csrfMeta ? csrfMeta.getAttribute('content') : ''; }
 
@@ -32,14 +36,22 @@
     if (hidden) { hidden.value = token; }
   }
 
-  function show(kind, text) {
+  function show(kind, text, link) {
     clearTimeout(savedTimer);
     statusBox.innerHTML = '';
-    if (!text) { return; }
+    if (!text) { return null; }
     var div = document.createElement('div');
     div.className = 'notice notice-' + kind;
     div.textContent = text;
+    if (link) {
+      var a = document.createElement('a');
+      a.href = link.href;
+      a.textContent = link.text;
+      div.appendChild(document.createTextNode(' '));
+      div.appendChild(a);
+    }
     statusBox.appendChild(div);
+    return div;
   }
 
   function setBusy(on) {
@@ -119,8 +131,21 @@
     saveNewButton.hidden = true;
     tokenInput.value = json.next_token;
     clearVisitorFields();
-    show('ok', json.possible_duplicate ? 'Saved. Note: this phone number is already registered at this exhibition.' : 'Saved');
-    savedTimer = setTimeout(function () { if (statusBox.textContent.indexOf('Saved') === 0) { show('', ''); } }, 2000);
+    var saved = 'Saved ' + (json.visitor_name || 'the entry') + '.';
+    if (json.possible_duplicate) {
+      // Stays until the next save starts.
+      show('warn', saved + ' This phone number is already registered at this exhibition.',
+        json.duplicate_url ? { href: json.duplicate_url, text: 'View earlier entry' } : null);
+    } else {
+      var notice = show('ok', saved);
+      // Hidden, not removed, so the form below does not move.
+      savedTimer = setTimeout(function () { notice.style.visibility = 'hidden'; }, SAVED_MS);
+    }
+    savedCount += 1;
+    if (countLine) {
+      countLine.textContent = savedCount + ' saved in this session';
+      countLine.hidden = false;
+    }
     focusName();
   }
 
