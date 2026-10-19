@@ -87,3 +87,45 @@ test('Arabic at 360x740 with the five default fields and no logo: Send ends with
   testInfo.annotations.push({ type: 'Send bottom at 360x740 Arabic (px)', description: String(Math.round(bottom)) });
   expect(bottom).toBeLessThanOrEqual(740);
 });
+
+test('thank-you with a welcome package: code and QR visible on a phone, the QR opens the hand-over page (M9 CO-6)', async ({ browser, baseURL }, testInfo) => {
+  const f = fixture(testInfo);
+  // CSP blocks injected scripts; the decoder is the test's own, so this one context bypasses it.
+  const context = await browser.newContext({ ...testInfo.project.use, baseURL, bypassCSP: true, storageState: undefined });
+  const page = await context.newPage();
+  const lang = isArabic(testInfo) ? 'ar' : 'en';
+  await page.goto(`/r/${f.packageExhibitionToken}?lang=${lang}`);
+  await page.locator('#f-name').fill(`Package Visitor ${testInfo.project.name}`);
+  await page.locator('#f-phone').fill(`0105${String(Date.now()).slice(-7)}`);
+  await page.locator('form button[type=submit]').click();
+  await expect(page).toHaveURL(/\/thanks$/);
+
+  const code = (await page.locator('.package-code').textContent()).replace(/[^0-9A-Z]/g, '').slice(-6);
+  expect(code).toMatch(/^[0-9A-Z]{6}$/);
+  if (testInfo.project.name.endsWith('-360')) {
+    for (const selector of ['.package-qr', '.package-code']) {
+      const box = await page.locator(selector).boundingBox();
+      expect(box.y, `${selector} top`).toBeGreaterThanOrEqual(0);
+      expect(box.y + box.height, `${selector} bottom within 740 px`).toBeLessThanOrEqual(740);
+    }
+  }
+
+  await page.addScriptTag({ path: require.resolve('jsqr/dist/jsQR.js') });
+  const decoded = await page.evaluate(async () => {
+    const svg = new XMLSerializer().serializeToString(document.querySelector('.package-qr svg'));
+    const img = new Image();
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    await img.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = 480; canvas.height = 480;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 480, 480);
+    ctx.drawImage(img, 40, 40, 400, 400);
+    const data = ctx.getImageData(0, 0, 480, 480);
+    const result = window.jsQR(data.data, 480, 480);
+    return result ? result.data : null;
+  });
+  expect(decoded).toBe(`${baseURL}/staff/packages/${code}`);
+  await expect(page.getByText('Register another person')).toHaveCount(0);
+  await context.close();
+});

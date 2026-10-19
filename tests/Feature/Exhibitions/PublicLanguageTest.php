@@ -108,8 +108,8 @@ class PublicLanguageTest extends TestCase
 
         // A replay with other values (409) and a rate limit (429) answer in the exhibition's language too.
         $hidden = $this->openPublicForm($english);
-        $this->submitPublicForm($english, ['name' => 'First Person', 'phone' => '01001234567'], $hidden)->assertRedirect();
-        $this->submitPublicForm($english, ['name' => 'Other Person', 'phone' => '01001234567'], $hidden)->assertStatus(409)->assertSee(self::EN, false);
+        $this->submitPublicForm($english, ['name' => 'First Person', 'phone' => '01001234569'], $hidden)->assertRedirect();
+        $this->submitPublicForm($english, ['name' => 'Other Person', 'phone' => '01001234569'], $hidden)->assertStatus(409)->assertSee(self::EN, false);
         for ($i = 0; $i < GuardPublicSubmission::PER_EXHIBITION_PER_MINUTE; $i++) {
             RateLimiter::hit('public-submit-exhibition:'.$english->public_token, 60);
         }

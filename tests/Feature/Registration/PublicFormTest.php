@@ -7,12 +7,14 @@ namespace Tests\Feature\Registration;
 use App\Http\Middleware\GuardPublicSubmission;
 use App\Models\Exhibition;
 use App\Models\FieldDefinition;
+use App\Models\User;
 use App\Models\Visitor;
 use App\Support\Asset;
 use App\Support\Settings;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Tests\Support\PublicForm;
 use Tests\TestCase;
 
@@ -96,17 +98,23 @@ class PublicFormTest extends TestCase
 
     public function test_the_duplicate_flag_applies_within_one_exhibition_only_and_nothing_merges(): void
     {
+        // M9 CO-7: the public form refuses a second registration of a number at one exhibition;
+        // staff entry still saves it and flags it (DuplicatePhoneTest has the full rule).
         [$a, $b] = Exhibition::factory()->count(2)->create();
 
         $this->submitPublicForm($a, self::VISITOR);
-        $this->submitPublicForm($a, [...self::VISITOR, 'name' => 'Same Phone', 'phone' => '+20 100 123 4567']);
+        $this->submitPublicForm($a, [...self::VISITOR, 'name' => 'Same Phone', 'phone' => '+20 100 123 4567'])->assertStatus(422);
         $this->submitPublicForm($b, self::VISITOR);
+        $this->actingAs(User::factory()->staff()->create())->postJson('/staff/registrations', [
+            ...self::VISITOR, 'name' => 'Staff Entry', 'exhibition_id' => (string) $a->id, 'submission_token' => (string) Str::ulid(),
+        ])->assertCreated();
 
         $first = Visitor::query()->where('exhibition_id', $a->id)->orderBy('id')->first();
         $second = Visitor::query()->where('exhibition_id', $a->id)->orderByDesc('id')->first();
         $other = Visitor::query()->where('exhibition_id', $b->id)->sole();
 
         $this->assertSame(3, Visitor::query()->count());
+        $this->assertSame('Staff Entry', $second->name);
         $this->assertNull($first->possible_duplicate_of);
         $this->assertSame($first->id, $second->possible_duplicate_of);
         $this->assertNull($other->possible_duplicate_of);

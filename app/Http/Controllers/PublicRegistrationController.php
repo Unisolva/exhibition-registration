@@ -10,7 +10,9 @@ use App\Models\FieldDefinition;
 use App\Models\Visitor;
 use App\Registration\FormView;
 use App\Registration\Normalizer;
+use App\Registration\PhoneLock;
 use App\Registration\Submission;
+use App\Support\QrCode;
 use App\Support\Settings;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
@@ -77,35 +79,82 @@ class PublicRegistrationController extends Controller
             return $this->form($exhibition, $submissionToken, $submission->old, $submission->errors, 422);
         }
 
-        // Step 6. A unique-key violation re-enters step 3.
+        // M9 CO-7: one QR registration per phone number per exhibition. The named lock makes two
+        // simultaneous submissions with the same number queue, so the second sees the first.
+        $lock = PhoneLock::name($exhibition->id, $submission->phoneKey);
+        if (! PhoneLock::acquire($lock)) {
+            return $this->form($exhibition, $submissionToken, $submission->old, ['_form' => __('public.error.form_expired')], 429);
+        }
+
         try {
-            DB::transaction(function () use ($exhibition, $submission, $submissionToken, $locale) {
-                Visitor::query()->create([
+            if (Visitor::earliestDuplicateId($exhibition->id, $submission->phoneKey) !== null) {
+                // Nothing about the earlier visitor is shown.
+                return $this->form($exhibition, $submissionToken, $submission->old,
+                    ['phone' => __('public.error.phone_taken', ['exhibition' => $exhibition->name])], 422);
+            }
+
+            // Step 6. A unique-key violation re-enters step 3.
+            try {
+                $visitor = DB::transaction(fn () => Visitor::query()->create([
                     ...$submission->visitorAttributes(),
                     'exhibition_id' => $exhibition->id,
                     'source' => 'public',
                     'entered_by' => null,
                     'submission_token' => $submissionToken,
                     'payload_hash' => $submission->hash($exhibition->id),
-                    'possible_duplicate_of' => Visitor::earliestDuplicateId($exhibition->id, $submission->phoneKey),
+                    'possible_duplicate_of' => null,
                     'locale' => $locale,
                     'request_id' => app('request_id'),
-                ]);
-            });
-        } catch (UniqueConstraintViolationException) {
-            // The same token committed concurrently: answer as a replay.
-            return $this->replay($exhibition, $submissionToken, $submission) ?? $this->conflict($exhibition);
+                ]));
+            } catch (UniqueConstraintViolationException) {
+                // The same token committed concurrently: answer as a replay.
+                return $this->replay($exhibition, $submissionToken, $submission) ?? $this->conflict($exhibition);
+            }
+        } finally {
+            PhoneLock::release($lock);
         }
 
-        // Step 7.
+        // Step 7. The thank-you page finds this visitor's package code in the session (M9 CO-6).
+        $this->rememberVisitor($exhibition, $visitor->id);
+
         return $this->toThanks($exhibition);
     }
 
-    public function thanks(string $token): Response
+    /**
+     * The exhibition's thanks text and, when it offers a welcome package, the
+     * code and QR of the visitor registered in this session (M9 CO-6). A
+     * session without one (expired, another browser) gets the generic thanks.
+     */
+    public function thanks(Request $request, string $token): Response
     {
         $exhibition = $this->exhibitionOr404($token);
+        $visitor = null;
+        if ($exhibition->offers_package && ($id = $request->session()->get(self::visitorKey($exhibition)))) {
+            $visitor = Visitor::query()->current()->where('id', $id)->where('exhibition_id', $exhibition->id)
+                ->where('source', 'public')->first(['id', 'package_code']);
+        }
 
-        return response()->view('public.thanks', $this->page($exhibition));
+        return response()->view('public.thanks', [
+            ...$this->page($exhibition),
+            'packageCode' => $visitor?->package_code,
+            'packageQr' => $visitor?->package_code ? QrCode::svg(self::packageUrl($visitor->package_code)) : null,
+        ]);
+    }
+
+    /** Where the QR on the thank-you page points: the staff hand-over page for that code. */
+    public static function packageUrl(string $code): string
+    {
+        return rtrim((string) config('app.url'), '/').'/staff/packages/'.$code;
+    }
+
+    private static function visitorKey(Exhibition $exhibition): string
+    {
+        return 'public_visitor.'.$exhibition->public_token;
+    }
+
+    private function rememberVisitor(Exhibition $exhibition, int $visitorId): void
+    {
+        request()->session()->put(self::visitorKey($exhibition), $visitorId);
     }
 
     /**
@@ -148,14 +197,18 @@ class PublicRegistrationController extends Controller
 
     private function replay(Exhibition $exhibition, string $submissionToken, Submission $submission): Response|RedirectResponse|null
     {
-        $committed = Visitor::query()->where('submission_token', $submissionToken)->first(['id', 'payload_hash']);
+        $committed = Visitor::query()->where('submission_token', $submissionToken)->first(['id', 'payload_hash', 'source']);
         if ($committed === null) {
             return null;
         }
+        if (! hash_equals($committed->payload_hash, $submission->hash($exhibition->id))) {
+            return $this->conflict($exhibition);
+        }
+        if ($committed->source === 'public') {
+            $this->rememberVisitor($exhibition, $committed->id);
+        }
 
-        return hash_equals($committed->payload_hash, $submission->hash($exhibition->id))
-            ? $this->toThanks($exhibition)
-            : $this->conflict($exhibition);
+        return $this->toThanks($exhibition);
     }
 
     private function toThanks(Exhibition $exhibition): RedirectResponse

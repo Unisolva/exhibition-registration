@@ -9,6 +9,7 @@
   {{ $exhibition->starts_on->format('Y-m-d') }}@if ($exhibition->ends_on) – {{ $exhibition->ends_on->format('Y-m-d') }}@endif
   · @if ($exhibition->is_open)<span class="badge">Registration open</span>@else<span class="badge badge-off">Registration closed</span>@endif
   · Public form language: {{ $exhibition->default_locale === 'en' ? 'English' : 'Arabic' }}
+  · Welcome package: {{ $exhibition->offers_package ? 'offered' : 'not offered' }}
 </p>
 
 <div class="card qr-card">
@@ -23,7 +24,7 @@
 </div>
 
 <div class="actions spaced">
-  <a class="btn btn-secondary" href="{{ route('exhibitions.edit', $exhibition) }}">Edit name, dates and language</a>
+  <a class="btn btn-secondary" href="{{ route('exhibitions.edit', $exhibition) }}">Edit name, dates, language and package</a>
   @if ($exhibition->is_open)
     <a class="btn btn-secondary" href="{{ route('exhibitions.close-confirm', $exhibition) }}">Close registration…</a>
   @else

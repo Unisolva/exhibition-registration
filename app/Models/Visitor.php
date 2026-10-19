@@ -4,11 +4,13 @@
 
 namespace App\Models;
 
+use App\Support\PackageCode;
 use Database\Factories\VisitorFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * One registration at one exhibition (work order §4 visitors). Rows are never
@@ -31,6 +33,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $submission_token
  * @property string $payload_hash
  * @property int|null $possible_duplicate_of
+ * @property string|null $package_code 6 Crockford characters, unique (M9 CO-5)
+ * @property Carbon|null $package_received_at
+ * @property int|null $package_received_by
  */
 class Visitor extends Model
 {
@@ -47,7 +52,16 @@ class Visitor extends Model
             'edited_at' => 'datetime',
             'trashed_at' => 'datetime',
             'deleted_at' => 'datetime',
+            'package_received_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // Every visitor gets a welcome-package code at insert (M9 CO-5).
+        static::creating(function (Visitor $visitor) {
+            $visitor->package_code ??= PackageCode::generate();
+        });
     }
 
     /** Visitors that are neither in the trash nor permanently deleted. */

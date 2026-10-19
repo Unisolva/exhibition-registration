@@ -4,6 +4,7 @@
  * - [data-print]: the poster's Print button.
  * - Password fields get a "Show" button (M8 L13).
  * - The field form hides "Choices" while the type is "Short text" (M8 L3).
+ * - The exhibition form shows the package notes while the package box is ticked (M9 CO-4).
  * Nothing is written to browser storage.
  */
 (function () {
@@ -36,6 +37,15 @@
       wrap.appendChild(input);
       wrap.appendChild(button);
     }(passwords[i]));
+  }
+
+  // Exhibition form: the package notes show while "Offers a welcome package" is ticked (M9 CO-4).
+  var offers = document.querySelector('[data-package-toggle]');
+  var notes = document.querySelector('[data-package-notes]');
+  if (offers && notes) {
+    var syncNotes = function () { notes.hidden = !offers.checked; };
+    offers.addEventListener('change', syncNotes);
+    syncNotes();
   }
 
   var type = document.querySelector('form select[name=type]');

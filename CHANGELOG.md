@@ -8,6 +8,8 @@ Release 1.2.0 (in progress).
 
 - A form field can be shown on staff entry only (for example "Visitor type"): it appears in Save & New and on staff entries' edit and view pages, never on the public form, and is never checked there even when required. Its Arabic labels are optional. It counts toward the 15 active custom fields and is exported and sent to the ERP like any custom field.
 - A list field can be shown as radio buttons, on the public form too: an optional group starts with "Not set", a required one has nothing chosen and says "Choose one". Database: one additive migration (`field_definitions.audience`, `field_definitions.widget`).
+- An exhibition can offer a welcome package, with a note in Arabic and English. Every visitor has a 6-character package code. After a QR registration at such an exhibition, the thank-you page shows the note, the code and a QR for the team, and asks the visitor to keep a screenshot; a refresh shows the same code. The thank-you page no longer links back to the form. Database: one additive migration (`exhibitions.offers_package`, `package_note_ar`, `package_note_en`; `visitors.package_code`, `package_received_at`, `package_received_by`); existing visitors get codes from the migration and from the deploy's seeding step.
+- The public form refuses a phone number already registered at the same exhibition and asks the visitor to see the team; a resent form still gets its thank-you page. Two registrations of one number at the same moment queue, so only the first is saved. Staff entry still saves and flags duplicates.
 
 ## [1.1.0] - 2026-10-16
 

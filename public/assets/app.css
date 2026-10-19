@@ -143,6 +143,14 @@ th { font-size: .875rem; color: var(--muted); }
 .intro { margin-block: 0 .75rem; }
 .public .card { padding: 1rem; }
 .public .field { margin-block-end: .75rem; }
+/* Welcome package on the thank-you page (M9 CO-6). */
+.package-box { border: 2px dashed var(--brand); border-radius: var(--radius); padding: .75rem; margin-block-start: .75rem; text-align: center; }
+.package-note { margin: 0 0 .5rem; }
+.package-qr { inline-size: 168px; block-size: 168px; margin: 0 auto; background: #fff; }
+.package-qr svg { display: block; inline-size: 100%; block-size: 100%; }
+.package-code { font-family: ui-monospace, Consolas, monospace; font-size: 2rem; font-weight: 800; letter-spacing: .2em; margin: .25rem 0; }
+.package-show { margin: 0; font-weight: 600; }
+.visually-hidden { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .public-foot { display: flex; flex-wrap: wrap; gap: 1rem; font-size: .875rem; padding-block-end: 2rem; }
 .public-foot a { color: var(--muted); display: inline-flex; align-items: center; min-height: 44px; }
 

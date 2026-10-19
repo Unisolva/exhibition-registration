@@ -10,6 +10,7 @@ use App\Models\Visitor;
 use App\Support\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\Support\ErpRows;
 use Tests\Support\PublicForm;
 use Tests\TestCase;
@@ -42,7 +43,9 @@ class TrashAndHousekeepingTest extends TestCase
 
         // The later visitor no longer points at it, and a new registration is not matched to it.
         $this->assertNull($later->fresh()->possible_duplicate_of);
-        $this->submitPublicForm($exhibition, ['name' => 'New', 'phone' => '01001112222', 'governorate' => 'C'])->assertStatus(303);
+        // (A staff entry: since M9 CO-7 the public form refuses a number already registered here.)
+        $this->actingAs($admin)->postJson('/staff/registrations', ['name' => 'New', 'phone' => '01001112222', 'governorate' => 'C',
+            'exhibition_id' => (string) $exhibition->id, 'submission_token' => (string) Str::ulid()])->assertCreated();
         $this->assertSame($later->id, Visitor::query()->where('name', 'New')->sole()->possible_duplicate_of);
 
         // Edits are refused while it is in the trash.

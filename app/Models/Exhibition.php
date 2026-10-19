@@ -20,6 +20,9 @@ use Illuminate\Support\Carbon;
  * @property string $public_token
  * @property bool $is_open
  * @property string $default_locale ar or en: the public form's language unless the visitor chose one
+ * @property bool $offers_package a welcome package for QR registrations (M9 CO-4)
+ * @property string|null $package_note_ar
+ * @property string|null $package_note_en
  */
 class Exhibition extends Model
 {
@@ -30,7 +33,9 @@ class Exhibition extends Model
 
     public const LOCALES = ['ar', 'en'];
 
-    protected $fillable = ['name', 'starts_on', 'ends_on', 'default_locale'];
+    public const NOTE_MAX = 500;
+
+    protected $fillable = ['name', 'starts_on', 'ends_on', 'default_locale', 'offers_package', 'package_note_ar', 'package_note_en'];
 
     protected function casts(): array
     {
@@ -38,6 +43,7 @@ class Exhibition extends Model
             'starts_on' => 'date',
             'ends_on' => 'date',
             'is_open' => 'boolean',
+            'offers_package' => 'boolean',
         ];
     }
 
@@ -73,6 +79,15 @@ class Exhibition extends Model
     public function publicUrl(): string
     {
         return rtrim((string) config('app.url'), '/').'/r/'.$this->public_token;
+    }
+
+    /** The package note in a language, falling back to the other one (M9 CO-6). */
+    public function packageNote(string $locale): string
+    {
+        $ar = trim((string) $this->package_note_ar);
+        $en = trim((string) $this->package_note_en);
+
+        return $locale === 'ar' ? ($ar !== '' ? $ar : $en) : ($en !== '' ? $en : $ar);
     }
 
     public function visitors(): HasMany

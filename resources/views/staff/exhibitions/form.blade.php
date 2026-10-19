@@ -17,6 +17,17 @@
     <x-field type="date" name="ends_on" label="Last day (optional)" :value="old('ends_on', $exhibition->ends_on?->format('Y-m-d'))" />
     <x-field type="select" name="default_locale" label="Public form language" :value="old('default_locale', $exhibition->default_locale ?? 'ar')"
              :options="['ar' => 'Arabic', 'en' => 'English']" hint="The language the registration page opens in. Visitors can still switch." />
+
+    {{-- M9 CO-4: the notes show while the box is ticked (without JavaScript always). --}}
+    <x-field type="checkbox" name="offers_package" label="Offers a welcome package" data-package-toggle
+             :checked="(bool) old('offers_package', $exhibition->offers_package)"
+             hint="Visitors who register by QR see a package code and a QR on the thank-you page, to show to your team." />
+    <div class="package-notes" data-package-notes>
+      <x-field type="textarea" name="package_note_ar" label="Package note in Arabic" :value="old('package_note_ar', $exhibition->package_note_ar)"
+               maxlength="500" dir="rtl" lang="ar" rows="3" hint="Shown above the code. Plain text, at most 500 characters." />
+      <x-field type="textarea" name="package_note_en" label="Package note in English" :value="old('package_note_en', $exhibition->package_note_en)"
+               maxlength="500" rows="3" hint="If one language is empty, the other is shown." />
+    </div>
     @if ($editing)
       <p class="hint">Renaming keeps the same registration link and QR code.</p>
     @endif
