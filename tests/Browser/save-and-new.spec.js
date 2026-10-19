@@ -243,8 +243,49 @@ test('on a phone the message after a save is not hidden under the sticky exhibit
   await expectSaved(page);
   await type(page, { name: `${first.name} again`, phone: first.phone });
   await page.locator('[data-save]').click();
-  await expect(page.locator('#entry-status .notice-warn')).toBeVisible();
+  // The warning itself, not the "Saving…" notice shown while the request runs.
+  await expect(page.locator('#entry-status .notice-warn')).toContainText('already registered', { timeout: 15000 });
   const gap = await page.evaluate(() => document.querySelector('#entry-status .notice').getBoundingClientRect().top
     - document.querySelector('.entry-bar').getBoundingClientRect().bottom);
   expect(gap).toBeGreaterThanOrEqual(0);
+});
+
+test('a radio group: arrow keys move the choice, rows are 44 px, it resets to "Not set" after a save (M9 CO-3)', async ({ page }, testInfo) => {
+  await openEntry(page, fixture(testInfo));
+  const group = page.locator('fieldset#f-visitor_type');
+  await expect(group.locator('legend')).toHaveText('Visitor type');
+  await expect(group.locator('input[type=radio]')).toHaveCount(3);
+  await expect(group.locator('#f-visitor_type-0')).toBeChecked();
+  for (const row of await group.locator('label.radio').all()) {
+    expect((await row.boundingBox()).height).toBeGreaterThanOrEqual(44);
+  }
+
+  await group.locator('#f-visitor_type-0').focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(group.locator('#f-visitor_type-1')).toBeChecked();
+  await expect(group.locator('#f-visitor_type-1')).toBeFocused();
+
+  const visitor = uniqueVisitor(testInfo, 'radio');
+  await type(page, visitor);
+  const request = page.waitForRequest(ENDPOINT);
+  await page.locator('[data-save]').click();
+  expect(JSON.parse((await request).postData()).visitor_type).toBe('vip');
+  await expectSaved(page);
+  await expect(group.locator('#f-visitor_type-0')).toBeChecked();
+});
+
+test('a radio error is tied to the group and focuses its first radio (M9 CO-3)', async ({ page }, testInfo) => {
+  await openEntry(page, fixture(testInfo));
+  await type(page, uniqueVisitor(testInfo, 'radioerr'));
+  await page.route(ENDPOINT, (route) => route.fulfill({
+    status: 422, contentType: 'application/json',
+    body: JSON.stringify({ errors: { visitor_type: 'Choose one.' }, next_token: null }),
+  }), { times: 1 });
+  await page.locator('[data-save]').click();
+
+  const group = page.locator('fieldset#f-visitor_type');
+  await expect(group).toHaveAttribute('aria-describedby', 'f-visitor_type-error');
+  await expect(page.locator('#f-visitor_type-error')).toHaveText('Choose one.');
+  await expect(group.locator('#f-visitor_type-0')).toBeFocused();
+  await expect(group.locator('#f-visitor_type-0')).toHaveAttribute('aria-invalid', 'true');
 });

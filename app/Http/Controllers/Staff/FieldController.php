@@ -49,7 +49,7 @@ class FieldController extends Controller
             'key' => ['required', 'string', 'regex:/^[a-z][a-z0-9_]{1,39}$/', 'unique:field_definitions,key',
                 Rule::notIn([...FieldDefinition::SYSTEM_KEYS, ...self::RESERVED_KEYS])],
             'type' => ['required', Rule::in(['text', 'select'])],
-            ...$this->commonRules(),
+            ...$this->commonRules($request, isSystem: false),
         ]);
 
         $active = $request->boolean('is_active');
@@ -62,8 +62,10 @@ class FieldController extends Controller
             'is_system' => false,
             'type' => $data['type'],
             'label_en' => trim($data['label_en']),
-            'label_ar' => trim($data['label_ar']),
-            'options' => $data['type'] === 'select' ? $this->options($request, []) : null,
+            'label_ar' => trim((string) ($data['label_ar'] ?? '')),
+            'audience' => $this->audience($request, isSystem: false),
+            'widget' => $this->widget($request, $data['type']),
+            'options' => $data['type'] === 'select' ? $this->options($request, [], $this->audience($request, isSystem: false) === 'all') : null,
             'is_required' => $request->boolean('is_required'),
             'is_active' => $active,
             'sort_order' => (int) $data['sort_order'],
@@ -82,7 +84,7 @@ class FieldController extends Controller
 
     public function update(Request $request, FieldDefinition $field): RedirectResponse
     {
-        $data = $request->validate($this->commonRules());
+        $data = $request->validate($this->commonRules($request, $field->is_system));
 
         $alwaysOn = in_array($field->key, ['name', 'phone'], true);
         $active = $alwaysOn || $request->boolean('is_active');
@@ -93,14 +95,16 @@ class FieldController extends Controller
 
         $field->fill([
             'label_en' => trim($data['label_en']),
-            'label_ar' => trim($data['label_ar']),
+            'label_ar' => trim((string) ($data['label_ar'] ?? '')),
+            'audience' => $this->audience($request, $field->is_system),
+            'widget' => $this->widget($request, $field->type),
             'is_required' => $alwaysOn || $request->boolean('is_required'),
             'is_active' => $active,
             'sort_order' => (int) $data['sort_order'],
             'send_to_erp' => $request->boolean('send_to_erp'),
         ]);
         if ($field->type === 'select') {
-            $field->options = $this->options($request, $field->options ?? []);
+            $field->options = $this->options($request, $field->options ?? [], $this->audience($request, $field->is_system) === 'all');
         }
 
         $changed = array_keys($field->getDirty());
@@ -113,13 +117,31 @@ class FieldController extends Controller
     }
 
     /**
+     * "Shown on" (M9 CO-1): staff-only or everyone; system fields are always shown to everyone.
+     */
+    private function audience(Request $request, bool $isSystem): string
+    {
+        return ! $isSystem && $request->input('audience') === 'staff' ? 'staff' : 'all';
+    }
+
+    /** "Show as": radio buttons or a dropdown, for list fields only (Governorate and text fields stay as they are). */
+    private function widget(Request $request, string $type): string
+    {
+        return $type === 'select' && $request->input('widget') === 'radio' ? 'radio' : 'select';
+    }
+
+    /**
+     * The Arabic label is needed only where Arabic is shown: staff screens are English (M9 CO-1).
+     *
      * @return array<string, mixed>
      */
-    private function commonRules(): array
+    private function commonRules(Request $request, bool $isSystem): array
     {
         return [
+            'audience' => ['nullable', Rule::in(['all', 'staff'])],
+            'widget' => ['nullable', Rule::in(['select', 'radio'])],
             'label_en' => ['required', 'string', 'max:100'],
-            'label_ar' => ['required', 'string', 'max:100'],
+            'label_ar' => [Rule::requiredIf($this->audience($request, $isSystem) === 'all'), 'nullable', 'string', 'max:100'],
             'sort_order' => ['required', 'integer', 'min:0', 'max:100000'],
             'options' => ['array', 'max:200'],
             'options.*.label_en' => ['nullable', 'string', 'max:100'],
@@ -138,7 +160,7 @@ class FieldController extends Controller
      * @param  list<array{value: string, label_en: string, label_ar: string, is_active: bool}>  $existing
      * @return list<array{value: string, label_en: string, label_ar: string, is_active: bool}>
      */
-    private function options(Request $request, array $existing): array
+    private function options(Request $request, array $existing, bool $arabicNeeded = true): array
     {
         $posted = (array) $request->input('options', []);
         $result = [];
@@ -163,8 +185,11 @@ class FieldController extends Controller
             if (in_array($value, $values, true)) {
                 throw ValidationException::withMessages(['new_options' => "The option value \"{$value}\" already exists."]);
             }
-            if ($labelEn === '' || $labelAr === '') {
-                throw ValidationException::withMessages(['new_options' => "Give the option \"{$value}\" an English and an Arabic label."]);
+            // Staff-only lists are shown in English only, so their Arabic labels are optional (M9 CO-1).
+            if ($labelEn === '' || ($arabicNeeded && $labelAr === '')) {
+                throw ValidationException::withMessages(['new_options' => $arabicNeeded
+                    ? "Give the option \"{$value}\" an English and an Arabic label."
+                    : "Give the option \"{$value}\" an English label."]);
             }
             $result[] = ['value' => $value, 'label_en' => $labelEn, 'label_ar' => $labelAr, 'is_active' => true];
             $values[] = $value;

@@ -13,11 +13,12 @@
   @foreach ($fields as $field)
     <tr>
       <td data-label="Order">{{ $field->sort_order }}</td>
-      <td data-label="Label">{{ $field->label_en }} / <span lang="ar" dir="rtl">{{ $field->label_ar }}</span></td>
+      <td data-label="Label">{{ $field->label_en }}@if ($field->label_ar !== '') / <span lang="ar" dir="rtl">{{ $field->label_ar }}</span>@endif</td>
       <td data-label="Key"><code>{{ $field->key }}</code>@if ($field->is_system) <span class="badge">system</span>@endif</td>
-      <td data-label="Type">{{ $field->type }}@if ($field->type === 'select') ({{ count($field->activeOptions()) ?: 'free text' }}{{ count($field->activeOptions()) ? ' options' : '' }})@endif</td>
+      <td data-label="Type">{{ $field->type }}@if ($field->type === 'select') ({{ count($field->activeOptions()) ?: 'free text' }}{{ count($field->activeOptions()) ? ' options' : '' }})@endif @if ($field->isRadio())<span class="badge">Radio</span>@endif</td>
       <td data-label="Status">
         @if ($field->is_active)<span class="badge">Active</span>@else<span class="badge badge-off">Inactive</span>@endif
+        @if ($field->isStaffOnly())<span class="badge badge-staff">Staff only</span>@endif
         @if ($field->required())<span class="badge">Required</span>@endif
         @unless ($field->send_to_erp)<span class="badge">Not sent to ERP</span>@endunless
       </td>

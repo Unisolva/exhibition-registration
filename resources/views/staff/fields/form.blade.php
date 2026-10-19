@@ -22,7 +22,8 @@
     @endif
 
     <x-field name="label_en" label="Label in English" :value="old('label_en', $field->label_en)" required maxlength="100" />
-    <x-field name="label_ar" label="Label in Arabic" :value="old('label_ar', $field->label_ar)" required maxlength="100" dir="rtl" lang="ar" />
+    <x-field name="label_ar" label="Label in Arabic" :value="old('label_ar', $field->label_ar)" maxlength="100" dir="rtl" lang="ar"
+             :hint="$field->is_system ? null : 'Needed when the field is shown on the public form; optional for staff-only fields.'" />
     <x-field type="number" name="sort_order" label="Order" hint="Lower comes first." :value="old('sort_order', $field->sort_order)" required min="0" max="100000" />
 
     @if ($alwaysOn)
@@ -33,11 +34,19 @@
     @endif
     <x-field type="checkbox" name="send_to_erp" label="Send to the ERP with the lead" :checked="(bool) old('send_to_erp', $field->send_to_erp)" />
 
+    {{-- M9 CO-1: system fields are always shown to everyone, so the choice is not offered for them. --}}
+    @unless ($field->is_system)
+      <x-field type="radio" name="audience" label="Shown on" :value="old('audience', $field->audience ?? 'all')"
+               :options="['all' => 'Public form and staff entry', 'staff' => 'Staff entry only']" />
+    @endunless
+
     @if (! $editing || $field->type === 'select')
       <section class="choices" aria-labelledby="choices-title" data-choices>
         <h2 id="choices-title">Choices</h2>
         <p class="hint" id="choices-hint">For a list of choices. A list with no active choices is shown as a free-text box. Choice values cannot change once added; deactivate a choice to hide it.</p>
         @error('new_options')<p class="notice notice-err" role="alert">{{ $message }}</p>@enderror
+        <x-field type="radio" name="widget" label="Show as" :value="old('widget', $field->widget ?? 'select')"
+                 :options="['select' => 'Dropdown', 'radio' => 'Radio buttons']" />
         @foreach ($field->options ?? [] as $i => $option)
           <fieldset class="option-row">
             <legend><code>{{ $option['value'] }}</code></legend>

@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $is_active
  * @property int $sort_order
  * @property bool $send_to_erp
+ * @property string $audience all (public form and staff entry) or staff (staff entry only, M9 CO-1)
+ * @property string $widget select (dropdown) or radio, for list fields
  */
 class FieldDefinition extends Model
 {
@@ -31,6 +33,8 @@ class FieldDefinition extends Model
     public const SYSTEM_KEYS = ['name', 'phone', 'email', 'occupation', 'governorate'];
 
     protected $guarded = ['id'];
+
+    protected $attributes = ['audience' => 'all', 'widget' => 'select'];
 
     protected function casts(): array
     {
@@ -45,11 +49,27 @@ class FieldDefinition extends Model
     }
 
     /**
+     * Active fields in form order. The public form gets only fields shown to
+     * everyone; staff entry, edit, exports and the ERP payload get all (M9 CO-2).
+     *
      * @return Collection<int, FieldDefinition>
      */
-    public static function activeInOrder(): Collection
+    public static function activeInOrder(bool $publicOnly = false): Collection
     {
-        return static::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
+        return static::query()->where('is_active', true)
+            ->when($publicOnly, fn ($query) => $query->where('audience', 'all'))
+            ->orderBy('sort_order')->orderBy('id')->get();
+    }
+
+    public function isStaffOnly(): bool
+    {
+        return $this->audience === 'staff';
+    }
+
+    /** A list field shown as radio buttons (M9 CO-3); a list without choices stays free text. */
+    public function isRadio(): bool
+    {
+        return $this->widget === 'radio' && $this->type === 'select' && ! $this->isFreeTextSelect();
     }
 
     public function label(?string $locale = null): string

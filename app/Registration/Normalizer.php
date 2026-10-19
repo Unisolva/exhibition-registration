@@ -56,7 +56,9 @@ class Normalizer
 
             if ($value === '') {
                 if ($field->required()) {
-                    $errors[$field->key] = __('public.error.required', ['field' => $label], $locale);
+                    $errors[$field->key] = $field->isRadio()
+                        ? __('public.error.choose_one', [], $locale)
+                        : __('public.error.required', ['field' => $label], $locale);
                 }
                 if (! $field->is_system) {
                     $extra[$field->key] = null;

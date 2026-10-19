@@ -2,6 +2,13 @@
 
 All notable changes. Versions follow semantic versioning; each release is the git tag `v<version>`.
 
+## Unreleased
+
+Release 1.2.0 (in progress).
+
+- A form field can be shown on staff entry only (for example "Visitor type"): it appears in Save & New and on staff entries' edit and view pages, never on the public form, and is never checked there even when required. Its Arabic labels are optional. It counts toward the 15 active custom fields and is exported and sent to the ERP like any custom field.
+- A list field can be shown as radio buttons, on the public form too: an optional group starts with "Not set", a required one has nothing chosen and says "Choose one". Database: one additive migration (`field_definitions.audience`, `field_definitions.widget`).
+
 ## [1.1.0] - 2026-10-16
 
 Interface fixes from a usability and accessibility review, a public form language per exhibition, and the removal of the spam check. **Database:** one additive migration (`exhibitions.default_locale`, existing exhibitions get Arabic). Two new settings keys (`logo_width`, `logo_height`) need no migration.

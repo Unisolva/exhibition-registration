@@ -84,6 +84,11 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 }
 .check { display: flex; align-items: center; gap: .5rem; font-weight: 400; min-height: 44px; }
 .check input { width: 1.5rem; height: 1.5rem; flex: none; }
+/* Radio groups (M9 CO-3): the legend is the label; each choice is a 44 px row; logical properties keep RTL right. */
+.field-radio { border: 0; padding: 0; margin-inline: 0; min-inline-size: 0; }
+.field-radio legend { font-weight: 600; padding: 0; margin-block-end: .25rem; }
+.radio { display: flex; align-items: center; gap: .5rem; font-weight: 400; min-height: 44px; margin: 0; cursor: pointer; }
+.radio input { width: 1.5rem; height: 1.5rem; flex: none; margin: 0; }
 [aria-invalid=true] { border-color: var(--err); }
 .error { color: var(--err); font-size: .9rem; margin-block-start: .25rem; }
 
@@ -118,6 +123,7 @@ th, td { text-align: start; padding: .6rem .75rem; border-block-end: 1px solid v
 th { font-size: .875rem; color: var(--muted); }
 .badge { display: inline-block; padding: .1rem .5rem; border-radius: 999px; font-size: .8rem; background: var(--badge-bg); }
 .badge-off { background: var(--err-bg); color: var(--err); }
+.badge-staff { background: var(--warn-bg); color: var(--warn); }
 
 .secret { font-family: ui-monospace, Consolas, monospace; font-size: 1.4rem; letter-spacing: .08em; padding: .75rem 1rem; background: #fff; border: 2px dashed var(--brand); display: inline-block; }
 

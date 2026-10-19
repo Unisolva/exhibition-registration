@@ -3,7 +3,12 @@
      After a failed submit the first invalid field gets autofocus (M8 CO-10). --}}
 @php($firstInvalid = collect($fields)->first(fn ($field) => isset($fieldErrors[$field['key']]))['key'] ?? null)
 @foreach ($fields as $field)
-  @if ($field['control'] === 'select')
+  @if ($field['control'] === 'radio')
+    <x-field type="radio" :name="$field['key']" :id="'f-'.$field['key']" :label="$field['label']"
+             :value="$old[$field['key']] ?? ''" :options="$field['options']" :placeholder="$field['required'] ? null : __('public.not_set')"
+             :error="$fieldErrors[$field['key']] ?? null" :required="$field['required']" :mark="$field['required']"
+             :autofocus="$firstInvalid === $field['key']" />
+  @elseif ($field['control'] === 'select')
     <x-field type="select" :name="$field['key']" :id="'f-'.$field['key']" :label="$field['label']"
              :value="$old[$field['key']] ?? ''" :options="$field['options']" :placeholder="__('public.choose')"
              :error="$fieldErrors[$field['key']] ?? null" :required="$field['required']" :mark="$field['required']"

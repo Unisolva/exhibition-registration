@@ -60,6 +60,14 @@ foreach (['test', 'live'] as $kind) {
 }
 $testConnection = ErpConnection::active();
 
+// M9: a staff-only radio field (optional, so the Save & New tests need not choose).
+FieldDefinition::query()->create([
+    'key' => 'visitor_type', 'is_system' => false, 'type' => 'select', 'label_en' => 'Visitor type', 'label_ar' => '',
+    'options' => [['value' => 'vip', 'label_en' => 'VIP', 'label_ar' => '', 'is_active' => true],
+        ['value' => 'regular', 'label_en' => 'Regular', 'label_ar' => '', 'is_active' => true]],
+    'is_required' => false, 'is_active' => true, 'sort_order' => 60, 'send_to_erp' => true, 'audience' => 'staff', 'widget' => 'radio',
+]);
+
 $owner = new User(['name' => 'Browser Test Owner', 'email' => 'browser-owner@example.test', 'role' => Role::SuperAdmin, 'is_active' => true]);
 $owner->forceFill(['password' => OneTimePassword::generate(24), 'must_change_password' => false])->save();
 
