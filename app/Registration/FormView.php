@@ -18,12 +18,14 @@ class FormView
     public function __construct(private readonly Settings $settings) {}
 
     /**
+     * The public form passes $publicOnly: staff-only fields never appear there (M9 CO-2).
+     *
      * @param  Collection<int, FieldDefinition>|null  $fields
      * @return list<array{key: string, label: string, required: bool, control: string, type: string, options: array<string, string>, maxlength: int, autocomplete: string|null, inputmode: string|null, dir: string|null}>
      */
-    public function fields(string $locale, ?Collection $fields = null): array
+    public function fields(string $locale, ?Collection $fields = null, bool $publicOnly = false): array
     {
-        $fields ??= FieldDefinition::activeInOrder();
+        $fields ??= FieldDefinition::activeInOrder($publicOnly);
         $out = [];
 
         foreach ($fields as $field) {
@@ -36,7 +38,7 @@ class FormView
                     $options[$region->code] = $region->name($locale);
                 }
             } elseif ($field->type === 'select' && ! $field->isFreeTextSelect()) {
-                $control = 'select';
+                $control = $field->isRadio() ? 'radio' : 'select';
                 foreach ($field->activeOptions() as $option) {
                     $options[$option['value']] = $locale === 'ar' ? ($option['label_ar'] ?: $option['label_en']) : ($option['label_en'] ?: $option['label_ar']);
                 }

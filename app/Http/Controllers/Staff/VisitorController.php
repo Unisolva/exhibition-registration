@@ -96,7 +96,8 @@ class VisitorController extends Controller
 
         return view('staff.visitors.edit', [
             'visitor' => $visitor,
-            'fields' => $formView->fields('en'),
+            // QR registrations never get a staff-only value (M9 CO-2).
+            'fields' => $formView->fields('en', publicOnly: $visitor->source !== 'staff'),
             'old' => old() ?: $this->currentValues($visitor),
             'fieldErrors' => $bag ? array_map(fn (array $messages) => $messages[0], $bag->messages()) : [],
             'lock' => VisitorLock::causeFor($visitor->id),

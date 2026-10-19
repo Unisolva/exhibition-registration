@@ -51,7 +51,7 @@ class PublicRegistrationController extends Controller
         $locale = app()->getLocale();
         $submission = $this->normalizer->normalize(
             $request->all(),
-            FieldDefinition::activeInOrder(),
+            FieldDefinition::activeInOrder(publicOnly: true),
             (string) $this->settings->get('default_country'),
             $locale,
         );
@@ -117,7 +117,7 @@ class PublicRegistrationController extends Controller
         UsePublicLocale::apply($request);
         $exhibition = $this->exhibitionOr404($token);
         $old = [];
-        foreach (FieldDefinition::activeInOrder() as $field) {
+        foreach (FieldDefinition::activeInOrder(publicOnly: true) as $field) {
             $value = $request->input($field->key);
             $old[$field->key] = is_string($value) ? $value : '';
         }
@@ -183,7 +183,7 @@ class PublicRegistrationController extends Controller
 
         return response()->view('public.form', [
             ...$this->page($exhibition),
-            'fields' => $this->formView->fields($locale),
+            'fields' => $this->formView->fields($locale, publicOnly: true),
             'old' => $old,
             'fieldErrors' => $errors,
             'submissionToken' => $submissionToken,

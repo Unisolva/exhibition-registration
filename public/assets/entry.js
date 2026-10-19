@@ -65,12 +65,18 @@
     return form.querySelectorAll('.entry-fields input, .entry-fields select');
   }
 
+  // The element an error belongs to: the control, or the fieldset of a radio group (M9 CO-3).
+  function errorTarget(input) {
+    return input.type === 'radio' ? input.closest('fieldset') : input;
+  }
+
   function clearFieldErrors() {
     var inputs = fieldInputs();
     for (var i = 0; i < inputs.length; i++) {
+      var target = errorTarget(inputs[i]);
       inputs[i].removeAttribute('aria-invalid');
-      inputs[i].removeAttribute('aria-describedby');
-      var old = document.getElementById(inputs[i].id + '-error');
+      target.removeAttribute('aria-describedby');
+      var old = document.getElementById(target.id + '-error');
       if (old) { old.parentNode.removeChild(old); }
     }
   }
@@ -82,13 +88,15 @@
       if (!Object.prototype.hasOwnProperty.call(errors, key)) { continue; }
       var input = form.querySelector('.entry-fields [name="' + key + '"]');
       if (!input) { show('err', errors[key]); continue; }
+      var target = errorTarget(input);
       var div = document.createElement('div');
       div.className = 'error';
-      div.id = input.id + '-error';
+      div.id = target.id + '-error';
       div.textContent = errors[key];
-      input.setAttribute('aria-invalid', 'true');
-      input.setAttribute('aria-describedby', div.id);
-      input.parentNode.appendChild(div);
+      var group = input.type === 'radio' ? target.querySelectorAll('input[type=radio]') : [input];
+      for (var g = 0; g < group.length; g++) { group[g].setAttribute('aria-invalid', 'true'); }
+      target.setAttribute('aria-describedby', div.id);
+      (input.type === 'radio' ? target : input.parentNode).appendChild(div);
       if (!first) { first = input; }
     }
     if (first) { first.focus(); }
@@ -97,7 +105,11 @@
   function clearVisitorFields() {
     var inputs = fieldInputs();
     for (var i = 0; i < inputs.length; i++) {
-      if (inputs[i].tagName === 'SELECT') { inputs[i].selectedIndex = 0; } else { inputs[i].value = ''; }
+      var el = inputs[i];
+      if (el.tagName === 'SELECT') { el.selectedIndex = 0; }
+      else if (el.type === 'radio') { el.checked = el.value === ''; } // back to "Not set", or nothing chosen
+      else if (el.type === 'checkbox') { el.checked = false; }
+      else { el.value = ''; }
     }
     clearFieldErrors();
   }
@@ -113,6 +125,7 @@
     for (var i = 0; i < elements.length; i++) {
       var el = elements[i];
       if (!el.name || el.disabled || el.type === 'submit' || el.type === 'button') { continue; }
+      if ((el.type === 'radio' || el.type === 'checkbox') && !el.checked) { continue; }
       data[el.name] = el.value;
     }
     return JSON.stringify(data);

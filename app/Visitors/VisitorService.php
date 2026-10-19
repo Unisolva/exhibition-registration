@@ -47,7 +47,8 @@ class VisitorService
                 throw new VisitorLockedException($cause);
             }
 
-            $fields = FieldDefinition::activeInOrder();
+            // Staff-only fields belong to staff entries only (M9 CO-2).
+            $fields = FieldDefinition::activeInOrder(publicOnly: $visitor->source !== 'staff');
             $submission = $this->normalizer->normalize($input, $fields, (string) $this->settings->get('default_country'), 'en');
             if (! $submission->isValid()) {
                 throw ValidationException::withMessages($submission->errors);
