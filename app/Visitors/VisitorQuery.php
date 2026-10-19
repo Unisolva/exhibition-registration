@@ -4,6 +4,7 @@
 
 namespace App\Visitors;
 
+use App\Models\Exhibition;
 use App\Models\User;
 use App\Models\Visitor;
 use App\Registration\Normalizer;
@@ -50,7 +51,7 @@ class VisitorQuery
     /**
      * The filters the request asks for, reduced to allowed values.
      *
-     * @return array{q: string, exhibition: int|null, occupation: string, region: string, source: string, sync: string, duplicate: bool, sort: string}
+     * @return array{q: string, exhibition: int|null, occupation: string, region: string, source: string, sync: string, duplicate: bool, package: string, sort: string}
      */
     public function filters(Request $request): array
     {
@@ -64,12 +65,14 @@ class VisitorQuery
             'source' => in_array($string('source'), self::SOURCES, true) ? $string('source') : '',
             'sync' => in_array($string('sync'), self::SYNC_STATES, true) ? $string('sync') : '',
             'duplicate' => $string('duplicate') === '1',
+            // M9 CO-10: received or not received (only exhibitions that offer a package count as "not received").
+            'package' => in_array($string('package'), ['received', 'not_received'], true) ? $string('package') : '',
             'sort' => array_key_exists($string('sort'), self::SORTS) ? $string('sort') : 'newest',
         ];
     }
 
     /**
-     * @param  array{q: string, exhibition: int|null, occupation: string, region: string, source: string, sync: string, duplicate: bool, sort: string}  $filters
+     * @param  array{q: string, exhibition: int|null, occupation: string, region: string, source: string, sync: string, duplicate: bool, package: string, sort: string}  $filters
      * @return Builder<Visitor>
      */
     public function build(User $user, array $filters): Builder
@@ -81,7 +84,7 @@ class VisitorQuery
             ->select('visitors.*')
             ->whereNull('visitors.trashed_at')
             ->whereNull('visitors.deleted_at')
-            ->with('exhibition', 'enteredBy');
+            ->with('exhibition', 'enteredBy', 'packageReceivedBy');
 
         // The sync state shown is the one for the active connection, or Live when none is active (§16.6).
         $query->leftJoin('lead_syncs as sync', function ($join) use ($connectionId) {
@@ -106,6 +109,12 @@ class VisitorQuery
         }
         if ($filters['duplicate']) {
             $query->whereNotNull('visitors.possible_duplicate_of');
+        }
+        if ($filters['package'] === 'received') {
+            $query->whereNotNull('visitors.package_received_at');
+        } elseif ($filters['package'] === 'not_received') {
+            $query->whereNull('visitors.package_received_at')
+                ->whereIn('visitors.exhibition_id', Exhibition::query()->select('id')->where('offers_package', true));
         }
         if ($filters['sync'] !== '') {
             $filters['sync'] === 'never'

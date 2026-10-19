@@ -81,6 +81,12 @@
       </select>
     </div>
   </div>
+  @if ($showPackage)
+    <div class="filter-grid">
+      <x-field type="select" name="package" label="Package" :value="$filters['package']" placeholder="All"
+               :options="['received' => 'Received', 'not_received' => 'Not received']" />
+    </div>
+  @endif
   <x-field type="checkbox" name="duplicate" label="Possible duplicates only" :checked="$filters['duplicate']" />
   <div class="actions">
     <button type="submit" class="btn">Apply</button>
@@ -112,7 +118,7 @@
   @endif
   <table class="stack-sm visitors">
     <thead>
-      <tr>@if ($canPush)<th><span class="hint">Select</span></th>@endif<th>Name</th><th>Phone</th><th>Exhibition</th><th>Registered</th>@if ($manager)<th>Source</th>@endif @if ($showErp)<th>ERP</th>@endif<th><span class="hint">Actions</span></th></tr>
+      <tr>@if ($canPush)<th><span class="hint">Select</span></th>@endif<th>Name</th><th>Phone</th><th>Exhibition</th><th>Registered</th>@if ($manager)<th>Source</th>@endif @if ($showErp)<th>ERP</th>@endif @if ($showPackage)<th>Package</th>@endif<th><span class="hint">Actions</span></th></tr>
     </thead>
     <tbody>
     @foreach ($page->items() as $visitor)
@@ -131,6 +137,7 @@
         <td data-label="Registered">{{ $visitor->created_at->timezone($timezone)->format('Y-m-d H:i') }}</td>
         @if ($manager)<td data-label="Source">{{ $visitor->source === 'public' ? 'QR form' : 'Staff: '.($visitor->enteredBy?->name ?? '?') }}</td>@endif
         @if ($showErp)<td data-label="ERP">{{ \App\Visitors\VisitorQuery::syncLabel($visitor->sync_state, $syncKind) }}</td>@endif
+        @if ($showPackage)<td data-label="Package">@if ($visitor->exhibition?->offers_package){{ $visitor->package_received_at ? 'Received' : 'Not received' }}@endif</td>@endif
         <td class="row-actions">
           @if (! $lock)
             @can('update', $visitor)<a href="{{ route('visitors.edit', $visitor) }}">Edit</a>@endcan

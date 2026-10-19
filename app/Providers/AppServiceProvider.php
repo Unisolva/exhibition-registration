@@ -47,6 +47,9 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        // M9 CO-9: 30 package lookups (code and phone together) per user per minute.
+        RateLimiter::for('package-lookups', fn (Request $request) => Limit::perMinute(30)->by('package-lookups:'.$request->user()?->id));
+
         Password::defaults(fn () => Password::min(10)->max(128));
 
         $this->defineRoleGates();
@@ -70,5 +73,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('registrations.export', fn (User $user) => $user->isManager());
         Gate::define('registrations.enter', fn (User $user) => $user->is_active);
         Gate::define('trash.purge', fn (User $user) => $user->isSuperAdmin());
+        // M9 CO-8: the hand-over screens only; it widens no list, page, edit or export.
+        Gate::define('packages.handover', fn (User $user) => $user->is_active);
     }
 }

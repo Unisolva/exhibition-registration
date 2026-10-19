@@ -39,7 +39,8 @@ class ExportController extends Controller
             fwrite($out, "\xEF\xBB\xBF");
 
             $header = ['ID', 'Exhibition', 'Registered at', 'Source', 'Entered by', 'Name', 'Phone (as entered)', 'Phone (E.164)',
-                'Phone valid', 'Email', 'Occupation', 'Governorate code', 'Governorate', 'Possible duplicate of', 'Edited at'];
+                'Phone valid', 'Email', 'Occupation', 'Governorate code', 'Governorate', 'Possible duplicate of', 'Edited at',
+                'Package code', 'Package received at', 'Package received by'];
             foreach ($custom as $field) {
                 $header[] = $field->label_en;
             }
@@ -65,6 +66,9 @@ class ExportController extends Controller
                     $visitor->region_label,
                     $visitor->possible_duplicate_of,
                     $visitor->edited_at?->timezone($timezone)->format('Y-m-d H:i'),
+                    $visitor->package_code,
+                    $visitor->package_received_at?->timezone($timezone)->format('Y-m-d H:i'),
+                    $visitor->packageReceivedBy?->name,
                 ];
                 foreach ($custom as $field) {
                     $value = $visitor->extra[$field->key] ?? null;

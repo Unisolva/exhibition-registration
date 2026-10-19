@@ -75,6 +75,12 @@ class Visitor extends Model
         return $this->belongsTo(Exhibition::class);
     }
 
+    /** Who handed over the welcome package (M9 CO-10). */
+    public function packageReceivedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'package_received_by');
+    }
+
     public function enteredBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'entered_by');

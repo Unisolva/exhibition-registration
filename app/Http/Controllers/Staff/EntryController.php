@@ -12,6 +12,7 @@ use App\Registration\FormView;
 use App\Registration\Normalizer;
 use App\Registration\Submission;
 use App\Support\Settings;
+use App\Visitors\PackageService;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -35,6 +36,7 @@ class EntryController extends Controller
         private readonly Settings $settings,
         private readonly Normalizer $normalizer,
         private readonly FormView $formView,
+        private readonly PackageService $packages,
     ) {}
 
     public function show(Request $request): Response
@@ -89,17 +91,26 @@ class EntryController extends Controller
         }
 
         try {
-            $visitor = DB::transaction(fn () => Visitor::query()->create([
-                ...$submission->visitorAttributes(),
-                'exhibition_id' => $exhibition->id,
-                'source' => 'staff',
-                'entered_by' => $user->id,
-                'submission_token' => $token,
-                'payload_hash' => $submission->hash($exhibition->id),
-                'possible_duplicate_of' => Visitor::earliestDuplicateId($exhibition->id, $submission->phoneKey),
-                'locale' => 'en',
-                'request_id' => app('request_id'),
-            ]));
+            // "Package given" is recorded in the same transaction; it is not part of the replay check (M9 CO-10).
+            $packageGiven = $exhibition->offers_package && $request->boolean('package_given');
+            $visitor = DB::transaction(function () use ($submission, $exhibition, $user, $token, $packageGiven) {
+                $visitor = Visitor::query()->create([
+                    ...$submission->visitorAttributes(),
+                    'exhibition_id' => $exhibition->id,
+                    'source' => 'staff',
+                    'entered_by' => $user->id,
+                    'submission_token' => $token,
+                    'payload_hash' => $submission->hash($exhibition->id),
+                    'possible_duplicate_of' => Visitor::earliestDuplicateId($exhibition->id, $submission->phoneKey),
+                    'locale' => 'en',
+                    'request_id' => app('request_id'),
+                ]);
+                if ($packageGiven) {
+                    $this->packages->markGiven($visitor, $user);
+                }
+
+                return $visitor;
+            });
         } catch (UniqueConstraintViolationException) {
             return $this->replay($request, $exhibition, $token, $submission)
                 ?? $this->answer($request, 409, ['message' => 'This entry could not be saved. Press Save again.'], $exhibition, (string) Str::ulid(), $submission);

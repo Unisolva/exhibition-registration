@@ -99,6 +99,11 @@ foreach (['ar-360', 'en-360', 'ar-1280', 'en-1280'] as $project) {
     ]);
     $queued = Visitor::factory()->at($exhibition)->create(['name' => 'Sample Visitor Queued', 'source' => 'public']);
     Visitor::factory()->at($exhibition)->trashed($admin)->create(['name' => 'Sample Visitor Trashed', 'source' => 'public']);
+    // M9: QR registrations at the package exhibition, one already handed over.
+    $packageVisitor = Visitor::factory()->at($package)->create(['name' => 'Package Visitor One', 'source' => 'public']);
+    $receivedVisitor = Visitor::factory()->at($package)->create(['name' => 'Package Visitor Two', 'source' => 'public',
+        'package_received_at' => now(), 'package_received_by' => $admin->id]);
+
     $batch = app(PushService::class)->createBatch($admin, $testConnection, [$queued->id], (string) Str::ulid())['batch'];
 
     $projects[$project] = [
@@ -118,6 +123,9 @@ foreach (['ar-360', 'en-360', 'ar-1280', 'en-1280'] as $project) {
         'packageExhibitionId' => $package->id,
         'packageExhibitionToken' => $package->public_token,
         'packageExhibitionName' => $package->name,
+        'packageCode' => $packageVisitor->package_code,
+        'receivedPackageCode' => $receivedVisitor->package_code,
+        'packageVisitorPhone' => $packageVisitor->phone_raw,
     ];
 }
 
