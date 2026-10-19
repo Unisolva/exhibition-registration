@@ -110,7 +110,8 @@ class ExhibitionTest extends TestCase
         $this->actingAs($admin)->get("/staff/exhibitions/{$exhibition->id}/poster")
             ->assertOk()
             ->assertSee('QR Fair')
-            ->assertSee('localhost/r/'.$exhibition->public_token)
+            // The address breaks only after "/" (M9 CO-15).
+            ->assertSee('localhost/<wbr>r/<wbr>'.$exhibition->public_token, false)
             ->assertSee('<svg', false);
     }
 

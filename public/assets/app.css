@@ -173,12 +173,17 @@ th { font-size: .875rem; color: var(--muted); }
   background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: var(--radius); padding: .6rem 1rem; margin-block-end: 1rem; }
 /* Room for one notice at all times, so the form never moves when a message appears or clears. */
 .entry-status { min-height: calc(4rem + 2px); }
+/* M9 CO-13: on phones only one line is kept free; a notice pushes the form down once, at the save,
+   and is then hidden in place (entry.js), so nothing moves afterwards. */
+@media (max-width: 40rem) { .entry-status { min-height: 1.5rem; } }
 .saved-count { font-weight: 600; margin-block: .75rem 0; }
 .filters { margin-block-end: 1rem; }
 /* Visitor filters (M8 CO-19): a "Filters" fold on phones; on wider screens always open where the
    browser can style the fold's content, otherwise one click away. */
 .filter-details > summary { cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: .5rem; min-block-size: 44px; }
 .filter-details[open] > summary { margin-block-end: .5rem; }
+.filter-details > summary::after { content: "\25BE"; }
+.filter-details[open] > summary::after { content: "\25B4"; }
 @media (min-width: 40.01rem) {
   @supports selector(::details-content) {
     .filter-details > summary { display: none; }
@@ -239,13 +244,15 @@ input.short { inline-size: 7rem; display: inline-block; }
 .poster-cta { font-size: 2.2rem; font-weight: 800; margin: 0; }
 .poster-cta-second { font-size: 1.5rem; font-weight: 700; margin: 0 0 4mm; }
 .poster-qr { inline-size: 130mm; max-inline-size: 100%; aspect-ratio: 1; margin: 0 auto; }
-.poster-url { font-family: ui-monospace, Consolas, monospace; font-size: 1.7rem; font-weight: 700; margin-block: 4mm; word-break: break-all; }
+.poster-url { font-family: ui-monospace, Consolas, monospace; font-size: clamp(1rem, 5.5vw, 1.7rem); font-weight: 700; margin-block: 4mm;
+  overflow-wrap: normal; word-break: normal; }
 .poster-tools { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; align-items: center; margin-block-start: 6mm; }
 .poster-tools .hint { flex-basis: 100%; margin: 0; }
 @page { size: A4 portrait; margin: 10mm; }
 @media print {
   .no-print { display: none !important; }
   .poster-page { padding: 0; }
+  .poster-url { font-size: 1.7rem; }
 }
 
 .lang-block + .lang-block { margin-block-start: 1.5rem; padding-block-start: 1.5rem; border-block-start: 1px solid var(--line); }

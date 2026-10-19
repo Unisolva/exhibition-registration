@@ -2,17 +2,31 @@
 
 All notable changes. Versions follow semantic versioning; each release is the git tag `v<version>`.
 
-## Unreleased
+## [1.2.0] - 2026-10-19
 
-Release 1.2.0 (in progress).
+Staff-only form fields, radio buttons, and a welcome package handed over at the stand. **Database:** two additive migrations (`field_definitions.audience` and `widget`; `exhibitions.offers_package`, `package_note_ar`, `package_note_en`; `visitors.package_code`, `package_received_at`, `package_received_by`). Existing visitors get package codes from the migration and from the deploy's seeding step.
 
-- A form field can be shown on staff entry only (for example "Visitor type"): it appears in Save & New and on staff entries' edit and view pages, never on the public form, and is never checked there even when required. Its Arabic labels are optional. It counts toward the 15 active custom fields and is exported and sent to the ERP like any custom field.
-- A list field can be shown as radio buttons, on the public form too: an optional group starts with "Not set", a required one has nothing chosen and says "Choose one". Database: one additive migration (`field_definitions.audience`, `field_definitions.widget`).
-- An exhibition can offer a welcome package, with a note in Arabic and English. Every visitor has a 6-character package code. After a QR registration at such an exhibition, the thank-you page shows the note, the code and a QR for the team, and asks the visitor to keep a screenshot; a refresh shows the same code. The thank-you page no longer links back to the form. Database: one additive migration (`exhibitions.offers_package`, `package_note_ar`, `package_note_en`; `visitors.package_code`, `package_received_at`, `package_received_by`); existing visitors get codes from the migration and from the deploy's seeding step.
-- The public form refuses a phone number already registered at the same exhibition and asks the visitor to see the team; a resent form still gets its thank-you page. Two registrations of one number at the same moment queue, so only the first is saved. Staff entry still saves and flags duplicates.
-- Package hand-over, for every role: "Packages" opens a search by package code (or by scanning the QR on the visitor's screen, which opens the page directly) or by the exact phone number at the exhibition. It shows a short card (name, code, exhibition, time, source, a duplicate warning) and "Mark package received". Staff see QR registrations only this way; their visitor list, the visitor page and edit stay limited to their own entries. Lookups are limited to 30 a minute per user and logged without the typed number.
-- "Undo" a hand-over: the person who marked it within 10 minutes, admins and super admins any time. Package status may change on a visitor that is locked after a LIVE push; edit and delete stay refused, and package data is never sent to the ERP.
-- Save & New has "Package given" at exhibitions with a package. The visitor page has a "Welcome package" section with the code, status and log; the visitor list has a Package column and filter; the CSV export has the package code, when and by whom.
+Staff-only fields and radio buttons
+- CO-1: A form field can be shown on staff entry only (for example "Visitor type"); its Arabic labels are optional. A list field can be shown as radio buttons. Staff-only fields count toward the 15 active custom fields; the field list marks them.
+- CO-2: The public form never shows or checks a staff-only field, even a required one. Save & New shows every field; editing shows staff-only fields for staff entries only; the visitor page, the CSV export and the ERP lead include them.
+- CO-3: Radio buttons on the public form and in Save & New: an optional group starts with "Not set", a required one has nothing chosen and says "Choose one"; keyboard arrows move the choice.
+
+Welcome package
+- CO-4: An exhibition can offer a welcome package, with a note in Arabic and English.
+- CO-5: Every visitor has a 6-character package code; hand-overs and undos are logged.
+- CO-6: After a QR registration at such an exhibition, the thank-you page shows the note, the code and a QR for the team, and asks the visitor to keep a screenshot; a refresh shows the same code. The thank-you page no longer links back to the form.
+- CO-7: The public form refuses a phone number already registered at the same exhibition and asks the visitor to see the team; a resent form still gets its thank-you page, and two registrations of one number at the same moment queue so only the first is saved. Staff entry still saves and flags duplicates.
+
+Hand-over
+- CO-8, CO-9: "Packages", for every role: find a package by its code (or by scanning the QR, which opens the page directly) or by the exact phone number at the exhibition, see a short card (name, code, exhibition, time, source, a duplicate warning) and mark the package received. Staff see QR registrations only this way. Lookups are limited to 30 a minute per user and logged without the typed number.
+- CO-10: Save & New has "Package given"; the visitor page has a "Welcome package" section with its log; the visitor list has a Package column and filter; the CSV export has the package code, when and by whom.
+- CO-11: "Undo": the person who marked it within 10 minutes, admins and super admins any time. Package status may change on a visitor locked after a LIVE push; edit and delete stay refused, and package data is never sent to the ERP.
+
+Interface
+- CO-12: The visitor "Filters" fold has an arrow.
+- CO-13: On phones, Save & New keeps one line free above the form instead of a whole message.
+- CO-14: The visitor filters open on wide screens in every browser.
+- CO-15: The poster address breaks only after "/" and is smaller on narrow screens.
 
 ## [1.1.0] - 2026-10-16
 

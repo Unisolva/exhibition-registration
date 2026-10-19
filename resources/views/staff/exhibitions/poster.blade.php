@@ -30,7 +30,8 @@
   <p class="poster-cta" lang="{{ $first }}" dir="{{ $dir($first) }}">{{ __('public.poster_cta', [], $first) }}</p>
   <p class="poster-cta-second" lang="{{ $second }}" dir="{{ $dir($second) }}">{{ __('public.poster_cta', [], $second) }}</p>
   <div class="poster-qr">{!! $qr !!}</div>
-  <p class="poster-url">{{ preg_replace('#^https?://#', '', $exhibition->publicUrl()) }}</p>
+  {{-- Breaks only after "/" (M9 CO-15). --}}
+  <p class="poster-url">{!! implode('/<wbr>', array_map('e', explode('/', preg_replace('#^https?://#', '', $exhibition->publicUrl())))) !!}</p>
   <div class="no-print poster-tools">
     <button type="button" class="btn" data-print>Print</button>
     <a href="{{ route('exhibitions.show', $exhibition) }}">Back to the exhibition</a>
