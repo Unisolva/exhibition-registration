@@ -4,6 +4,7 @@
 
 namespace Database\Seeders;
 
+use App\Support\PackageCode;
 use App\Support\Settings;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +21,8 @@ class ProductSeeder extends Seeder
         $this->seedSettings($settings);
         $this->seedRegions();
         $this->seedSystemFields($settings);
+        // Visitors inserted by older code (for example after a rollback) get a package code (M9 CO-5).
+        PackageCode::backfill();
     }
 
     private function seedSettings(Settings $settings): void

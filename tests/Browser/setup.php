@@ -81,6 +81,12 @@ foreach (['ar-360', 'en-360', 'ar-1280', 'en-1280'] as $project) {
     $staff = new User(['name' => "Browser Staff {$project}", 'email' => "browser-staff-{$project}@example.test", 'role' => Role::Staff, 'is_active' => true]);
     $staff->forceFill(['password' => $password, 'must_change_password' => false])->save();
 
+    // M9: an exhibition that offers a welcome package.
+    $package = new Exhibition(['name' => "Package Fair {$project}", 'starts_on' => now()->toDateString(), 'offers_package' => true,
+        'package_note_ar' => 'هديتك في انتظارك في جناحنا.', 'package_note_en' => 'Your welcome gift is waiting at our stand.']);
+    $package->created_by = $owner->id;
+    $package->save();
+
     $adminPassword = OneTimePassword::generate(20);
     $admin = new User(['name' => "Browser Admin {$project}", 'email' => "browser-admin-{$project}@example.test", 'role' => Role::SuperAdmin, 'is_active' => true]);
     $admin->forceFill(['password' => $adminPassword, 'must_change_password' => false])->save();
@@ -109,6 +115,9 @@ foreach (['ar-360', 'en-360', 'ar-1280', 'en-1280'] as $project) {
         'lockedVisitorId' => $queued->id,
         'batchId' => $batch->id,
         'fieldId' => FieldDefinition::query()->where('key', 'occupation')->value('id'),
+        'packageExhibitionId' => $package->id,
+        'packageExhibitionToken' => $package->public_token,
+        'packageExhibitionName' => $package->name,
     ];
 }
 

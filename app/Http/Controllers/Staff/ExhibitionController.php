@@ -120,7 +120,7 @@ class ExhibitionController extends Controller
     }
 
     /**
-     * @return array{name: string, starts_on: string, ends_on: string|null, default_locale: string}
+     * @return array{name: string, starts_on: string, ends_on: string|null, default_locale: string, offers_package: bool, package_note_ar: string|null, package_note_en: string|null}
      */
     private function validated(Request $request): array
     {
@@ -129,13 +129,20 @@ class ExhibitionController extends Controller
             'starts_on' => ['required', 'date_format:Y-m-d'],
             'ends_on' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:starts_on'],
             'default_locale' => ['required', Rule::in(Exhibition::LOCALES)],
+            'package_note_ar' => ['nullable', 'string', 'max:'.Exhibition::NOTE_MAX],
+            'package_note_en' => ['nullable', 'string', 'max:'.Exhibition::NOTE_MAX],
         ], ['default_locale.*' => 'Choose Arabic or English.']);
+        // Plain text; line breaks are kept and shown as breaks (M9 CO-4).
+        $note = fn (?string $text) => ($text = trim(str_replace("\r\n", "\n", (string) $text))) === '' ? null : $text;
 
         return [
             'name' => trim($data['name']),
             'starts_on' => $data['starts_on'],
             'ends_on' => $data['ends_on'] ?? null,
             'default_locale' => $data['default_locale'],
+            'offers_package' => $request->boolean('offers_package'),
+            'package_note_ar' => $note($data['package_note_ar'] ?? null),
+            'package_note_en' => $note($data['package_note_en'] ?? null),
         ];
     }
 }

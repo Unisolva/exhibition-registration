@@ -34,6 +34,11 @@ class ExhibitionFactory extends Factory
         return $this->state(fn () => ['is_open' => false]);
     }
 
+    public function withPackage(string $noteEn = 'Your welcome gift is waiting at our stand.', string $noteAr = 'هديتك في انتظارك في جناحنا.'): static
+    {
+        return $this->state(fn () => ['offers_package' => true, 'package_note_en' => $noteEn, 'package_note_ar' => $noteAr]);
+    }
+
     public function english(): static
     {
         return $this->state(fn () => ['default_locale' => 'en']);
