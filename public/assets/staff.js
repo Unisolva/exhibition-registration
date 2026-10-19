@@ -5,6 +5,7 @@
  * - Password fields get a "Show" button (M8 L13).
  * - The field form hides "Choices" while the type is "Short text" (M8 L3).
  * - The exhibition form shows the package notes while the package box is ticked (M9 CO-4).
+ * - The visitor filters open on wide screens (M9 CO-14).
  * Nothing is written to browser storage.
  */
 (function () {
@@ -46,6 +47,12 @@
     var syncNotes = function () { notes.hidden = !offers.checked; };
     offers.addEventListener('change', syncNotes);
     syncNotes();
+  }
+
+  // Visitor filters: open on wide screens in browsers that cannot style the fold's content (M9 CO-14).
+  var filters = document.querySelector('.filter-details');
+  if (filters && window.matchMedia && window.matchMedia('(min-width: 40rem)').matches) {
+    filters.open = true;
   }
 
   var type = document.querySelector('form select[name=type]');

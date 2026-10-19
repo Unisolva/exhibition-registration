@@ -289,3 +289,11 @@ test('a radio error is tied to the group and focuses its first radio (M9 CO-3)',
   await expect(group.locator('#f-visitor_type-0')).toBeFocused();
   await expect(group.locator('#f-visitor_type-0')).toHaveAttribute('aria-invalid', 'true');
 });
+
+test('on a phone only one line is kept free above the form (M9 CO-13)', async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.endsWith('-360'), 'phone layout');
+  await openEntry(page, fixture(testInfo));
+  const gap = await page.evaluate(() => document.querySelector('form[data-entry]').getBoundingClientRect().top
+    - document.querySelector('#entry-status').getBoundingClientRect().top);
+  expect(gap).toBeLessThanOrEqual(32);
+});

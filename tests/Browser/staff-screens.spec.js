@@ -213,3 +213,24 @@ test('hand-over on a phone: a staff member marks a package, then may undo it (M9
   await page.getByRole('button', { name: 'Undo' }).click();
   await expect(page.getByRole('button', { name: 'Mark package received' })).toBeVisible();
 });
+
+test('M8 leftovers: Filters arrow, filters open on wide screens, poster URL breaks after "/" (M9 CO-12, CO-14, CO-15)', async ({ browser }, testInfo) => {
+  test.skip(isArabic(testInfo), 'staff screens are English only');
+  const f = fixture(testInfo);
+  const page = await adminPage(browser, testInfo);
+  await page.goto('/staff/visitors');
+  const details = page.locator('.filter-details');
+  if (testInfo.project.name.endsWith('-360')) {
+    expect(await page.locator('.filter-details > summary').evaluate((s) => getComputedStyle(s, '::after').content)).toBe('"▾"');
+    expect(await details.evaluate((d) => d.open)).toBe(false);
+  } else {
+    expect(await details.evaluate((d) => d.open)).toBe(true);
+    await expect(page.locator('#q')).toBeVisible();
+  }
+
+  await page.goto(`/staff/exhibitions/${f.exhibitionId}/poster`);
+  expect(await page.locator('.poster-url').evaluate((p) => p.innerHTML)).toMatch(/^[^/]+\/<wbr>r\/<wbr>[0-9A-Z]{10}$/);
+  const { scroll, width } = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, width: window.innerWidth }));
+  expect(scroll).toBeLessThanOrEqual(width);
+  await page.context().close();
+});
