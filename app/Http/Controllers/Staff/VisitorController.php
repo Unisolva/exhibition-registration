@@ -60,8 +60,10 @@ class VisitorController extends Controller
             'total' => $query->toBase()->getCountForPagination(),
             'activeFilters' => count(array_filter([
                 $filters['q'] !== '', $filters['exhibition'] !== null, $filters['occupation'] !== '', $filters['region'] !== '',
-                $filters['source'] !== '', $erp && $filters['sync'] !== '', $filters['duplicate'],
+                $filters['source'] !== '', $erp && $filters['sync'] !== '', $filters['duplicate'], $filters['package'] !== '',
             ])),
+            // M9 CO-10: the Package column and filter, while any exhibition offers a package.
+            'showPackage' => Exhibition::query()->where('offers_package', true)->exists(),
         ]);
     }
 
@@ -76,8 +78,17 @@ class VisitorController extends Controller
             ->orderByDesc('visitor_edits.at')->orderByDesc('visitor_edits.id')
             ->get(['visitor_edits.at', 'visitor_edits.changes', 'users.name as user_name']);
 
+        // M9 CO-10: the package log, from the audit trail.
+        $packageEvents = DB::table('audit_events')
+            ->leftJoin('users', 'users.id', '=', 'audit_events.user_id')
+            ->where('target_type', 'visitors')->where('target_id', $visitor->id)
+            ->whereIn('action', ['package.given', 'package.undone'])
+            ->orderByDesc('audit_events.at')->orderByDesc('audit_events.id')
+            ->get(['audit_events.at', 'audit_events.action', 'users.name as user_name']);
+
         return view('staff.visitors.show', [
-            'visitor' => $visitor->load('exhibition', 'enteredBy'),
+            'visitor' => $visitor->load('exhibition', 'enteredBy', 'packageReceivedBy'),
+            'packageEvents' => $packageEvents,
             'fields' => FieldDefinition::query()->orderBy('sort_order')->orderBy('id')->get(),
             'edits' => $edits,
             'lock' => VisitorLock::causeFor($visitor->id),

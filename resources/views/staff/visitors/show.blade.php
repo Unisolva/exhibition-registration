@@ -50,6 +50,40 @@
   <a href="{{ route('visitors.index') }}">Back to the list</a>
 </div>
 
+@if ($visitor->exhibition?->offers_package || $visitor->package_received_at)
+  {{-- M9 CO-10, CO-11: marking and undoing work on a locked visitor too. --}}
+  @inject('packageService', 'App\Visitors\PackageService')
+  <h2>Welcome package</h2>
+  <div class="card">
+    <dl class="details">
+      <dt>Package code</dt><dd class="code-text" dir="ltr">{{ $visitor->package_code }}</dd>
+      <dt>Status</dt>
+      <dd>
+        @if ($visitor->package_received_at)
+          Received {{ $visitor->package_received_at->timezone($timezone)->format('Y-m-d H:i') }} by {{ $visitor->packageReceivedBy?->name ?? '?' }}
+        @else
+          Not received
+        @endif
+      </dd>
+    </dl>
+    <div class="actions spaced">
+      @if (! $visitor->package_received_at)
+        <form method="post" action="{{ route('packages.give', $visitor->package_code) }}" data-once>@csrf<button type="submit" class="btn">Mark package received</button></form>
+      @elseif ($packageService->canUndo($visitor, auth()->user()))
+        <form method="post" action="{{ route('packages.undo', $visitor->package_code) }}" data-once>@csrf<button type="submit" class="btn btn-secondary">Undo</button></form>
+      @endif
+    </div>
+    @if ($packageEvents->isNotEmpty())
+      <h3>Package log</h3>
+      <ul class="package-log">
+        @foreach ($packageEvents as $event)
+          <li>{{ \Illuminate\Support\Carbon::parse($event->at, 'UTC')->timezone($timezone)->format('Y-m-d H:i') }} · {{ $event->action === 'package.given' ? 'Marked received' : 'Undone' }} by {{ $event->user_name ?? '?' }}</li>
+        @endforeach
+      </ul>
+    @endif
+  </div>
+@endif
+
 <h2>Edit log</h2>
 @if ($edits->isEmpty())
   <p>Not edited since it was registered.</p>
@@ -74,3 +108,7 @@
   </table>
 @endif
 @endsection
+
+@push('scripts')
+<script src="{{ \App\Support\Asset::url('app.js') }}" defer></script>
+@endpush

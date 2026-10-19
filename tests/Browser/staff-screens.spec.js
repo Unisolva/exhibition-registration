@@ -40,6 +40,14 @@ function adminScreens(f) {
     ['erp-activate-confirm', '/staff/erp/activate?kind=live'],
     ['exhibition-close-confirm', `/staff/exhibitions/${f.exhibitionId}/close`],
     ['user-reset-confirm', `/staff/users/${f.staffId}/reset-password`],
+    // M9: hand-over screens, and Save & New at an exhibition with a package.
+    ['packages-choose', '/staff/packages?change=1'],
+    ['entry-package', `/staff/entry?exhibition=${f.packageExhibitionId}`],
+    ['packages', '/staff/packages'],
+    ['package-found', `/staff/packages/${f.packageCode}`],
+    ['package-received', `/staff/packages/${f.receivedPackageCode}`],
+    ['package-phone', `/staff/packages/phone?phone=${encodeURIComponent(f.packageVisitorPhone)}`],
+    ['package-not-found', '/staff/packages/ZZZZZZ'],
   ];
 }
 
@@ -106,7 +114,8 @@ test('on a phone the TEST banner and header end within 140 px; the menu holds th
   testInfo.annotations.push({ type: 'header bottom at 360x740 (px)', description: String(Math.round(bottom)) });
   expect(bottom).toBeLessThanOrEqual(140);
 
-  await expect(page.locator('.nav-narrow > a')).toHaveText('Save & New');
+  // M9 §3a.7: Packages sits beside Save & New (a manager always has it).
+  await expect(page.locator('.nav-narrow > a')).toHaveText(['Save & New', 'Packages']);
   await expect(page.locator('.menu-links a').first()).toBeHidden();
   await page.locator('.menu summary').click();
   await expect(page.locator('.menu-links')).toContainText('Exhibitions');
@@ -186,4 +195,21 @@ test('password fields have a Show button; the field form hides Choices for short
   await page.locator('#type').selectOption('select');
   await expect(page.locator('[data-choices]')).toBeVisible();
   await page.context().close();
+});
+
+test('hand-over on a phone: a staff member marks a package, then may undo it (M9 CO-9, CO-11)', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'en-360', 'phone layout');
+  const f = fixture(testInfo);
+  await page.goto(`/staff/packages?exhibition=${f.packageExhibitionId}`);
+  await expect(page.locator('.nav-narrow > a')).toHaveText(['Save & New', 'Packages']);
+  const bottom = await page.locator('header.topbar').evaluate((el) => el.getBoundingClientRect().bottom);
+  expect(bottom).toBeLessThanOrEqual(140);
+
+  await page.locator('#code').fill(f.packageCode.toLowerCase());
+  await page.getByRole('button', { name: 'Find' }).click();
+  await expect(page.locator('.package-card h2')).toHaveText('Package Visitor One');
+  await page.getByRole('button', { name: 'Mark package received' }).click();
+  await expect(page.locator('.package-received')).toContainText('Package already received');
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(page.getByRole('button', { name: 'Mark package received' })).toBeVisible();
 });

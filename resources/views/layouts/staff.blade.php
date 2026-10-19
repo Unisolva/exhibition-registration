@@ -17,8 +17,13 @@
     // The forced password change page shows no links that would only bounce back to it (M8 CO-13).
     $showNav = ! $user->must_change_password;
     // [label, url, route patterns that mark it as the current page]
+    // M9 CO-9: "Packages" for managers always, for staff when the exhibition they work at offers one.
+    $sessionExhibitionId = session(\App\Http\Controllers\Staff\EntryController::SESSION_KEY);
+    $showPackages = $user->isManager()
+        || ($sessionExhibitionId && \App\Models\Exhibition::query()->whereKey($sessionExhibitionId)->value('offers_package'));
     $links = array_values(array_filter([
         ['Save & New', route('staff.entry'), ['staff.entry']],
+        $showPackages ? ['Packages', route('packages.index'), ['packages.*']] : null,
         [$user->isManager() ? 'Visitors' : 'My entries', route('visitors.index'), ['visitors.*']],
         $user->can('exhibitions.manage') ? ['Exhibitions', route('exhibitions.index'), ['exhibitions.*']] : null,
         app(\App\Support\Settings::class)->get('erp_mode') === 'odoo' && $user->can('registrations.push') ? ['Batches', route('batches.index'), ['batches.*']] : null,
@@ -44,11 +49,15 @@
       </nav>
       {{-- Under 40rem: Save & New, and the rest in a menu (no script needed). --}}
       <nav class="nav-narrow" aria-label="Main">
-        <a href="{{ $links[0][1] }}" @if ($current($links[0][2])) aria-current="page" @endif>{{ $links[0][0] }}</a>
+        {{-- Save & New, and Packages beside it when shown (M9 §3a.7). --}}
+        @php($beside = $showPackages ? 2 : 1)
+        @foreach (array_slice($links, 0, $beside) as [$label, $url, $patterns])
+          <a href="{{ $url }}" @if ($current($patterns)) aria-current="page" @endif>{{ $label }}</a>
+        @endforeach
         <details class="menu">
           <summary>Menu</summary>
           <div class="menu-links">
-            @foreach (array_slice($links, 1) as [$label, $url, $patterns])
+            @foreach (array_slice($links, $beside) as [$label, $url, $patterns])
               <a href="{{ $url }}" @if ($current($patterns)) aria-current="page" @endif>{{ $label }}</a>
             @endforeach
             <form method="post" action="{{ route('logout') }}">

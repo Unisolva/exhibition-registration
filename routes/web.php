@@ -16,6 +16,7 @@ use App\Http\Controllers\Staff\ExportController;
 use App\Http\Controllers\Staff\FieldController;
 use App\Http\Controllers\Staff\HomeController;
 use App\Http\Controllers\Staff\ItemController;
+use App\Http\Controllers\Staff\PackageController;
 use App\Http\Controllers\Staff\SettingsController;
 use App\Http\Controllers\Staff\SystemController;
 use App\Http\Controllers\Staff\TrashController;
@@ -62,6 +63,16 @@ Route::prefix('staff')->middleware('staff.locale')->group(function () {
             // Save & New (every role).
             Route::get('entry', [EntryController::class, 'show'])->name('staff.entry')->can('registrations.enter');
             Route::post('registrations', [EntryController::class, 'store'])->name('staff.registrations.store')->can('registrations.enter');
+
+            // Package hand-over (M9 CO-8, CO-9): every role, by code or exact phone only.
+            Route::middleware('can:packages.handover')->group(function () {
+                Route::get('packages', [PackageController::class, 'index'])->name('packages.index');
+                Route::get('packages/find', [PackageController::class, 'find'])->name('packages.find');
+                Route::get('packages/phone', [PackageController::class, 'phone'])->name('packages.phone')->middleware('throttle:package-lookups');
+                Route::get('packages/{code}', [PackageController::class, 'show'])->name('packages.show')->middleware('throttle:package-lookups');
+                Route::post('packages/{code}/give', [PackageController::class, 'give'])->name('packages.give');
+                Route::post('packages/{code}/undo', [PackageController::class, 'undo'])->name('packages.undo');
+            });
 
             // Visitors: staff see their own entries; the policy decides per record.
             Route::get('visitors', [VisitorController::class, 'index'])->name('visitors.index');

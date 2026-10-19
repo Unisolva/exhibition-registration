@@ -26,6 +26,10 @@
 
     <div class="entry-fields">
       @include('partials.registration-fields')
+      {{-- M9 CO-10: resets with the other fields after each save. --}}
+      @if ($exhibition->offers_package)
+        <x-field type="checkbox" name="package_given" label="Package given" />
+      @endif
     </div>
 
     <div class="actions">

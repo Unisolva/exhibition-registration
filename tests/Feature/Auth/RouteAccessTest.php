@@ -65,6 +65,13 @@ class RouteAccessTest extends TestCase
         'GET staff/settings/branding' => [200, 403, 403],
         'PUT staff/settings/branding' => [302, 403, 403],
         'GET staff/entry' => [200, 200, 200],
+        // Package hand-over (M9 CO-8): every role; {code} is a QR registration's code.
+        'GET staff/packages' => [200, 200, 200],
+        'GET staff/packages/find' => [302, 302, 302],
+        'GET staff/packages/phone' => [302, 302, 302],
+        'GET staff/packages/{code}' => [200, 200, 200],
+        'POST staff/packages/{code}/give' => [302, 302, 302],
+        'POST staff/packages/{code}/undo' => [302, 302, 302],
         'POST staff/registrations' => [302, 302, 302],
         'GET staff/session' => [200, 200, 200],
         'GET staff/visitors' => [200, 200, 200],
@@ -155,7 +162,7 @@ class RouteAccessTest extends TestCase
                     'admin' => User::factory()->admin()->create(),
                 ];
 
-                $exhibition = Exhibition::factory()->create();
+                $exhibition = Exhibition::factory()->withPackage()->create();
                 $visitor = Visitor::factory()->at($exhibition)->create();
                 $trashed = Visitor::factory()->at($exhibition)->trashed()->create();
                 $field = FieldDefinition::query()->where('key', 'occupation')->first();
@@ -169,9 +176,9 @@ class RouteAccessTest extends TestCase
                 [$method, $uri] = explode(' ', $key, 2);
                 $url = '/'.preg_replace_callback('/\{(staff|super|admin)\}/', fn ($m) => (string) $targets[$m[1]]->id, $uri);
                 $url = str_replace(
-                    ['{exhibition}', '{visitor}', '{trashed}', '{field}', '{batch}', '{item}', '{review_item}', '{kind}'],
+                    ['{exhibition}', '{visitor}', '{trashed}', '{field}', '{batch}', '{item}', '{review_item}', '{kind}', '{code}'],
                     [(string) $exhibition->id, (string) $visitor->id, (string) $trashed->id, (string) $field->id,
-                        (string) $batch->id, (string) $failedItem->id, (string) $reviewItem->id, 'live'],
+                        (string) $batch->id, (string) $failedItem->id, (string) $reviewItem->id, 'live', $visitor->package_code],
                     $url,
                 );
                 $data = $this->payloadFor($key, $targets, $exhibition, $visitor);
