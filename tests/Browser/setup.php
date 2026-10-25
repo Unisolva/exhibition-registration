@@ -60,11 +60,12 @@ foreach (['test', 'live'] as $kind) {
 }
 $testConnection = ErpConnection::active();
 
-// M9: a staff-only radio field (optional, so the Save & New tests need not choose).
+// M9: a staff-only radio field (optional, so the Save & New tests need not choose);
+// M10.1: "Regular" is selected by default, as the live "Visitor type" is set up.
 FieldDefinition::query()->create([
     'key' => 'visitor_type', 'is_system' => false, 'type' => 'select', 'label_en' => 'Visitor type', 'label_ar' => '',
     'options' => [['value' => 'vip', 'label_en' => 'VIP', 'label_ar' => '', 'is_active' => true],
-        ['value' => 'regular', 'label_en' => 'Regular', 'label_ar' => '', 'is_active' => true]],
+        ['value' => 'regular', 'label_en' => 'Regular', 'label_ar' => '', 'is_active' => true, 'default' => true]],
     'is_required' => false, 'is_active' => true, 'sort_order' => 60, 'send_to_erp' => true, 'audience' => 'staff', 'widget' => 'radio',
 ]);
 

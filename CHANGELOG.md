@@ -2,6 +2,12 @@
 
 All notable changes. Versions follow semantic versioning; each release is the git tag `v<version>`.
 
+## [1.3.1] - 2026-10-25
+
+A default choice for lists. **Database:** no migration. A rollback to 1.3.0 needs no restore.
+
+- CO-1: A list choice can be marked "Selected by default" (one per list; a deactivated choice is never the default). New entries on the public form and in Save & New start with it, for radio buttons and dropdowns; an optional list still offers "Not set". After each Save & New save the list comes back on its default. After a failed submit the visitor's own choice is kept, and the edit form shows the stored value (the default only when nothing is stored). Existing visitors are not changed.
+
 ## [1.3.0] - 2026-10-25
 
 Staff screens on the Tabler UI kit, "Other" with details, valid phone numbers only, no paper forms, and moving several visitors to the trash at once. **Database:** no migration. A rollback to 1.2.0 needs no restore. The public pages and the A4 poster are unchanged.

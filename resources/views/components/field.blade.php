@@ -25,6 +25,7 @@
     'bag' => 'default',
     'required' => false,
     'mark' => false,
+    'default' => null,
 ])
 @php
     $tabler = ! request()->routeIs('public.*');
@@ -51,7 +52,7 @@
     @if ($hint)<div class="hint" id="{{ $id }}-hint">{{ $hint }}</div>@endif
     @foreach ($choices as $optionValue => $optionLabel)
       <label class="radio"><input type="radio"{!! $tabler ? ' class="form-check-input"' : '' !!} name="{{ $name }}" value="{{ $optionValue }}" id="{{ $id }}-{{ $loop->index }}"
-        @checked((string) $value === (string) $optionValue) @if ($required) required @endif @if ($message) aria-invalid="true" @endif
+        @checked((string) $value === (string) $optionValue){!! $default !== null && (string) $default === (string) $optionValue ? ' data-default' : '' !!} @if ($required) required @endif @if ($message) aria-invalid="true" @endif
         @if ($loop->first && $attributes->get('autofocus')) autofocus @endif> {{ $optionLabel }}</label>
     @endforeach
     @if ($message)<div class="error" id="{{ $id }}-error">{{ $message }}</div>@endif
@@ -70,7 +71,7 @@
       <select {{ $control }}>
         @if ($placeholder !== null)<option value="">{{ $placeholder }}</option>@endif
         @foreach ($options as $optionValue => $optionLabel)
-          <option value="{{ $optionValue }}" @selected((string) $value === (string) $optionValue)>{{ $optionLabel }}</option>
+          <option value="{{ $optionValue }}" @selected((string) $value === (string) $optionValue){!! $default !== null && (string) $default === (string) $optionValue ? ' data-default' : '' !!}>{{ $optionLabel }}</option>
         @endforeach
       </select>
     @elseif ($type === 'textarea')

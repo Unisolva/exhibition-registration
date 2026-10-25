@@ -107,8 +107,15 @@
     var inputs = fieldInputs();
     for (var i = 0; i < inputs.length; i++) {
       var el = inputs[i];
-      if (el.tagName === 'SELECT') { el.selectedIndex = 0; }
-      else if (el.type === 'radio') { el.checked = el.value === ''; } // back to "Not set", or nothing chosen
+      // M10.1 CO-1: lists go back to their default choice, else to "Not set" or nothing chosen.
+      if (el.tagName === 'SELECT') {
+        var preset = el.querySelector('option[data-default]');
+        if (preset) { preset.selected = true; } else { el.selectedIndex = 0; }
+      }
+      else if (el.type === 'radio') {
+        var hasDefault = form.querySelector('input[type=radio][name="' + el.name + '"][data-default]');
+        el.checked = hasDefault ? el.hasAttribute('data-default') : el.value === '';
+      }
       else if (el.type === 'checkbox') { el.checked = false; }
       else { el.value = ''; }
     }

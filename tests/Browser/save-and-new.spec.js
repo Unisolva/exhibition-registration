@@ -250,18 +250,20 @@ test('on a phone the message after a save is not hidden under the sticky exhibit
   expect(gap).toBeGreaterThanOrEqual(0);
 });
 
-test('a radio group: arrow keys move the choice, rows are 44 px, it resets to "Not set" after a save (M9 CO-3)', async ({ page }, testInfo) => {
+test('a radio group: arrow keys move the choice, rows are 44 px, it comes back on its default after a save (M9 CO-3, M10.1 CO-1)', async ({ page }, testInfo) => {
   await openEntry(page, fixture(testInfo));
   const group = page.locator('fieldset#f-visitor_type');
   await expect(group.locator('legend')).toHaveText('Visitor type');
   await expect(group.locator('input[type=radio]')).toHaveCount(3);
-  await expect(group.locator('#f-visitor_type-0')).toBeChecked();
+  // "Not set" is offered, "Regular" (the default) is selected.
+  await expect(group.locator('#f-visitor_type-0')).not.toBeChecked();
+  await expect(group.locator('#f-visitor_type-2')).toBeChecked();
   for (const row of await group.locator('label.radio').all()) {
     expect((await row.boundingBox()).height).toBeGreaterThanOrEqual(44);
   }
 
-  await group.locator('#f-visitor_type-0').focus();
-  await page.keyboard.press('ArrowDown');
+  await group.locator('#f-visitor_type-2').focus();
+  await page.keyboard.press('ArrowUp');
   await expect(group.locator('#f-visitor_type-1')).toBeChecked();
   await expect(group.locator('#f-visitor_type-1')).toBeFocused();
 
@@ -271,7 +273,9 @@ test('a radio group: arrow keys move the choice, rows are 44 px, it resets to "N
   await page.locator('[data-save]').click();
   expect(JSON.parse((await request).postData()).visitor_type).toBe('vip');
   await expectSaved(page);
-  await expect(group.locator('#f-visitor_type-0')).toBeChecked();
+  // M10.1: back on the default, ready for the next visitor, with the name field focused.
+  await expect(group.locator('#f-visitor_type-2')).toBeChecked();
+  await expect(page.locator('#f-name')).toBeFocused();
 });
 
 test('a radio error is tied to the group and focuses its first radio (M9 CO-3)', async ({ page }, testInfo) => {

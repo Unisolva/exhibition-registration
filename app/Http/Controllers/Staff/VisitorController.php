@@ -112,6 +112,8 @@ class VisitorController extends Controller
             // QR registrations never get a staff-only value (M9 CO-2).
             'fields' => $formView->fields('en', publicOnly: $visitor->source !== 'staff'),
             'old' => old() ?: $this->currentValues($visitor),
+            // M10.1 CO-1: a list with nothing stored shows its default choice.
+            'defaultsForEmpty' => ! old(),
             'fieldErrors' => $bag ? array_map(fn (array $messages) => $messages[0], $bag->messages()) : [],
             'lock' => VisitorLock::causeFor($visitor->id),
         ]);
