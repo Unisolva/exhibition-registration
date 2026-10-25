@@ -229,7 +229,7 @@ class PackageHandoverTest extends TestCase
             ->assertSee('Received')->assertSee('by Admin Person')->assertSee('Marked received by Admin Person')->assertSee('>Undo</button>', false);
 
         $this->actingAs($admin)->get('/staff/visitors')->assertSee('<th>Package</th>', false)
-            ->assertSee('<td data-label="Package">Received</td>', false)->assertSee('<td data-label="Package">Not received</td>', false);
+            ->assertSee('<span class="badge bg-success-lt">Received</span>', false)->assertSee('<span class="badge bg-secondary-lt">Not received</span>', false);
         $this->actingAs($admin)->get('/staff/visitors?package=received')->assertSee('Given Visitor')->assertDontSee('Waiting Visitor');
         $this->actingAs($admin)->get('/staff/visitors?package=not_received')->assertSee('Waiting Visitor')->assertDontSee('Given Visitor');
 
