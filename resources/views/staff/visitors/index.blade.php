@@ -6,20 +6,20 @@
 @section('title', $manager ? 'Visitors' : 'My entries')
 
 @section('content')
-<h1>{{ $manager ? 'Visitors' : 'My entries' }}</h1>
+<div class="page-header"><h1 class="page-title">{{ $manager ? 'Visitors' : 'My entries' }}</h1></div>
 
-<form method="get" action="{{ route('visitors.index') }}" class="card filters" role="search">
+<form method="get" action="{{ route('visitors.index') }}" class="card card-body filters" role="search">
   {{-- On phones the filters fold away; they open by themselves when one is set (M8 CO-19). --}}
   <details class="filter-details" @if ($activeFilters > 0) open @endif>
   <summary>Filters @if ($activeFilters > 0)<span class="hint">({{ $activeFilters }} active)</span>@endif</summary>
   <div class="filter-grid">
     <div class="field">
       <label for="q">Name or phone</label>
-      <input id="q" name="q" type="text" value="{{ $filters['q'] }}" maxlength="100">
+      <input class="form-control" id="q" name="q" type="text" value="{{ $filters['q'] }}" maxlength="100">
     </div>
     <div class="field">
       <label for="exhibition">Exhibition</label>
-      <select id="exhibition" name="exhibition">
+      <select class="form-select" id="exhibition" name="exhibition">
         <option value="">All</option>
         @foreach ($exhibitions as $exhibition)
           <option value="{{ $exhibition->id }}" @selected($filters['exhibition'] === $exhibition->id)>{{ $exhibition->name }}</option>
@@ -30,9 +30,9 @@
       <div class="field">
         <label for="occupation">{{ $occupation->label_en }}</label>
         @if ($occupation->isFreeTextSelect())
-          <input id="occupation" name="occupation" type="text" value="{{ $filters['occupation'] }}" maxlength="100">
+          <input class="form-control" id="occupation" name="occupation" type="text" value="{{ $filters['occupation'] }}" maxlength="100">
         @else
-          <select id="occupation" name="occupation">
+          <select class="form-select" id="occupation" name="occupation">
             <option value="">All</option>
             @foreach ($occupation->options ?? [] as $option)
               <option value="{{ $option['value'] }}" @selected($filters['occupation'] === $option['value'])>{{ $option['label_en'] }}</option>
@@ -43,7 +43,7 @@
     @endif
     <div class="field">
       <label for="region">Governorate</label>
-      <select id="region" name="region">
+      <select class="form-select" id="region" name="region">
         <option value="">All</option>
         @foreach ($regions as $region)
           <option value="{{ $region->code }}" @selected($filters['region'] === $region->code)>{{ $region->name_en }}</option>
@@ -53,7 +53,7 @@
     @if ($manager)
       <div class="field">
         <label for="source">Source</label>
-        <select id="source" name="source">
+        <select class="form-select" id="source" name="source">
           <option value="">All</option>
           <option value="public" @selected($filters['source'] === 'public')>QR form</option>
           <option value="staff" @selected($filters['source'] === 'staff')>Staff entry</option>
@@ -63,7 +63,7 @@
     @if ($showErp)
       <div class="field">
         <label for="sync">ERP state</label>
-        <select id="sync" name="sync">
+        <select class="form-select" id="sync" name="sync">
           <option value="">All</option>
           @foreach (\App\Visitors\VisitorQuery::SYNC_STATES as $state)
             <option value="{{ $state }}" @selected($filters['sync'] === $state)>{{ \App\Visitors\VisitorQuery::syncLabel($state, $syncKind) }}</option>
@@ -73,7 +73,7 @@
     @endif
     <div class="field">
       <label for="sort">Sort</label>
-      <select id="sort" name="sort">
+      <select class="form-select" id="sort" name="sort">
         <option value="newest" @selected($filters['sort'] === 'newest')>Newest first</option>
         <option value="oldest" @selected($filters['sort'] === 'oldest')>Oldest first</option>
         <option value="name" @selected($filters['sort'] === 'name')>Name A–Z</option>
@@ -89,10 +89,10 @@
   @endif
   <x-field type="checkbox" name="duplicate" label="Possible duplicates only" :checked="$filters['duplicate']" />
   <div class="actions">
-    <button type="submit" class="btn">Apply</button>
+    <button type="submit" class="btn btn-primary">Apply</button>
     <a href="{{ route('visitors.index') }}">Clear</a>
     @can('registrations.export')
-      <a class="btn btn-secondary" href="{{ route('visitors.export', request()->except('cursor')) }}">Export CSV</a>
+      <a class="btn btn-outline-primary" href="{{ route('visitors.export', request()->except('cursor')) }}">Export CSV</a>
     @endcan
   </div>
   </details>
@@ -113,10 +113,10 @@
     <div class="select-bar">
       <label class="check"><input type="checkbox" data-select-all> Select all on this page</label>
       <span data-select-count aria-live="polite">0 selected</span>
-      <button type="submit" class="btn" data-select-submit>Send selected to Odoo…</button>
+      <button type="submit" class="btn btn-primary" data-select-submit>Send selected to Odoo…</button>
     </div>
   @endif
-  <table class="stack-sm visitors">
+  <div class="card mb-3"><div class="table-responsive"><table class="table table-vcenter card-table stack-sm visitors">
     <thead>
       <tr>@if ($canPush)<th><span class="hint">Select</span></th>@endif<th>Name</th><th>Phone</th><th>Exhibition</th><th>Registered</th>@if ($manager)<th>Source</th>@endif @if ($showErp)<th>ERP</th>@endif @if ($showPackage)<th>Package</th>@endif<th><span class="hint">Actions</span></th></tr>
     </thead>
@@ -129,15 +129,15 @@
         @endif
         <td data-label="Name">
           <a href="{{ route('visitors.show', $visitor) }}">{{ $visitor->name }}</a>
-          @if ($visitor->possible_duplicate_of)<span class="badge">Possible duplicate</span>@endif
-          @if ($lock)<span class="badge badge-lock"><x-lock-icon /> Locked</span>@endif
+          @if ($visitor->possible_duplicate_of)<span class="badge bg-warning-lt">Possible duplicate</span>@endif
+          @if ($lock)<span class="badge bg-secondary-lt badge-lock"><x-lock-icon /> Locked</span>@endif
         </td>
         <td data-label="Phone" dir="ltr">{{ $visitor->phone_raw }}</td>
         <td data-label="Exhibition">{{ $visitor->exhibition?->name }}</td>
         <td data-label="Registered">{{ $visitor->created_at->timezone($timezone)->format('Y-m-d H:i') }}</td>
         @if ($manager)<td data-label="Source">{{ $visitor->source === 'public' ? 'QR form' : 'Staff: '.($visitor->enteredBy?->name ?? '?') }}</td>@endif
         @if ($showErp)<td data-label="ERP">{{ \App\Visitors\VisitorQuery::syncLabel($visitor->sync_state, $syncKind) }}</td>@endif
-        @if ($showPackage)<td data-label="Package">@if ($visitor->exhibition?->offers_package){{ $visitor->package_received_at ? 'Received' : 'Not received' }}@endif</td>@endif
+        @if ($showPackage)<td data-label="Package">@if ($visitor->exhibition?->offers_package)@if ($visitor->package_received_at)<span class="badge bg-success-lt">Received</span>@else<span class="badge bg-secondary-lt">Not received</span>@endif@endif</td>@endif
         <td class="row-actions">
           @if (! $lock)
             @can('update', $visitor)<a href="{{ route('visitors.edit', $visitor) }}">Edit</a>@endcan
@@ -146,7 +146,7 @@
       </tr>
     @endforeach
     </tbody>
-  </table>
+  </table></div></div>
   @if ($canPush)
   </form>
   @endif

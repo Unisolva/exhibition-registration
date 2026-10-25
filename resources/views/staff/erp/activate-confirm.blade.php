@@ -5,11 +5,11 @@
 
 @section('content')
 <div class="narrow">
-  <h1>Change the active connection</h1>
+  <div class="page-header"><h1 class="page-title">Change the active connection</h1></div>
 
   @if ($connection->is_active)
-    <div class="notice notice-ok" role="status">{{ $connection->label() }} is already active. Nothing changes.</div>
-    <p><a class="btn btn-secondary" href="{{ route('erp.show') }}">Back to the ERP screen</a></p>
+    <div class="alert alert-success notice notice-ok" role="status">{{ $connection->label() }} is already active. Nothing changes.</div>
+    <p><a class="btn btn-outline-primary" href="{{ route('erp.show') }}">Back to the ERP screen</a></p>
   @else
     <p>Leads will be sent to:</p>
     <div class="destination destination-{{ $connection->kind }}">
@@ -21,7 +21,7 @@
       @csrf
       <input type="hidden" name="kind" value="{{ $connection->kind }}">
       <div class="actions">
-        <button type="submit" class="btn">Make {{ $connection->label() }} active</button>
+        <button type="submit" class="btn btn-primary">Make {{ $connection->label() }} active</button>
         <a href="{{ route('erp.show') }}">Cancel</a>
       </div>
     </form>

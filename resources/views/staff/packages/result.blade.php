@@ -6,10 +6,10 @@
 @section('content')
 @include('staff.packages.bar')
 <div class="narrow">
-  <h1>Package</h1>
+  <div class="page-header"><h1 class="page-title">Package</h1></div>
   @if ($visitors->isEmpty())
     {{-- The same words whether the code or number is unknown, trashed, deleted, or at an exhibition without a package. --}}
-    <div class="notice notice-warn" role="status">{{ $searched === 'code' ? 'No package found for this code.' : 'No package found for this number.' }}</div>
+    <div class="alert alert-warning notice notice-warn" role="status">{{ $searched === 'code' ? 'No package found for this code.' : 'No package found for this number.' }}</div>
   @else
     @if ($visitors->count() > 1)
       <p>{{ $visitors->count() }} registrations have this number at {{ $exhibition->name }}.</p>
@@ -18,7 +18,7 @@
       @include('staff.packages.card', ['visitor' => $visitor])
     @endforeach
   @endif
-  <p><a class="btn btn-secondary" href="{{ route('packages.index') }}">Find another package</a></p>
+  <p><a class="btn btn-outline-primary" href="{{ route('packages.index') }}">Find another package</a></p>
 </div>
 @endsection
 

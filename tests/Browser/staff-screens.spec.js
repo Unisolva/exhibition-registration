@@ -5,7 +5,7 @@
 // Plus the navigation (CO-13), the stacked tables (CO-12) and the focus ring (CO-11).
 
 const { test, expect } = require('@playwright/test');
-const { fixture, isArabic, adminPage, axeIssues, smallControls, smallTargets, noHorizontalScroll } = require('./helpers');
+const { fixture, isArabic, adminPage, axeIssues, smallControls, smallTargets, noHorizontalScroll, watchRequests } = require('./helpers');
 
 /** [name, path] for every staff screen a super admin can open with a GET. */
 function adminScreens(f) {
@@ -60,7 +60,8 @@ async function checkScreen(page, name, url) {
   const response = await page.goto(url);
   expect(response.status(), `${name} status`).toBe(200);
   if (!WITHOUT_HEADER.includes(name)) {
-    await expect(page.locator('header .test-banner'), `${name} TEST banner`).toBeVisible();
+    // M10 CO-2: the TEST banner is a labelled region above everything.
+    await expect(page.getByRole('region', { name: 'Test ERP' }), `${name} TEST banner`).toBeVisible();
   }
   expect(await axeIssues(page), `${name} axe`).toEqual([]);
   expect(await smallControls(page), `${name} controls`).toEqual([]);
@@ -74,9 +75,12 @@ test('every staff screen as super admin: axe, overflow, target size and control 
   test.setTimeout(300000);
   const f = fixture(testInfo);
   const page = await adminPage(browser, testInfo);
+  // M10 CO-1: nothing is loaded from another host (Tabler is vendored, icons are inline).
+  const foreign = watchRequests(page, testInfo.project.use.baseURL || process.env.BASE_URL);
   for (const [name, url] of adminScreens(f)) {
     await checkScreen(page, name, url);
   }
+  expect(foreign, 'requests to other hosts').toEqual([]);
   await page.context().close();
 });
 
@@ -87,39 +91,63 @@ test('staff-role screens: the same checks', async ({ page }, testInfo) => {
   }
 });
 
-test('navigation marks the current page; settings pages share one sub-nav (M8 CO-13)', async ({ browser }, testInfo) => {
-  test.skip(isArabic(testInfo), 'staff screens are English only');
+test('the sidebar marks the current page and groups the links (M8 CO-13, M10 CO-2)', async ({ browser }, testInfo) => {
+  test.skip(testInfo.project.name !== 'en-1280', 'wide layout, staff screens are English only');
   const page = await adminPage(browser, testInfo);
-  const nav = testInfo.project.name.endsWith('-360') ? '.nav-narrow' : '.nav-wide';
-
   await page.goto('/staff/visitors');
-  if (nav === '.nav-narrow') { await page.locator('.menu summary').click(); }
-  await expect(page.locator(`${nav} a[aria-current=page]`)).toHaveText('Visitors');
-  expect(await page.locator(`${nav} a[aria-current=page]`).evaluate((a) => getComputedStyle(a).fontWeight)).toBe('700');
-
-  for (const [path, current] of [['/staff/settings', 'Settings'], ['/staff/settings/branding', 'Branding'], ['/staff/settings/fields', 'Form fields'],
+  const sidebar = page.locator('aside.staff-nav');
+  const box = await sidebar.boundingBox();
+  expect(box.x).toBe(0);
+  expect(box.width).toBeGreaterThan(200);
+  await expect(page.locator('.navbar-toggler')).toBeHidden();
+  await expect(sidebar.locator('.nav-section-title')).toHaveText(['Event', 'Manage', 'Settings']);
+  const current = sidebar.locator('a[aria-current=page]');
+  await expect(current).toHaveText('Visitors');
+  expect(await current.evaluate((a) => getComputedStyle(a).fontWeight)).toBe('700');
+  for (const [path, label] of [['/staff/settings', 'Settings'], ['/staff/settings/branding', 'Branding'], ['/staff/settings/fields', 'Form fields'],
     ['/staff/erp', 'ERP'], ['/staff/system', 'System']]) {
     await page.goto(path);
-    await expect(page.locator('nav.subnav a'), path).toHaveText(['Settings', 'Branding', 'Form fields', 'ERP', 'System']);
-    await expect(page.locator('nav.subnav a[aria-current=page]'), path).toHaveText(current);
+    await expect(page.locator('aside.staff-nav a[aria-current=page]'), path).toHaveText(label);
   }
+  // The content starts beside the sidebar.
+  const main = await page.locator('main').boundingBox();
+  expect(main.x).toBeGreaterThanOrEqual(box.x + box.width - 1);
   await page.context().close();
 });
 
-test('on a phone the TEST banner and header end within 140 px; the menu holds the other links (M8 CO-13)', async ({ browser }, testInfo) => {
+test('on a phone the menu button opens the full menu from the keyboard (M10 CO-2)', async ({ browser }, testInfo) => {
   test.skip(testInfo.project.name !== 'en-360', 'phone layout, staff screens are English only');
   const page = await adminPage(browser, testInfo);
   await page.goto('/staff/visitors');
-  const bottom = await page.locator('header.topbar').evaluate((el) => el.getBoundingClientRect().bottom);
+  const toggler = page.locator('.navbar-toggler');
+  await expect(toggler).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('#staff-menu')).toBeHidden();
+  await toggler.focus();
+  await page.keyboard.press('Enter');
+  await expect(toggler).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('#staff-menu')).toBeVisible();
+  await expect(page.locator('#staff-menu a[aria-current=page]')).toHaveText('Visitors');
+  await expect(page.locator('#staff-menu')).toContainText('Exhibitions');
+  await expect(page.locator('#staff-menu')).toContainText('Sign out');
+  await page.keyboard.press('Enter');
+  await expect(toggler).toHaveAttribute('aria-expanded', 'false');
+  await page.context().close();
+});
+
+test('on a phone the TEST banner and top bar end within 140 px; the menu holds the other links (M8 CO-13, M10 CO-2)', async ({ browser }, testInfo) => {
+  test.skip(testInfo.project.name !== 'en-360', 'phone layout, staff screens are English only');
+  const page = await adminPage(browser, testInfo);
+  await page.goto('/staff/visitors');
+  const bottom = await page.locator('aside.staff-nav').evaluate((el) => el.getBoundingClientRect().bottom);
   testInfo.annotations.push({ type: 'header bottom at 360x740 (px)', description: String(Math.round(bottom)) });
   expect(bottom).toBeLessThanOrEqual(140);
 
   // M9 §3a.7: Packages sits beside Save & New (a manager always has it).
-  await expect(page.locator('.nav-narrow > a')).toHaveText(['Save & New', 'Packages']);
-  await expect(page.locator('.menu-links a').first()).toBeHidden();
-  await page.locator('.menu summary').click();
-  await expect(page.locator('.menu-links')).toContainText('Exhibitions');
-  await expect(page.locator('.menu-links')).toContainText('Sign out');
+  await expect(page.locator('.staff-shortcuts > a')).toHaveText(['Save & New', 'Packages']);
+  await expect(page.locator('#staff-menu a').first()).toBeHidden();
+  await page.locator('.navbar-toggler').click();
+  await expect(page.locator('#staff-menu')).toContainText('Exhibitions');
+  await expect(page.locator('#staff-menu')).toContainText('Sign out');
   await page.context().close();
 });
 
@@ -201,8 +229,8 @@ test('hand-over on a phone: a staff member marks a package, then may undo it (M9
   test.skip(testInfo.project.name !== 'en-360', 'phone layout');
   const f = fixture(testInfo);
   await page.goto(`/staff/packages?exhibition=${f.packageExhibitionId}`);
-  await expect(page.locator('.nav-narrow > a')).toHaveText(['Save & New', 'Packages']);
-  const bottom = await page.locator('header.topbar').evaluate((el) => el.getBoundingClientRect().bottom);
+  await expect(page.locator('.staff-shortcuts > a')).toHaveText(['Save & New', 'Packages']);
+  const bottom = await page.locator('aside.staff-nav').evaluate((el) => el.getBoundingClientRect().bottom);
   expect(bottom).toBeLessThanOrEqual(140);
 
   await page.locator('#code').fill(f.packageCode.toLowerCase());

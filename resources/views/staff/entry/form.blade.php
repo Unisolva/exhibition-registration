@@ -6,19 +6,19 @@
 @section('content')
 <div class="entry-bar" role="region" aria-label="Exhibition">
   <strong>{{ $exhibition->name }}</strong>
-  @unless ($exhibition->is_open)<span class="badge badge-off">Closed to the public</span>@endunless
+  @unless ($exhibition->is_open)<span class="badge bg-secondary-lt">Closed to the public</span>@endunless
   <a href="{{ route('staff.entry', ['change' => 1]) }}">Change exhibition</a>
 </div>
 
 <div class="narrow">
-  <h1>Save &amp; New</h1>
+  <div class="page-header"><h1 class="page-title">Save &amp; New</h1></div>
 
   <div id="entry-status" class="entry-status" role="status" aria-live="polite">
-    @if ($notice)<div class="notice notice-warn">{{ $notice }}</div>@endif
-    @if (isset($fieldErrors['_form']))<div class="notice notice-err">{{ $fieldErrors['_form'] }}</div>@endif
+    @if ($notice)<div class="alert alert-warning notice notice-warn">{{ $notice }}</div>@endif
+    @if (isset($fieldErrors['_form']))<div class="alert alert-danger notice notice-err">{{ $fieldErrors['_form'] }}</div>@endif
   </div>
 
-  <form method="post" action="{{ route('staff.registrations.store') }}" class="card" novalidate data-entry
+  <form method="post" action="{{ route('staff.registrations.store') }}" class="card card-body" novalidate data-entry
         data-session-url="{{ route('staff.session') }}">
     @csrf
     <input type="hidden" name="exhibition_id" value="{{ $exhibition->id }}">
@@ -33,9 +33,9 @@
     </div>
 
     <div class="actions">
-      <button type="submit" class="btn" data-save>Save &amp; New</button>
-      <button type="button" class="btn btn-secondary" data-retry hidden>Retry</button>
-      <button type="button" class="btn btn-secondary" data-save-new hidden>Save as a new entry</button>
+      <button type="submit" class="btn btn-primary" data-save>Save &amp; New</button>
+      <button type="button" class="btn btn-outline-primary" data-retry hidden>Retry</button>
+      <button type="button" class="btn btn-outline-primary" data-save-new hidden>Save as a new entry</button>
     </div>
   </form>
   <p class="saved-count" data-saved-count hidden></p>

@@ -59,6 +59,17 @@ class ErpPushItem extends Model
         return self::STATE_LABELS[$state] ?? ucfirst(str_replace('_', ' ', $state));
     }
 
+    /** Badge colour by meaning (M10 CO-4): sent green, needs checking and retries amber, failed red. */
+    public static function stateBadge(string $state): string
+    {
+        return match ($state) {
+            'succeeded' => 'bg-success-lt',
+            'needs_review', 'failed_retry' => 'bg-warning-lt',
+            'failed_final' => 'bg-danger-lt',
+            default => 'bg-secondary-lt',
+        };
+    }
+
     public static function errorLabel(string $class): string
     {
         return self::ERROR_LABELS[$class] ?? ucfirst(str_replace('_', ' ', $class));

@@ -204,3 +204,13 @@ input.short { inline-size: 7rem; display: inline-block; }
 /* Home: one card per open exhibition (M10 CO-3). */
 .stat-value { font-size: 1.75rem; font-weight: 700; line-height: 1.2; }
 .stat-split { color: var(--muted); font-size: .875rem; }
+
+/* Check boxes outside <x-field>, and notices from shared partials. */
+.check { display: flex; align-items: center; gap: .5rem; font-weight: 400; min-height: 44px; margin: 0; }
+.check input { width: 1.5rem; height: 1.5rem; flex: none; margin: 0; }
+.notice:not(.alert) { padding: .75rem 1rem; border-radius: var(--radius); margin-block-end: 1rem; border: 1px solid var(--line); background: #fff; }
+.notice-err:not(.alert) { color: var(--err); background: #fdeaea; border-color: #f2b8bb; }
+.error-summary p { margin: 0 0 .25rem; font-weight: 600; }
+.error-summary ul { margin: 0; padding-inline-start: 1.25rem; }
+.error-summary a { color: inherit; }
+.field > label:not(.check) { display: block; font-weight: 600; margin-block-end: .25rem; }

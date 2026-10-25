@@ -7,8 +7,8 @@
 
 @section('content')
 <div class="narrow">
-  <h1>{{ $editing ? 'Edit exhibition' : 'Add exhibition' }}</h1>
-  <form method="post" action="{{ $editing ? route('exhibitions.update', $exhibition) : route('exhibitions.store') }}" class="card" novalidate>
+  <div class="page-header"><h1 class="page-title">{{ $editing ? 'Edit exhibition' : 'Add exhibition' }}</h1></div>
+  <form method="post" action="{{ $editing ? route('exhibitions.update', $exhibition) : route('exhibitions.store') }}" class="card card-body" novalidate>
     @csrf
     @if ($editing) @method('PUT') @endif
 
@@ -32,7 +32,7 @@
       <p class="hint">Renaming keeps the same registration link and QR code.</p>
     @endif
     <div class="actions">
-      <button type="submit" class="btn">Save</button>
+      <button type="submit" class="btn btn-primary">Save</button>
       <a href="{{ $editing ? route('exhibitions.show', $exhibition) : route('exhibitions.index') }}">Cancel</a>
     </div>
   </form>

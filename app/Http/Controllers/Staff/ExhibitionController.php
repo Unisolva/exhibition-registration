@@ -49,9 +49,15 @@ class ExhibitionController extends Controller
 
     public function show(Exhibition $exhibition): View
     {
+        // M10 CO-4a: registrations by source and packages given, current visitors only.
+        $summary = $exhibition->visitors()->whereNull('trashed_at')
+            ->selectRaw('COUNT(*) AS total, COALESCE(SUM(source = ?), 0) AS qr, COALESCE(SUM(package_received_at IS NOT NULL), 0) AS packages', ['public'])
+            ->toBase()->first();
+
         return view('staff.exhibitions.show', [
             'exhibition' => $exhibition,
             'qr' => QrCode::svg($exhibition->publicUrl()),
+            'summary' => $summary,
         ]);
     }
 

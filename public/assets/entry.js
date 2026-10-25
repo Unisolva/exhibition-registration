@@ -41,7 +41,8 @@
     statusBox.innerHTML = '';
     if (!text) { return null; }
     var div = document.createElement('div');
-    div.className = 'notice notice-' + kind;
+    // Tabler alert colours (M10 CO-4); the notice names stay for the tests.
+    div.className = 'alert alert-' + ({ ok: 'success', warn: 'warning', err: 'danger' }[kind] || 'info') + ' notice notice-' + kind;
     div.textContent = text;
     if (link) {
       var a = document.createElement('a');

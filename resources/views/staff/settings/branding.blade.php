@@ -5,8 +5,8 @@
 
 @section('content')
 <div class="narrow">
-  <h1>Branding</h1>
-  <form method="post" action="{{ route('settings.branding.update') }}" enctype="multipart/form-data" class="card" novalidate>
+  <div class="page-header"><h1 class="page-title">Branding</h1></div>
+  <form method="post" action="{{ route('settings.branding.update') }}" enctype="multipart/form-data" class="card card-body" novalidate>
     @csrf
     @method('PUT')
 
@@ -28,7 +28,7 @@
     <x-field type="checkbox" name="show_powered_by" label='Show "Powered by Unisolva" on public pages'
              :checked="(bool) old('show_powered_by', $settings->get('show_powered_by'))" />
 
-    <div class="actions"><button type="submit" class="btn">Save</button></div>
+    <div class="actions"><button type="submit" class="btn btn-primary">Save</button></div>
   </form>
 </div>
 @endsection

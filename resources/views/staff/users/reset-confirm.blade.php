@@ -5,8 +5,8 @@
 
 @section('content')
 <div class="narrow">
-  <h1>Reset {{ $user->name }}'s password?</h1>
-  <form method="post" action="{{ route('users.reset-password', $user) }}" class="card" data-once>
+  <div class="page-header"><h1 class="page-title">Reset {{ $user->name }}'s password?</h1></div>
+  <form method="post" action="{{ route('users.reset-password', $user) }}" class="card card-body" data-once>
     @csrf
     <p>They are signed out on every device and need the new one-time password.</p>
     <div class="actions">

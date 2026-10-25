@@ -7,8 +7,8 @@
 
 @section('content')
 <div class="narrow">
-  <h1>{{ $editing ? 'Edit '.$user->name : 'Add user' }}</h1>
-  <form method="post" action="{{ $editing ? route('users.update', $user) : route('users.store') }}" class="card" novalidate>
+  <div class="page-header"><h1 class="page-title">{{ $editing ? 'Edit '.$user->name : 'Add user' }}</h1></div>
+  <form method="post" action="{{ $editing ? route('users.update', $user) : route('users.store') }}" class="card card-body" novalidate>
     @csrf
     @if ($editing) @method('PUT') @endif
 
@@ -35,7 +35,7 @@
     @endif
 
     <div class="actions">
-      <button type="submit" class="btn">Save</button>
+      <button type="submit" class="btn btn-primary">Save</button>
       <a href="{{ route('users.index') }}">Cancel</a>
     </div>
   </form>
@@ -43,9 +43,9 @@
   @if ($editing)
     @can('resetPassword', $user)
       <h2>Reset password</h2>
-      <div class="card">
+      <div class="card card-body">
         <p>Generates a new one-time password and signs {{ $user->name }} out everywhere.</p>
-        <a class="btn btn-secondary" href="{{ route('users.reset-password-confirm', $user) }}">Reset password…</a>
+        <a class="btn btn-outline-primary" href="{{ route('users.reset-password-confirm', $user) }}">Reset password…</a>
       </div>
     @endcan
   @endif

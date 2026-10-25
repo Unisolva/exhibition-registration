@@ -4,12 +4,12 @@
 @section('title', $visitor->name)
 
 @section('content')
-<h1>{{ $visitor->name }}</h1>
+<div class="page-header"><h1 class="page-title">{{ $visitor->name }}</h1></div>
 @if ($lock)
-  <div class="notice notice-warn" role="status"><x-lock-icon /> {{ \App\Visitors\VisitorLock::message($lock) }}. It cannot be edited or deleted.</div>
+  <div class="alert alert-warning notice notice-warn" role="status"><x-lock-icon /> {{ \App\Visitors\VisitorLock::message($lock) }}. It cannot be edited or deleted.</div>
 @endif
 
-<div class="card">
+<div class="card card-body">
   <dl class="details">
     <dt>Exhibition</dt><dd>{{ $visitor->exhibition?->name }}</dd>
     <dt>Registered</dt><dd>{{ $visitor->created_at->timezone($timezone)->format('Y-m-d H:i') }} · {{ $visitor->source === 'public' ? 'QR form' : 'Staff entry by '.($visitor->enteredBy?->name ?? '?') }}</dd>
@@ -44,8 +44,8 @@
 
 <div class="actions spaced">
   @if (! $lock)
-    @can('update', $visitor)<a class="btn btn-secondary" href="{{ route('visitors.edit', $visitor) }}">Edit</a>@endcan
-    @can('trash', $visitor)<a class="btn btn-secondary" href="{{ route('visitors.trash-confirm', $visitor) }}">Delete</a>@endcan
+    @can('update', $visitor)<a class="btn btn-outline-primary" href="{{ route('visitors.edit', $visitor) }}">Edit</a>@endcan
+    @can('trash', $visitor)<a class="btn btn-outline-primary" href="{{ route('visitors.trash-confirm', $visitor) }}">Delete</a>@endcan
   @endif
   <a href="{{ route('visitors.index') }}">Back to the list</a>
 </div>
@@ -54,7 +54,7 @@
   {{-- M9 CO-10, CO-11: marking and undoing work on a locked visitor too. --}}
   @inject('packageService', 'App\Visitors\PackageService')
   <h2>Welcome package</h2>
-  <div class="card">
+  <div class="card card-body">
     <dl class="details">
       <dt>Package code</dt><dd class="code-text" dir="ltr">{{ $visitor->package_code }}</dd>
       <dt>Status</dt>
@@ -68,9 +68,9 @@
     </dl>
     <div class="actions spaced">
       @if (! $visitor->package_received_at)
-        <form method="post" action="{{ route('packages.give', $visitor->package_code) }}" data-once>@csrf<button type="submit" class="btn">Mark package received</button></form>
+        <form method="post" action="{{ route('packages.give', $visitor->package_code) }}" data-once>@csrf<button type="submit" class="btn btn-primary">Mark package received</button></form>
       @elseif ($packageService->canUndo($visitor, auth()->user()))
-        <form method="post" action="{{ route('packages.undo', $visitor->package_code) }}" data-once>@csrf<button type="submit" class="btn btn-secondary">Undo</button></form>
+        <form method="post" action="{{ route('packages.undo', $visitor->package_code) }}" data-once>@csrf<button type="submit" class="btn btn-outline-primary">Undo</button></form>
       @endif
     </div>
     @if ($packageEvents->isNotEmpty())
@@ -88,7 +88,7 @@
 @if ($edits->isEmpty())
   <p>Not edited since it was registered.</p>
 @else
-  <table class="stack-sm">
+  <div class="card mb-3"><div class="table-responsive"><table class="table table-vcenter card-table stack-sm">
     <thead><tr><th>When</th><th>Who</th><th>Changes</th></tr></thead>
     <tbody>
     @foreach ($edits as $edit)
@@ -105,7 +105,7 @@
       </tr>
     @endforeach
     </tbody>
-  </table>
+  </table></div></div>
 @endif
 @endsection
 

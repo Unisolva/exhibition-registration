@@ -5,11 +5,11 @@
 
 @section('content')
 <div class="narrow">
-  <h1>Delete {{ $visitor->name }}?</h1>
+  <div class="page-header"><h1 class="page-title">Delete {{ $visitor->name }}?</h1></div>
   @if ($lock)
-    <div class="notice notice-warn" role="status"><x-lock-icon /> {{ \App\Visitors\VisitorLock::message($lock) }}. It cannot be deleted.</div>
+    <div class="alert alert-warning notice notice-warn" role="status"><x-lock-icon /> {{ \App\Visitors\VisitorLock::message($lock) }}. It cannot be deleted.</div>
   @else
-    <form method="post" action="{{ route('visitors.destroy', $visitor) }}" class="card">
+    <form method="post" action="{{ route('visitors.destroy', $visitor) }}" class="card card-body">
       @csrf
       @method('DELETE')
       <p>The visitor moves to the trash. An admin can restore it for 30 days; after that it is deleted for good.</p>
