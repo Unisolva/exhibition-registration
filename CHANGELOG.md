@@ -2,6 +2,22 @@
 
 All notable changes. Versions follow semantic versioning; each release is the git tag `v<version>`.
 
+## [1.3.0] - 2026-10-25
+
+Staff screens on the Tabler UI kit, "Other" with details, valid phone numbers only, no paper forms, and moving several visitors to the trash at once. **Database:** no migration. A rollback to 1.2.0 needs no restore. The public pages and the A4 poster are unchanged.
+
+Staff interface (Tabler)
+- CO-1: Staff and admin screens use Tabler 1.6.1 (MIT licence, `public/assets/vendor/tabler/LICENSE`) and a few Tabler Icons 3.49.0 drawn inline (MIT licence, `LICENSE-icons`). Both are served from the installation itself: no CDN, no web font, no request to another host. The content security policy is unchanged.
+- CO-2: A sidebar from 992 px wide, grouped as Event, Manage and Settings, with the signed-in user, Password and Sign out at the bottom. On phones a compact top bar keeps Save & New and Packages beside a menu button. The TEST ERP banner stays red and full width above everything. Every page starts with its title and its main action on the right.
+- CO-3: Home shows a card per open exhibition: registrations today and in total, split QR / staff, and packages given today and in total when the exhibition offers one.
+- CO-4: Every staff screen uses Tabler cards, tables, form controls, buttons (red for Delete, Move to trash and Delete permanently) and badges coloured by meaning. Phone tables still name their columns; controls stay 44 px with 16 px text; the focus ring is unchanged. The exhibition page shows registrations (QR / staff) and packages given, with "View visitors" and "Export CSV" for that exhibition. Both exhibition pickers show the name and the first day.
+
+Forms and data
+- CO-5: A list choice can be marked "Asks for details" (one per list). Choosing it shows a required "Please specify" box (at most 100 characters) on the public form and in Save & New, with dropdowns and radio buttons. The details are kept with the visitor and shown as "Occupation: Other (Seed supplier)" on the visitor page, in the CSV export and in what is sent to the ERP.
+- CO-6: The public form, Save & New and the edit form refuse a phone number that is not a valid number (read with the default country). Visitors already saved are not changed.
+- CO-7: The system replaces paper forms: Save & New lists open exhibitions only, and closing an exhibition stops staff entry as well as the public form. A resent submission that was already saved still succeeds.
+- CO-8: Admins and super admins can select visitors on the list and choose "Move selected to trash…". A confirmation page lists the names; visitors that are locked or being sent to the ERP are skipped and the page says so. Each visitor is logged as a single trash is.
+
 ## [1.2.0] - 2026-10-19
 
 Staff-only form fields, radio buttons, and a welcome package handed over at the stand. **Database:** two additive migrations (`field_definitions.audience` and `widget`; `exhibitions.offers_package`, `package_note_ar`, `package_note_en`; `visitors.package_code`, `package_received_at`, `package_received_by`). Existing visitors get package codes from the migration and from the deploy's seeding step.

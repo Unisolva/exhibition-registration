@@ -61,7 +61,7 @@ class ExportController extends Controller
                     $visitor->phone_e164,
                     $visitor->phone_valid ? 'yes' : 'no',
                     $visitor->email,
-                    $occupation?->optionLabel($visitor->occupation, 'en'),
+                    $occupation?->choiceText($visitor, 'en'),
                     $visitor->region_code,
                     $visitor->region_label,
                     $visitor->possible_duplicate_of,
@@ -72,7 +72,7 @@ class ExportController extends Controller
                 ];
                 foreach ($custom as $field) {
                     $value = $visitor->extra[$field->key] ?? null;
-                    $row[] = $field->type === 'select' ? $field->optionLabel($value, 'en') : $value;
+                    $row[] = $field->type === 'select' ? $field->choiceText($visitor, 'en') : $value;
                 }
                 $row[] = $visitor->getAttribute('sync_state');
                 $row[] = $visitor->getAttribute('sync_erp_lead_id');

@@ -19,7 +19,7 @@ return [
 
     // Release version (semantic versioning; also in CHANGELOG.md and the git tag v<version>).
     // Shown on the System page and sent in the ERP User-Agent.
-    'version' => '1.2.0',
+    'version' => '1.3.0',
 
     /*
     |--------------------------------------------------------------------------

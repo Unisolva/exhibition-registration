@@ -9,6 +9,7 @@ use App\Http\Controllers\LogoController;
 use App\Http\Controllers\PublicRegistrationController;
 use App\Http\Controllers\Staff\BatchController;
 use App\Http\Controllers\Staff\BrandingController;
+use App\Http\Controllers\Staff\BulkTrashController;
 use App\Http\Controllers\Staff\EntryController;
 use App\Http\Controllers\Staff\ErpController;
 use App\Http\Controllers\Staff\ExhibitionController;
@@ -85,6 +86,9 @@ Route::prefix('staff')->middleware('staff.locale')->group(function () {
                 Route::delete('visitors/{visitor}', [VisitorController::class, 'destroy'])->name('visitors.destroy');
 
                 Route::middleware('can:registrations.view-all')->group(function () {
+                    // M10 CO-8: managers only.
+                    Route::post('visitors/bulk-trash/review', [BulkTrashController::class, 'review'])->name('visitors.bulk-trash.review');
+                    Route::post('visitors/bulk-trash', [BulkTrashController::class, 'destroy'])->name('visitors.bulk-trash');
                     Route::get('trash', [TrashController::class, 'index'])->name('trash.index');
                     Route::post('trash/{visitor}/restore', [TrashController::class, 'restore'])->name('trash.restore');
                     Route::delete('trash/{visitor}', [TrashController::class, 'destroy'])->name('trash.destroy');

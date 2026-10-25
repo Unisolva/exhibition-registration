@@ -126,13 +126,16 @@ class BatchCreationTest extends TestCase
             ->assertSee('Send 1 lead to TEST');
     }
 
-    public function test_the_list_offers_selection_only_to_managers_in_odoo_mode(): void
+    public function test_the_list_offers_sending_only_to_managers_in_odoo_mode(): void
     {
+        // M10 CO-8: managers always select rows (for "Move selected to trash"); sending needs Odoo mode.
         Visitor::factory()->create();
-        $this->actingAs(User::factory()->admin()->create())->get('/staff/visitors')->assertOk()->assertDontSee('data-select-row', false);
+        $this->actingAs(User::factory()->admin()->create())->get('/staff/visitors')->assertOk()
+            ->assertSee('data-select-row', false)->assertDontSee('Send selected to Odoo');
 
         $this->readyToPush();
-        $this->actingAs(User::factory()->admin()->create())->get('/staff/visitors')->assertOk()->assertSee('data-select-row', false)->assertSee('Select all on this page');
+        $this->actingAs(User::factory()->admin()->create())->get('/staff/visitors')->assertOk()->assertSee('data-select-row', false)->assertSee('Select all on this page')
+            ->assertSee('Send selected to Odoo');
 
         $staff = User::factory()->staff()->create();
         Visitor::factory()->enteredBy($staff)->create();

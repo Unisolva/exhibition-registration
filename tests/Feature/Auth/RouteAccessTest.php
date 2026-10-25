@@ -83,6 +83,9 @@ class RouteAccessTest extends TestCase
         'GET staff/visitors/{visitor}/delete' => [200, 200, 403],
         'DELETE staff/visitors/{visitor}' => [302, 302, 403],
         'GET staff/trash' => [200, 200, 403],
+        // M10 CO-8: with nothing selected, both go back to the list.
+        'POST staff/visitors/bulk-trash/review' => [302, 302, 403],
+        'POST staff/visitors/bulk-trash' => [302, 302, 403],
         'POST staff/trash/{trashed}/restore' => [302, 302, 403],
         'DELETE staff/trash/{trashed}' => [302, 403, 403],
         'GET staff/settings' => [200, 403, 403],

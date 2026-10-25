@@ -21,9 +21,8 @@
                 .($visitor->phone_e164 && $visitor->phone_e164 !== $visitor->phone_raw ? ' ('.$visitor->phone_e164.')' : '')
                 .($visitor->phone_valid ? '' : ' · not a recognised number'),
             $field->key === 'email' => $visitor->email,
-            $field->key === 'occupation' => $field->optionLabel($visitor->occupation, 'en'),
+            $field->key === 'occupation', $field->type === 'select' => $field->choiceText($visitor, 'en'),
             $field->type === 'region' => $visitor->region_label,
-            $field->type === 'select' => $field->optionLabel($visitor->extra[$field->key] ?? null, 'en'),
             default => $visitor->extra[$field->key] ?? null,
         };
       @endphp

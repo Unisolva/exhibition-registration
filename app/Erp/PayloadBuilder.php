@@ -60,7 +60,7 @@ class PayloadBuilder
             $payload['email_from'] = $visitor->email;
         }
         if ($visitor->occupation !== null && $sent->has('occupation')) {
-            $payload['function'] = $sent['occupation']->optionLabel($visitor->occupation, 'en');
+            $payload['function'] = $sent['occupation']->choiceText($visitor, 'en');
         }
 
         $regionField = $sent->first(fn (FieldDefinition $field) => $field->type === 'region');
@@ -123,9 +123,8 @@ class PayloadBuilder
             $field->key === 'name' => $visitor->name,
             $field->key === 'phone' => $visitor->phone_valid && $visitor->phone_e164 ? $visitor->phone_e164 : $visitor->phone_raw,
             $field->key === 'email' => $visitor->email,
-            $field->key === 'occupation' => $field->optionLabel($visitor->occupation, 'en'),
+            $field->key === 'occupation', $field->type === 'select' => $field->choiceText($visitor, 'en'),
             $field->type === 'region' => $visitor->region_label,
-            $field->type === 'select' => $field->optionLabel($visitor->extra[$field->key] ?? null, 'en'),
             default => $visitor->extra[$field->key] ?? null,
         };
     }

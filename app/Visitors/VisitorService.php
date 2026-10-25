@@ -49,7 +49,7 @@ class VisitorService
 
             // Staff-only fields belong to staff entries only (M9 CO-2).
             $fields = FieldDefinition::activeInOrder(publicOnly: $visitor->source !== 'staff');
-            $submission = $this->normalizer->normalize($input, $fields, (string) $this->settings->get('default_country'), 'en');
+            $submission = $this->normalizer->normalize($input, $fields, (string) $this->settings->get('default_country'), 'en', staff: true);
             if (! $submission->isValid()) {
                 throw ValidationException::withMessages($submission->errors);
             }
@@ -71,6 +71,21 @@ class VisitorService
                     ]],
                     default => [$extra[$field->key] ?? null, $submission->extra[$field->key] ?? null, []],
                 };
+
+                // M10 CO-5: the details typed for "Other" are kept and logged like a field of their own.
+                if ($field->detailsOption() !== null) {
+                    $detailsKey = $field->key.'_details';
+                    $oldDetails = $extra[$detailsKey] ?? null;
+                    $newDetails = $submission->extra[$detailsKey] ?? null;
+                    if ($oldDetails !== $newDetails) {
+                        $changes[$detailsKey] = [$oldDetails, $newDetails];
+                        if ($newDetails === null) {
+                            unset($extra[$detailsKey]);
+                        } else {
+                            $extra[$detailsKey] = $newDetails;
+                        }
+                    }
+                }
 
                 if ($old === $new) {
                     continue;
@@ -119,6 +134,37 @@ class VisitorService
             $visitor->forceFill(['trashed_at' => now(), 'trashed_by' => $user->id])->save();
             DuplicateFlags::releaseReferencesTo($visitor->id);
             Audit::record('visitor_trashed', $visitor, userId: $user->id);
+        });
+    }
+
+    /**
+     * M10 CO-8: several visitors at once, in one transaction. Locked visitors and
+     * visitors with an item being sent to the ERP are skipped; each trash is
+     * logged as a single one is.
+     *
+     * @param  list<int>  $visitorIds
+     * @return array{trashed: list<int>, skipped: array<int, string>} skipped: visitor id => lock cause
+     */
+    public function trashMany(array $visitorIds, User $user): array
+    {
+        return DB::transaction(function () use ($visitorIds, $user) {
+            $trashed = [];
+            $skipped = [];
+            $visitors = Visitor::query()->whereKey($visitorIds)->whereNull('deleted_at')->whereNull('trashed_at')
+                ->orderBy('id')->lockForUpdate()->get();
+            foreach ($visitors as $visitor) {
+                if ($cause = VisitorLock::causeFor($visitor->id, forUpdate: true)) {
+                    $skipped[$visitor->id] = $cause;
+
+                    continue;
+                }
+                $visitor->forceFill(['trashed_at' => now(), 'trashed_by' => $user->id])->save();
+                DuplicateFlags::releaseReferencesTo($visitor->id);
+                Audit::record('visitor_trashed', $visitor, userId: $user->id);
+                $trashed[] = $visitor->id;
+            }
+
+            return ['trashed' => $trashed, 'skipped' => $skipped];
         });
     }
 

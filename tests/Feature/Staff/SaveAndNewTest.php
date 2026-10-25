@@ -4,6 +4,7 @@
 
 namespace Tests\Feature\Staff;
 
+use App\Http\Controllers\Staff\EntryController;
 use App\Models\Exhibition;
 use App\Models\User;
 use App\Models\Visitor;
@@ -52,17 +53,22 @@ class SaveAndNewTest extends TestCase
         $this->assertSame('+201005551234', $visitor->phone_key);
     }
 
-    public function test_staff_enter_visitors_for_closed_exhibitions_and_while_public_registration_is_off(): void
+    public function test_staff_enter_visitors_while_public_registration_is_off_but_not_for_closed_exhibitions(): void
     {
+        // v2.9 §10 test 17 as changed by M10 CO-7 (no paper forms).
         $staff = User::factory()->staff()->create();
+        $open = Exhibition::factory()->create();
         $closed = Exhibition::factory()->closed()->create();
         app(Settings::class)->set('public_registration_enabled', false);
 
-        $this->actingAs($staff)->postJson('/staff/registrations', $this->body($closed))->assertCreated();
-        $this->actingAs($staff)->get('/staff/entry?exhibition='.$closed->id)->assertOk()->assertSee($closed->name)->assertSee('Closed to the public');
+        $this->actingAs($staff)->postJson('/staff/registrations', $this->body($open))->assertCreated();
+        $this->actingAs($staff)->postJson('/staff/registrations', $this->body($closed))->assertStatus(422)
+            ->assertJsonPath('errors._form', EntryController::CLOSED_NOTE);
+        $this->actingAs($staff)->get('/staff/entry?exhibition='.$closed->id)->assertOk()->assertSee('Registration for '.$closed->name.' is closed.');
 
         // The public form refuses both, as before.
         $this->get('/r/'.$closed->public_token)->assertOk()->assertDontSee('name="submission_token"', false);
+        $this->get('/r/'.$open->public_token)->assertOk()->assertDontSee('name="submission_token"', false);
         $this->assertSame(1, Visitor::query()->count());
     }
 

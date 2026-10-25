@@ -43,5 +43,5 @@
     <form method="post" action="{{ route('exhibitions.open', $exhibition) }}">@csrf<button type="submit" class="btn btn-primary">Open registration</button></form>
   @endif
 </div>
-<p class="hint">Closing stops the public form for this exhibition only. Staff can still enter visitors, for example from paper forms.</p>
+<p class="hint">Closing stops the public form and Save &amp; New for this exhibition.</p>
 @endsection

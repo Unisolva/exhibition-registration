@@ -1,7 +1,8 @@
 {{-- Copyright (c) 2026 Unisolva for Information Technology and App Development L.L.C. All rights reserved. See LICENSE. --}}
 {{-- After a failed submit of a registration form (M8 CO-10): "Please fix {n} fields:" and a link to each.
      Expects $fields (FormView::fields) and $fieldErrors; a form-level message (_form) is shown on its own. --}}
-@php($invalid = collect($fields)->filter(fn ($field) => isset($fieldErrors[$field['key']]))->values())
+@php($invalid = collect($fields)->flatMap(fn ($field) => [$field, ['key' => $field['key'].'_details', 'label' => __('public.details_label')]])
+    ->filter(fn ($field) => isset($fieldErrors[$field['key']]))->values())
 @if (isset($fieldErrors['_form']))
   <div class="notice notice-err" role="alert">{{ $fieldErrors['_form'] }}</div>
 @elseif ($invalid->isNotEmpty())

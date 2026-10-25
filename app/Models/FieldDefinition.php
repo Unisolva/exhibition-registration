@@ -99,6 +99,34 @@ class FieldDefinition extends Model
         return $this->type === 'select' && $this->activeOptions() === [];
     }
 
+    /** The value of the active choice marked "Asks for details", if any (M10 CO-5). */
+    public function detailsOption(): ?string
+    {
+        if ($this->type !== 'select') {
+            return null;
+        }
+        foreach ($this->activeOptions() as $option) {
+            if (! empty($option['asks_details'])) {
+                return $option['value'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The visitor's choice for this list as staff read it: the choice's label, followed by the
+     * typed details in brackets when there are any, e.g. "Other (Seed supplier)" (M10 CO-5).
+     */
+    public function choiceText(Visitor $visitor, string $locale = 'en'): ?string
+    {
+        $value = $this->key === 'occupation' ? $visitor->occupation : ($visitor->extra[$this->key] ?? null);
+        $label = $this->optionLabel(is_string($value) ? $value : null, $locale);
+        $details = $visitor->extra[$this->key.'_details'] ?? null;
+
+        return $label !== null && is_string($details) && $details !== '' ? $label.' ('.$details.')' : $label;
+    }
+
     public function optionLabel(?string $value, ?string $locale = null): ?string
     {
         if ($value === null) {

@@ -6,7 +6,6 @@
 @section('content')
 <div class="entry-bar" role="region" aria-label="Exhibition">
   <strong>{{ $exhibition->name }}</strong>
-  @unless ($exhibition->is_open)<span class="badge bg-secondary-lt">Closed to the public</span>@endunless
   <a href="{{ route('staff.entry', ['change' => 1]) }}">Change exhibition</a>
 </div>
 

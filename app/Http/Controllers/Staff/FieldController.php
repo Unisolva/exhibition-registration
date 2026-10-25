@@ -171,6 +171,7 @@ class FieldController extends Controller
                 'label_en' => trim((string) ($row['label_en'] ?? $option['label_en'])) ?: $option['label_en'],
                 'label_ar' => trim((string) ($row['label_ar'] ?? $option['label_ar'])) ?: $option['label_ar'],
                 'is_active' => isset($row['is_active']) && $row['is_active'] === '1',
+                'asks_details' => isset($row['asks_details']) && $row['asks_details'] === '1',
             ];
         }
 
@@ -191,8 +192,14 @@ class FieldController extends Controller
                     ? "Give the option \"{$value}\" an English and an Arabic label."
                     : "Give the option \"{$value}\" an English label."]);
             }
-            $result[] = ['value' => $value, 'label_en' => $labelEn, 'label_ar' => $labelAr, 'is_active' => true];
+            $result[] = ['value' => $value, 'label_en' => $labelEn, 'label_ar' => $labelAr, 'is_active' => true,
+                'asks_details' => isset($row['asks_details']) && $row['asks_details'] === '1'];
             $values[] = $value;
+        }
+
+        // M10 CO-5: at most one choice per list asks for details.
+        if (count(array_filter(array_column($result, 'asks_details'))) > 1) {
+            throw ValidationException::withMessages(['new_options' => 'Only one choice can ask for details.']);
         }
 
         return $result;
