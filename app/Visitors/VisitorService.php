@@ -143,7 +143,7 @@ class VisitorService
      * logged as a single one is.
      *
      * @param  list<int>  $visitorIds
-     * @return array{trashed: list<int>, skipped: array<int, string>}  skipped: visitor id => lock cause
+     * @return array{trashed: list<int>, skipped: array<int, string>} skipped: visitor id => lock cause
      */
     public function trashMany(array $visitorIds, User $user): array
     {

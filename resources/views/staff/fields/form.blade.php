@@ -58,8 +58,6 @@
                      :checked="(bool) old('options.'.$i.'.is_active', $option['is_active'] ?? true)" />
             <x-field type="checkbox" :name="'options['.$i.'][asks_details]'" :id="'opt-'.$i.'-details'" label="Asks for details"
                      :checked="(bool) old('options.'.$i.'.asks_details', $option['asks_details'] ?? false)" />
-            <x-field type="checkbox" :name="'options['.$i.'][asks_details]'" :id="'opt-'.$i.'-details'" label="Asks for details"
-                     :checked="(bool) old('options.'.$i.'.asks_details', $option['asks_details'] ?? false)" />
           </fieldset>
         @endforeach
         @for ($i = 0; $i < 3; $i++)
@@ -71,8 +69,6 @@
                      :value="old('new_options.'.$i.'.label_en')" maxlength="100" />
             <x-field :name="'new_options['.$i.'][label_ar]'" :id="'new-'.$i.'-ar'" :error-key="'new_options.'.$i.'.label_ar'" label="Arabic"
                      :value="old('new_options.'.$i.'.label_ar')" maxlength="100" dir="rtl" lang="ar" />
-            <x-field type="checkbox" :name="'new_options['.$i.'][asks_details]'" :id="'new-'.$i.'-details'" label="Asks for details"
-                     :checked="(bool) old('new_options.'.$i.'.asks_details')" />
             <x-field type="checkbox" :name="'new_options['.$i.'][asks_details]'" :id="'new-'.$i.'-details'" label="Asks for details"
                      :checked="(bool) old('new_options.'.$i.'.asks_details')" />
           </fieldset>

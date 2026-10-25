@@ -193,7 +193,7 @@ class FlowAndCopyTest extends TestCase
             ->assertSee(route('exhibitions.close-confirm', $exhibition), false)->assertDontSee('action="'.route('exhibitions.close', $exhibition).'"', false);
         $this->actingAs($admin)->get("/staff/exhibitions/{$exhibition->id}/close")->assertOk()
             ->assertSee('Close registration for Sahara Sample Fair?')
-            ->assertSee('Visitors who scan the QR will see "Registration is closed". Staff can still enter visitors.', false)
+            ->assertSee('Visitors who scan the QR will see "Registration is closed", and staff can no longer enter visitors for it in Save &amp; New.', false)
             ->assertSee('action="'.route('exhibitions.close', $exhibition).'"', false);
         $this->assertTrue($exhibition->fresh()->is_open);
 

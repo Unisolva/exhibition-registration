@@ -61,24 +61,29 @@ class NormalizerTest extends TestCase
         $this->assertSame('٠١٠٠ ١٢٣ ٤٥٦٧', $this->normalize(['name' => 'A', 'phone' => ' ٠١٠٠ ١٢٣ ٤٥٦٧ '])->phoneRaw);
     }
 
-    public function test_an_unparseable_number_is_kept_and_flagged(): void
+    public function test_an_unparseable_number_is_refused(): void
     {
+        // M10 CO-6: before 1.3.0 it was kept and flagged.
         $s = $this->normalize(['name' => 'A', 'phone' => '+999 123 4567']);
 
-        $this->assertSame([], $s->errors);
+        $this->assertArrayHasKey('phone', $s->errors);
         $this->assertFalse($s->phoneValid);
         $this->assertNull($s->phoneE164);
-        $this->assertSame('+9991234567', $s->phoneKey);
     }
 
-    public function test_a_parseable_but_invalid_number_gets_an_e164_key_but_no_e164_value(): void
+    public function test_a_parseable_but_invalid_number_is_refused_with_the_right_wording(): void
     {
+        // M10 CO-6: the public wording in the visitor's language, the staff wording on staff screens.
         $s = $this->normalize(['name' => 'A', 'phone' => '0100123']);
 
-        $this->assertSame([], $s->errors);
+        $this->assertSame(['phone' => "This phone number doesn't look right. Please check it."], $s->errors);
         $this->assertFalse($s->phoneValid);
         $this->assertNull($s->phoneE164);
         $this->assertStringStartsWith('+20', $s->phoneKey);
+
+        $staff = app(Normalizer::class)->normalize(['name' => 'A', 'phone' => '0100123'],
+            FieldDefinition::activeInOrder(), 'EG', 'en', staff: true);
+        $this->assertSame(['phone' => Normalizer::STAFF_PHONE_INVALID], $staff->errors);
     }
 
     public function test_fewer_than_seven_digits_is_rejected(): void

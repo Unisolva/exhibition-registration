@@ -57,7 +57,8 @@ class KillSwitchAndHealthTest extends TestCase
         }
         $this->actingAs($admin)->post('/staff/batches/preview', ['visitor_ids' => [$visitor->id]])->assertNotFound();
         $this->actingAs($admin)->post('/staff/batches', ['batch_token' => (string) Str::ulid(), 'visitor_ids' => [$visitor->id]])->assertNotFound();
-        $this->actingAs($admin)->get('/staff/visitors')->assertOk()->assertDontSee('data-select-row', false)->assertDontSee('Batches');
+        // Rows stay selectable for "Move selected to trash" (M10 CO-8); nothing offers sending.
+        $this->actingAs($admin)->get('/staff/visitors')->assertOk()->assertDontSee('Send selected to Odoo')->assertDontSee('Batches');
     }
 
     public function test_the_mock_is_refused_in_production(): void
