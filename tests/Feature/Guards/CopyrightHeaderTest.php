@@ -45,7 +45,11 @@ class CopyrightHeaderTest extends TestCase
 
     private function isExempt(string $path): bool
     {
-        if (in_array(basename($path), self::EXEMPT_FILES, true)) {
+        // Third-party files keep their own licence header (M10 CO-1: Tabler, MIT).
+        if (str_starts_with($path, 'public/assets/vendor/')) {
+            return true;
+        }
+        if (in_array(basename($path), self::EXEMPT_FILES, true) || basename($path) === 'LICENSE-icons') {
             return true;
         }
 
