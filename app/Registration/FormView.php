@@ -55,6 +55,8 @@ class FormView
             $out[] = [
                 // M10 CO-5: the choice that shows "Please specify", or null.
                 'details' => in_array($control, ['select', 'radio'], true) ? $field->detailsOption() : null,
+                // M10.1 CO-1: the choice a new entry starts with, or null.
+                'default' => in_array($control, ['select', 'radio'], true) ? $field->defaultOption() : null,
                 'key' => $field->key,
                 'label' => $field->label($locale),
                 'required' => $field->required(),

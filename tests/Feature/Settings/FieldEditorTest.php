@@ -42,7 +42,7 @@ class FieldEditorTest extends TestCase
 
         $crop = FieldDefinition::query()->where('key', 'crop')->sole();
         $this->assertFalse($crop->is_system);
-        $this->assertSame([['value' => 'wheat', 'label_en' => 'Wheat', 'label_ar' => 'قمح', 'is_active' => true, 'asks_details' => false]], $crop->options);
+        $this->assertSame([['value' => 'wheat', 'label_en' => 'Wheat', 'label_ar' => 'قمح', 'is_active' => true, 'asks_details' => false, 'default' => false]], $crop->options);
         $this->assertDatabaseHas('audit_events', ['action' => 'field_created', 'target_id' => $crop->id]);
     }
 
@@ -101,8 +101,8 @@ class FieldEditorTest extends TestCase
         ])->assertRedirect();
 
         $this->assertSame([
-            ['value' => 'farmer', 'label_en' => 'Grower', 'label_ar' => 'مزارع', 'is_active' => false, 'asks_details' => false],
-            ['value' => 'engineer', 'label_en' => 'Agricultural engineer', 'label_ar' => 'مهندس زراعي', 'is_active' => true, 'asks_details' => false],
+            ['value' => 'farmer', 'label_en' => 'Grower', 'label_ar' => 'مزارع', 'is_active' => false, 'asks_details' => false, 'default' => false],
+            ['value' => 'engineer', 'label_en' => 'Agricultural engineer', 'label_ar' => 'مهندس زراعي', 'is_active' => true, 'asks_details' => false, 'default' => false],
         ], $occupation->fresh()->options);
 
         $this->actingAs($super)->put("/staff/settings/fields/{$occupation->id}", [...$base,

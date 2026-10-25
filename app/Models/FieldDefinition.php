@@ -114,6 +114,21 @@ class FieldDefinition extends Model
         return null;
     }
 
+    /** The value of the active choice marked "Selected by default", if any (M10.1 CO-1). */
+    public function defaultOption(): ?string
+    {
+        if ($this->type !== 'select') {
+            return null;
+        }
+        foreach ($this->activeOptions() as $option) {
+            if (! empty($option['default'])) {
+                return $option['value'];
+            }
+        }
+
+        return null;
+    }
+
     /**
      * The visitor's choice for this list as staff read it: the choice's label, followed by the
      * typed details in brackets when there are any, e.g. "Other (Seed supplier)" (M10 CO-5).

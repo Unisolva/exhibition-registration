@@ -1,16 +1,20 @@
 {{-- Copyright (c) 2026 Unisolva for Information Technology and App Development L.L.C. All rights reserved. See LICENSE. --}}
 {{-- Fields of a registration form. Expects $fields (FormView::fields), $old and $fieldErrors.
-     After a failed submit the first invalid field gets autofocus (M8 CO-10). --}}
+     After a failed submit the first invalid field gets autofocus (M8 CO-10).
+     M10.1 CO-1: a list's default choice is selected on a new entry ($old empty) and, on the edit form
+     ($defaultsForEmpty), when nothing is stored; after a submit the visitor's own choice wins. --}}
+@php($useDefaults = $old === [] || ($defaultsForEmpty ?? false))
+@php($listValue = fn (array $field) => ($old[$field['key']] ?? '') === '' && $useDefaults && ($field['default'] ?? null) !== null ? $field['default'] : ($old[$field['key']] ?? ''))
 @php($firstInvalid = collect($fields)->flatMap(fn ($field) => [$field['key'], $field['key'].'_details'])->first(fn ($key) => isset($fieldErrors[$key])))
 @foreach ($fields as $field)
   @if ($field['control'] === 'radio')
-    <x-field type="radio" :name="$field['key']" :id="'f-'.$field['key']" :label="$field['label']"
-             :value="$old[$field['key']] ?? ''" :options="$field['options']" :placeholder="$field['required'] ? null : __('public.not_set')"
+    <x-field type="radio" :name="$field['key']" :id="'f-'.$field['key']" :label="$field['label']" :default="$field['default'] ?? null"
+             :value="$listValue($field)" :options="$field['options']" :placeholder="$field['required'] ? null : __('public.not_set')"
              :error="$fieldErrors[$field['key']] ?? null" :required="$field['required']" :mark="$field['required']"
              :autofocus="$firstInvalid === $field['key']" />
   @elseif ($field['control'] === 'select')
-    <x-field type="select" :name="$field['key']" :id="'f-'.$field['key']" :label="$field['label']"
-             :value="$old[$field['key']] ?? ''" :options="$field['options']" :placeholder="__('public.choose')"
+    <x-field type="select" :name="$field['key']" :id="'f-'.$field['key']" :label="$field['label']" :default="$field['default'] ?? null"
+             :value="$listValue($field)" :options="$field['options']" :placeholder="__('public.choose')"
              :error="$fieldErrors[$field['key']] ?? null" :required="$field['required']" :mark="$field['required']"
              :autofocus="$firstInvalid === $field['key']" />
   @else

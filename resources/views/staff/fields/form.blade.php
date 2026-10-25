@@ -43,7 +43,7 @@
     @if (! $editing || $field->type === 'select')
       <section class="choices" aria-labelledby="choices-title" data-choices>
         <h2 id="choices-title">Choices</h2>
-        <p class="hint" id="choices-hint">For a list of choices. A list with no active choices is shown as a free-text box. Choice values cannot change once added; deactivate a choice to hide it. One choice, such as "Other", can ask for details: choosing it shows a required "Please specify" box.</p>
+        <p class="hint" id="choices-hint">For a list of choices. A list with no active choices is shown as a free-text box. Choice values cannot change once added; deactivate a choice to hide it. One choice, such as "Other", can ask for details: choosing it shows a required "Please specify" box. One choice can be selected by default: new entries start with it.</p>
         @error('new_options')<p class="alert alert-danger notice notice-err" role="alert">{{ $message }}</p>@enderror
         <x-field type="radio" name="widget" label="Show as" :value="old('widget', $field->widget ?? 'select')"
                  :options="['select' => 'Dropdown', 'radio' => 'Radio buttons']" />
@@ -58,6 +58,8 @@
                      :checked="(bool) old('options.'.$i.'.is_active', $option['is_active'] ?? true)" />
             <x-field type="checkbox" :name="'options['.$i.'][asks_details]'" :id="'opt-'.$i.'-details'" label="Asks for details"
                      :checked="(bool) old('options.'.$i.'.asks_details', $option['asks_details'] ?? false)" />
+            <x-field type="checkbox" :name="'options['.$i.'][default]'" :id="'opt-'.$i.'-default'" label="Selected by default"
+                     :checked="(bool) old('options.'.$i.'.default', $option['default'] ?? false)" />
           </fieldset>
         @endforeach
         @for ($i = 0; $i < 3; $i++)
@@ -71,6 +73,8 @@
                      :value="old('new_options.'.$i.'.label_ar')" maxlength="100" dir="rtl" lang="ar" />
             <x-field type="checkbox" :name="'new_options['.$i.'][asks_details]'" :id="'new-'.$i.'-details'" label="Asks for details"
                      :checked="(bool) old('new_options.'.$i.'.asks_details')" />
+            <x-field type="checkbox" :name="'new_options['.$i.'][default]'" :id="'new-'.$i.'-default'" label="Selected by default"
+                     :checked="(bool) old('new_options.'.$i.'.default')" />
           </fieldset>
         @endfor
       </section>
