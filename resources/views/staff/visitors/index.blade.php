@@ -137,7 +137,13 @@
         <td data-label="Registered">{{ $visitor->created_at->timezone($timezone)->format('Y-m-d H:i') }}</td>
         @if ($manager)<td data-label="Source">{{ $visitor->source === 'public' ? 'QR form' : 'Staff: '.($visitor->enteredBy?->name ?? '?') }}</td>@endif
         @if ($showErp)<td data-label="ERP">{{ \App\Visitors\VisitorQuery::syncLabel($visitor->sync_state, $syncKind) }}</td>@endif
-        @if ($showPackage)<td data-label="Package">@if ($visitor->exhibition?->offers_package)@if ($visitor->package_received_at)<span class="badge bg-success-lt">Received</span>@else<span class="badge bg-secondary-lt">Not received</span>@endif@endif</td>@endif
+        @if ($showPackage)
+          <td data-label="Package">
+            @if ($visitor->exhibition?->offers_package)
+              @if ($visitor->package_received_at)<span class="badge bg-success-lt">Received</span>@else<span class="badge bg-secondary-lt">Not received</span>@endif
+            @endif
+          </td>
+        @endif
         <td class="row-actions">
           @if (! $lock)
             @can('update', $visitor)<a href="{{ route('visitors.edit', $visitor) }}">Edit</a>@endcan

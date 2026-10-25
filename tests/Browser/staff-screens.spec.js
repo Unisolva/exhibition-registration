@@ -129,6 +129,8 @@ test('on a phone the menu button opens the full menu from the keyboard (M10 CO-2
   await expect(page.locator('#staff-menu a[aria-current=page]')).toHaveText('Visitors');
   await expect(page.locator('#staff-menu')).toContainText('Exhibitions');
   await expect(page.locator('#staff-menu')).toContainText('Sign out');
+  // Bootstrap ignores a second press while the menu is still opening.
+  await expect(page.locator('#staff-menu')).toHaveClass(/(^|\s)show(\s|$)/);
   await page.keyboard.press('Enter');
   await expect(toggler).toHaveAttribute('aria-expanded', 'false');
   await page.context().close();
