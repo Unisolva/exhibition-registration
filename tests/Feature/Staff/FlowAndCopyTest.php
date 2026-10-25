@@ -141,7 +141,7 @@ class FlowAndCopyTest extends TestCase
 
         $this->actingAs($super)->get('/staff/erp')->assertOk()
             ->assertSeeInOrder(['<legend>Active connection</legend>', 'name="kind" value="test"', 'name="kind" value="live"', 'Use the selected connection…', 'class="erp-blocks"'], false)
-            ->assertSee('<button type="submit" class="btn btn-secondary">Stop sending</button>', false);
+            ->assertSee('<button type="submit" class="btn btn-outline-primary">Stop sending</button>', false);
 
         // The confirmation names the chosen block, its URL and database, and posts to erp.activate.
         $this->actingAs($super)->get('/staff/erp/activate?kind=test')->assertOk()
@@ -226,7 +226,7 @@ class FlowAndCopyTest extends TestCase
         // L5: the organisation on the sign-in page.
         app(Settings::class)->set('org_name_en', 'Sample Agri Company');
         auth()->logout();
-        $this->get('/staff/login')->assertSeeInOrder(['<p class="org-line">Sample Agri Company</p>', '<h1>Sign in</h1>'], false);
+        $this->get('/staff/login')->assertSeeInOrder(['<p class="org-line">Sample Agri Company</p>', '<h1 class="page-title">Sign in</h1>'], false);
 
         // L9: the closed page says what to do next.
         $closed = Exhibition::factory()->english()->closed()->create();

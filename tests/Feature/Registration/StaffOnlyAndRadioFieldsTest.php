@@ -74,7 +74,7 @@ class StaffOnlyAndRadioFieldsTest extends TestCase
         $this->actingAs($super)->get("/staff/settings/fields/{$governorate->id}/edit")->assertDontSee('<legend>Show as</legend>', false);
 
         // The list shows the badge and the widget.
-        $this->actingAs($super)->get('/staff/settings/fields')->assertSee('<span class="badge badge-staff">Staff only</span>', false)->assertSee('<span class="badge">Radio</span>', false);
+        $this->actingAs($super)->get('/staff/settings/fields')->assertSee('<span class="badge bg-orange-lt badge-staff">Staff only</span>', false)->assertSee('<span class="badge bg-blue-lt">Radio</span>', false);
     }
 
     public function test_co1_staff_only_fields_count_toward_the_15_active_custom_fields(): void

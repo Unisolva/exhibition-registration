@@ -19,13 +19,18 @@
 }
 
 body.staff { font-size: 1rem; }
+/* Bootstrap scrolls smoothly; Save & New moves its message into view at once (M8 CO-4). */
+:root { scroll-behavior: auto; }
 [hidden] { display: none !important; }
 
 /* Two-tone focus ring (WCAG C40): 2 px of --focus next to the element, 3 px of --ink outside it.
    Tabler's own focus shadows are replaced so the ring looks the same everywhere. */
 :is(input, select, textarea, button, a, summary, .btn, .nav-link, .form-control, .form-select, .form-check-input):focus-visible {
   outline: 3px solid var(--ink) !important; outline-offset: 2px !important; box-shadow: 0 0 0 5px var(--focus) !important;
+  transition: none !important;
 }
+/* Links inside text are underlined (WCAG 1.4.1); buttons and navigation are not. */
+a:not(.btn):not(.nav-link):not(.navbar-brand):not(.skip-link) { text-decoration: underline; }
 .skip-link { position: absolute; inset-inline-start: -999rem; top: .5rem; z-index: 2000; background: #fff; color: var(--ink); padding: .5rem 1rem; border-radius: var(--radius); }
 .skip-link:focus { inset-inline-start: .5rem; }
 
@@ -52,12 +57,13 @@ a { padding-block: 2px; }
 .staff-shortcuts .btn { padding-inline: .75rem; }
 .staff-shortcuts .btn[aria-current=page] { box-shadow: inset 0 -3px 0 #fff; }
 .staff-nav .navbar-toggler { min-inline-size: 44px; min-block-size: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0; flex: none; }
+@media (min-width: 992px) { .staff-nav .navbar-toggler { display: none; } }
 .staff-nav .navbar-toggler .icon { inline-size: 1.5rem; block-size: 1.5rem; }
 .staff-menu .nav-section-title { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: #b6c0ca; margin-block: 1rem .25rem; padding-inline: 1rem; }
 .staff-menu .nav-section-title:first-child { margin-block-start: .25rem; }
 .staff-nav .nav-link { min-block-size: 44px; font-size: 1rem; }
 /* The current page: bold with a bar at the start edge (M8 CO-13). */
-.staff-nav .nav-item.active > .nav-link { font-weight: 700; box-shadow: inset 4px 0 0 var(--tblr-primary); }
+.staff-nav .nav-item.active > .nav-link { font-weight: 700 !important; box-shadow: inset 4px 0 0 var(--tblr-primary); }
 .staff-user { border-block-start: 1px solid rgba(255, 255, 255, .15); margin-block-start: 1rem; padding-block: .5rem; }
 .staff-user-name { margin: 0; padding: .25rem 1rem; color: #fff; font-weight: 600; }
 .staff-user-role { display: block; font-weight: 400; font-size: .875rem; color: #b6c0ca; }
@@ -88,6 +94,11 @@ html:not(.js) .staff-nav .navbar-toggler { display: none; }
 .page-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
 .page-actions form { margin: 0; }
 .alert { font-size: 1rem; }
+/* Alert text that reaches 4.5:1 on its tint. */
+.alert-success { color: #1e6b3a !important; background: #e5f3ea !important; border-color: #b9dfc6 !important; }
+.alert-warning { color: #7a4b00 !important; background: #fff4dc !important; border-color: #f0d49a !important; }
+.alert-danger { color: #a1121b !important; background: #fdeaea !important; border-color: #f2b8bb !important; }
+.alert a { color: inherit; }
 h2 { font-size: 1.2rem; }
 .card-title { font-size: 1.1rem; }
 
@@ -148,6 +159,13 @@ input.short { inline-size: 7rem; display: inline-block; }
 .badge-lock { display: inline-flex; align-items: center; gap: .25rem; }
 .badge-lock svg { inline-size: .85em; block-size: .85em; }
 .badge { font-size: .8rem; }
+/* Badge colours by meaning, with text that reaches 4.5:1 on its background (Tabler's light tints do not). */
+.badge.bg-success-lt, .badge.bg-green-lt { color: #1e6b3a !important; background: #e5f3ea !important; }
+.badge.bg-secondary-lt { color: #3b434c !important; background: #e8ebef !important; }
+.badge.bg-warning-lt { color: #7a4b00 !important; background: #fff4dc !important; }
+.badge.bg-danger-lt, .badge.bg-red-lt { color: #a1121b !important; background: #fdeaea !important; }
+.badge.bg-orange-lt { color: #8a3b00 !important; background: #ffe8d6 !important; }
+.badge.bg-blue-lt { color: #1f4e79 !important; background: #e3eef8 !important; }
 
 /* Save & New: the sticky exhibition bar and a status line that never moves the form (M8, M9 CO-13). */
 .entry-bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center;
@@ -204,3 +222,18 @@ input.short { inline-size: 7rem; display: inline-block; }
 /* Home: one card per open exhibition (M10 CO-3). */
 .stat-value { font-size: 1.75rem; font-weight: 700; line-height: 1.2; }
 .stat-split { color: var(--muted); font-size: .875rem; }
+
+/* Check boxes outside <x-field>, and notices from shared partials. */
+.check { display: flex; align-items: center; gap: .5rem; font-weight: 400; min-height: 44px; margin: 0; }
+.check input { width: 1.5rem; height: 1.5rem; flex: none; margin: 0; }
+.notice:not(.alert) { padding: .75rem 1rem; border-radius: var(--radius); margin-block-end: 1rem; border: 1px solid var(--line); background: #fff; }
+.notice-err:not(.alert) { color: var(--err); background: #fdeaea; border-color: #f2b8bb; }
+.error-summary p { margin: 0 0 .25rem; font-weight: 600; }
+.error-summary ul { margin: 0; padding-inline-start: 1.25rem; }
+.error-summary a { color: inherit; }
+.field > label:not(.check) { display: block; font-weight: 600; margin-block-end: .25rem; }
+/* Delete buttons: Tabler's red does not reach 4.5:1 with white text. */
+.btn-danger { background-color: #a1121b !important; border-color: #a1121b !important; color: #fff !important; }
+.btn-danger:hover { background-color: #86101a !important; border-color: #86101a !important; }
+.btn-outline-danger { color: #a1121b !important; border-color: #a1121b !important; }
+.btn-outline-danger:hover { background-color: #fdeaea !important; }

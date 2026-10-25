@@ -5,15 +5,15 @@
 
 @section('content')
 <div class="narrow">
-  <h1>Packages</h1>
+  <div class="page-header"><h1 class="page-title">Packages</h1></div>
   @if ($exhibitions->isEmpty())
     <p>There are no exhibitions yet. An admin creates them under Exhibitions.</p>
   @else
-    <form method="get" action="{{ route('packages.index') }}" class="card">
+    <form method="get" action="{{ route('packages.index') }}" class="card card-body">
       <x-field type="select" name="exhibition" label="Which exhibition are you handing packages out at?" required
-               :options="$exhibitions->mapWithKeys(fn ($e) => [$e->id => $e->name.($e->offers_package ? '' : ' · no package')])->all()" />
+               :options="$exhibitions->mapWithKeys(fn ($e) => [$e->id => $e->pickerLabel().($e->offers_package ? '' : ' · no package')])->all()" />
       <p class="hint">The same choice is used by Save &amp; New.</p>
-      <div class="actions"><button type="submit" class="btn">Start</button></div>
+      <div class="actions"><button type="submit" class="btn btn-primary">Start</button></div>
     </form>
   @endif
 </div>

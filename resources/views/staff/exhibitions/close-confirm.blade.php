@@ -5,8 +5,8 @@
 
 @section('content')
 <div class="narrow">
-  <h1>Close registration for {{ $exhibition->name }}?</h1>
-  <form method="post" action="{{ route('exhibitions.close', $exhibition) }}" class="card" data-once>
+  <div class="page-header"><h1 class="page-title">Close registration for {{ $exhibition->name }}?</h1></div>
+  <form method="post" action="{{ route('exhibitions.close', $exhibition) }}" class="card card-body" data-once>
     @csrf
     <p>Visitors who scan the QR will see "Registration is closed". Staff can still enter visitors.</p>
     <div class="actions">

@@ -4,23 +4,23 @@
 @section('title', 'ERP (Odoo)')
 
 @section('content')
-<h1>ERP (Odoo)</h1>
+<div class="page-header"><h1 class="page-title">ERP (Odoo)</h1></div>
 
 @if ($report)
-  <div class="notice {{ $report['ok'] ? 'notice-ok' : 'notice-err' }}" role="status">
+  <div class="alert {{ $report['ok'] ? 'alert-success notice-ok' : 'alert-danger notice-err' }} notice" role="status">
     {{ strtoupper($report['kind']) }} connection test: {{ $report['message'] }}
   </div>
 @endif
 @if ($errors->any())
-  <div class="notice notice-err" role="alert">@foreach ($errors->all() as $message){{ $message }} @endforeach</div>
+  <div class="alert alert-danger notice notice-err" role="alert">@foreach ($errors->all() as $message){{ $message }} @endforeach</div>
 @endif
 @foreach (['test', 'live'] as $kind)
   @if ($errors->getBag('block_'.$kind)->any())
-    <div class="notice notice-err" role="alert"><a href="#block-{{ $kind }}">{{ strtoupper($kind) }} connection not saved</a>: please fix the fields marked below.</div>
+    <div class="alert alert-danger notice notice-err" role="alert"><a href="#block-{{ $kind }}">{{ strtoupper($kind) }} connection not saved</a>: please fix the fields marked below.</div>
   @endif
 @endforeach
 
-<form method="post" action="{{ route('erp.settings') }}" class="card">
+<form method="post" action="{{ route('erp.settings') }}" class="card card-body">
   @csrf
   @method('PUT')
   <h2>Mode and version</h2>
@@ -39,36 +39,36 @@
     <x-field name="odoo_tag_ids" label="Tag IDs (comma-separated, optional)" :value="old('odoo_tag_ids', implode(', ', (array) $settings->get('odoo_tag_ids')))" />
   </div>
   <p class="hint">Changing the version marks both connections untested and switches sending off.</p>
-  <div class="actions"><button type="submit" class="btn">Save</button></div>
+  <div class="actions"><button type="submit" class="btn btn-primary">Save</button></div>
 </form>
 
 @if ($settings->get('erp_mode') === 'odoo')
   <h2>Connections</h2>
   {{-- The choice and its button together (M8 CO-18); the button opens a confirmation page. --}}
-  <form method="get" action="{{ route('erp.activate-confirm') }}" class="card activate-choice">
+  <form method="get" action="{{ route('erp.activate-confirm') }}" class="card card-body activate-choice">
     <fieldset>
       <legend>Active connection</legend>
       <div class="choice-row">
         @foreach ($blocks as $kind => $block)
           <label class="check">
             <input type="radio" name="kind" value="{{ $kind }}" @checked($block?->is_active) @disabled(! $block)>
-            {{ strtoupper($kind) }}@if ($block?->is_active) <span class="badge">Active</span>@elseif (! $block) <span class="hint">(not saved yet)</span>@endif
+            {{ strtoupper($kind) }}@if ($block?->is_active) <span class="badge bg-success-lt">Active</span>@elseif (! $block) <span class="hint">(not saved yet)</span>@endif
           </label>
         @endforeach
       </div>
     </fieldset>
     <div class="actions">
-      <button type="submit" class="btn">Use the selected connection…</button>
+      <button type="submit" class="btn btn-primary">Use the selected connection…</button>
       <span class="hint">You confirm on the next page. Allowed only after a passing test, and only when the active connection has no unfinished items.</span>
     </div>
   </form>
   <div class="erp-blocks">
     @foreach ($blocks as $kind => $block)
       @php($key = $block?->keyStatus() ?? ['status' => 'none', 'ends' => null])
-      <section class="card erp-block {{ $block?->is_active ? 'is-active' : '' }}" aria-labelledby="block-{{ $kind }}">
+      <section class="card card-body erp-block {{ $block?->is_active ? 'is-active' : '' }}" aria-labelledby="block-{{ $kind }}">
         <h3 id="block-{{ $kind }}">
           {{ strtoupper($kind) }}
-          @if ($block?->is_active)<span class="badge">Active</span>@endif
+          @if ($block?->is_active)<span class="badge bg-success-lt">Active</span>@endif
         </h3>
 
         <form method="post" action="{{ route('erp.blocks.save', $kind) }}" autocomplete="off">
@@ -84,13 +84,13 @@
                    :value="$typed ? old('login') : $block?->login" dir="ltr" required />
           <x-field type="password" name="api_key" :id="$kind.'-key'" :bag="$bag" label="API key" dir="ltr" autocomplete="new-password" :hint="$keyHint" />
           <p class="hint">Changing the URL or database clears the stored key.</p>
-          <div class="actions"><button type="submit" class="btn btn-secondary">Save {{ strtoupper($kind) }}</button></div>
+          <div class="actions"><button type="submit" class="btn btn-outline-primary">Save {{ strtoupper($kind) }}</button></div>
         </form>
 
         @if ($block)
           <form method="post" action="{{ route('erp.blocks.test', $kind) }}" class="spaced">
             @csrf
-            <button type="submit" class="btn btn-secondary">Test connection</button>
+            <button type="submit" class="btn btn-outline-primary">Test connection</button>
             <span class="hint">
               @if ($block->last_test_at)
                 Last test {{ $block->last_test_at->timezone($settings->get('display_timezone'))->format('Y-m-d H:i') }}:
@@ -107,18 +107,18 @@
   </div>
 
   <h2>Sending to Odoo</h2>
-  <form method="post" action="{{ route('erp.push') }}" class="card">
+  <form method="post" action="{{ route('erp.push') }}" class="card card-body">
     @csrf
     @method('PUT')
     <p>Sending to Odoo is <strong>{{ $settings->get('erp_push_enabled') ? 'on' : 'off' }}</strong>.</p>
     <input type="hidden" name="enabled" value="{{ $settings->get('erp_push_enabled') ? '0' : '1' }}">
-    <button type="submit" class="btn btn-secondary">{{ $settings->get('erp_push_enabled') ? 'Stop sending' : 'Start sending' }}</button>
+    <button type="submit" class="btn btn-outline-primary">{{ $settings->get('erp_push_enabled') ? 'Stop sending' : 'Start sending' }}</button>
   </form>
 
   @if ($active && $unfinished->isNotEmpty())
     <h2>Unfinished items on the active connection</h2>
     <p>The connection cannot be switched or changed until these are finished, cancelled or reviewed.</p>
-    <table class="stack-sm">
+    <div class="card mb-3"><div class="table-responsive"><table class="table table-vcenter card-table stack-sm">
       <thead><tr><th>Item</th><th>Visitor</th><th>State</th><th>Batch</th></tr></thead>
       <tbody>
       @foreach ($unfinished as $item)
@@ -126,10 +126,10 @@
           <td data-label="Batch"><a href="{{ route('batches.show', $item->batch_id) }}">Batch #{{ $item->batch_id }}</a></td></tr>
       @endforeach
       </tbody>
-    </table>
+    </table></div></div>
     <form method="post" action="{{ route('erp.cancel-waiting') }}" class="spaced">
       @csrf
-      <button type="submit" class="btn btn-secondary">Cancel waiting items</button>
+      <button type="submit" class="btn btn-outline-primary">Cancel waiting items</button>
       <span class="hint">Cancels queued and waiting-to-retry items. Items being processed finish within one run; items needing review must be resolved on their batch.</span>
     </form>
   @endif

@@ -8,8 +8,8 @@
 
 @section('content')
 <div class="narrow">
-  <h1>{{ $editing ? 'Edit field: '.$field->label_en : 'Add a field' }}</h1>
-  <form method="post" action="{{ $editing ? route('fields.update', $field) : route('fields.store') }}" class="card" novalidate>
+  <div class="page-header"><h1 class="page-title">{{ $editing ? 'Edit field: '.$field->label_en : 'Add a field' }}</h1></div>
+  <form method="post" action="{{ $editing ? route('fields.update', $field) : route('fields.store') }}" class="card card-body" novalidate>
     @csrf
     @if ($editing) @method('PUT') @endif
 
@@ -44,7 +44,7 @@
       <section class="choices" aria-labelledby="choices-title" data-choices>
         <h2 id="choices-title">Choices</h2>
         <p class="hint" id="choices-hint">For a list of choices. A list with no active choices is shown as a free-text box. Choice values cannot change once added; deactivate a choice to hide it.</p>
-        @error('new_options')<p class="notice notice-err" role="alert">{{ $message }}</p>@enderror
+        @error('new_options')<p class="alert alert-danger notice notice-err" role="alert">{{ $message }}</p>@enderror
         <x-field type="radio" name="widget" label="Show as" :value="old('widget', $field->widget ?? 'select')"
                  :options="['select' => 'Dropdown', 'radio' => 'Radio buttons']" />
         @foreach ($field->options ?? [] as $i => $option)
@@ -73,7 +73,7 @@
     @endif
 
     <div class="actions">
-      <button type="submit" class="btn">Save</button>
+      <button type="submit" class="btn btn-primary">Save</button>
       <a href="{{ route('fields.index') }}">Cancel</a>
     </div>
   </form>

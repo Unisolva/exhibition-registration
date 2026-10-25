@@ -5,8 +5,8 @@
 
 @section('content')
 <div class="narrow">
-  <h1>Settings</h1>
-  <form method="post" action="{{ route('settings.general.update') }}" class="card" novalidate>
+  <div class="page-header"><h1 class="page-title">Settings</h1></div>
+  <form method="post" action="{{ route('settings.general.update') }}" class="card card-body" novalidate>
     @csrf
     @method('PUT')
 
@@ -26,7 +26,7 @@
              :value="old('retention_months', $settings->get('retention_months'))"
              hint="Older visitors are deleted for good by the nightly housekeeping, even if they were sent to the ERP. Visitors still being sent wait until sending has finished." />
 
-    <div class="actions"><button type="submit" class="btn">Save</button></div>
+    <div class="actions"><button type="submit" class="btn btn-primary">Save</button></div>
   </form>
 </div>
 @endsection

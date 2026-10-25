@@ -4,13 +4,13 @@
 @section('title', 'Trash')
 
 @section('content')
-<h1>Trash</h1>
+<div class="page-header"><h1 class="page-title">Trash</h1></div>
 <p>Deleted visitors stay here for {{ \App\Http\Controllers\Staff\TrashController::DAYS }} days and can be restored. After that they are deleted for good.</p>
 
 @if ($visitors->isEmpty())
   <p>The trash is empty.</p>
 @else
-  <table class="stack-sm">
+  <div class="card mb-3"><div class="table-responsive"><table class="table table-vcenter card-table stack-sm">
     <thead><tr><th>Name</th><th>Exhibition</th><th>Deleted</th><th>Days left</th><th><span class="hint">Actions</span></th></tr></thead>
     <tbody>
     @foreach ($visitors as $visitor)
@@ -23,7 +23,7 @@
         <td>
           <form method="post" action="{{ route('trash.restore', $visitor) }}" class="inline">
             @csrf
-            <button type="submit" class="btn btn-secondary">Restore</button>
+            <button type="submit" class="btn btn-outline-primary">Restore</button>
           </form>
           @can('forceDelete', $visitor)
             <form method="post" action="{{ route('trash.destroy', $visitor) }}" class="inline purge">
@@ -38,7 +38,7 @@
       </tr>
     @endforeach
     </tbody>
-  </table>
+  </table></div></div>
   <nav class="actions pager" aria-label="Pages">
     @if ($visitors->previousPageUrl())<a href="{{ $visitors->previousPageUrl() }}">← Previous</a>@endif
     @if ($visitors->nextPageUrl())<a href="{{ $visitors->nextPageUrl() }}">Next →</a>@endif

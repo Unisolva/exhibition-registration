@@ -5,10 +5,10 @@
 
 @section('content')
 <div class="narrow">
-  <h1>Send to the ERP</h1>
+  <div class="page-header"><h1 class="page-title">Send to the ERP</h1></div>
 
   @if (! $connection)
-    <div class="notice notice-err" role="alert">No ERP connection is active. A super admin selects one on the ERP screen.</div>
+    <div class="alert alert-danger notice notice-err" role="alert">No ERP connection is active. A super admin selects one on the ERP screen.</div>
   @else
     <div class="destination destination-{{ $connection->kind }}">
       <div class="destination-kind">{{ $connection->label() }}</div>
@@ -25,16 +25,16 @@
     <p class="hint">Each lead also carries the exhibition, the source, the registration time and a reference line, so a retry never creates it twice.</p>
 
     @if (! $pushEnabled)
-      <div class="notice notice-err" role="alert">Sending to Odoo is off. A super admin switches it on on the ERP screen.</div>
+      <div class="alert alert-danger notice notice-err" role="alert">Sending to Odoo is off. A super admin switches it on on the ERP screen.</div>
     @elseif ($counts['eligible'] === 0)
-      <div class="notice notice-warn" role="status">Nothing to send.</div>
+      <div class="alert alert-warning notice notice-warn" role="status">Nothing to send.</div>
     @else
       <form method="post" action="{{ route('batches.store') }}" data-once>
         @csrf
         <input type="hidden" name="batch_token" value="{{ $batchToken }}">
         @foreach ($ids as $id)<input type="hidden" name="visitor_ids[]" value="{{ $id }}">@endforeach
         <div class="actions">
-          <button type="submit" class="btn">Send {{ trans_choice('{1} 1 lead|[2,*] :count leads', $counts['eligible'], ['count' => $counts['eligible']]) }} to {{ $connection->label() }}</button>
+          <button type="submit" class="btn btn-primary">Send {{ trans_choice('{1} 1 lead|[2,*] :count leads', $counts['eligible'], ['count' => $counts['eligible']]) }} to {{ $connection->label() }}</button>
           <a href="{{ route('visitors.index') }}">Cancel</a>
         </div>
       </form>

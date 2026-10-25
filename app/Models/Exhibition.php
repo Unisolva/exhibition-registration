@@ -82,6 +82,12 @@ class Exhibition extends Model
     }
 
     /** The package note in a language, falling back to the other one (M9 CO-6). */
+    /** The label in the Save & New and Packages pickers (M10 CO-4a): the name and the first day. */
+    public function pickerLabel(): string
+    {
+        return $this->name.' ('.$this->starts_on->format('j M Y').')';
+    }
+
     public function packageNote(string $locale): string
     {
         $ar = trim((string) $this->package_note_ar);

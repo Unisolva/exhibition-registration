@@ -7,6 +7,8 @@
   type: text, email, tel, password, date, number, url, file, select, radio, textarea or checkbox.
   The error comes from the error bag ($bag, key $errorKey or $name), or from $error when the
   caller has its own messages (the registration forms).
+  M10 CO-4: on staff pages the label and control also get Tabler's classes; the public pages keep
+  exactly their markup (they do not load Tabler).
 --}}
 @props([
     'name',
@@ -25,10 +27,13 @@
     'mark' => false,
 ])
 @php
+    $tabler = ! request()->routeIs('public.*');
     $id ??= trim(preg_replace('/[^A-Za-z0-9_-]+/', '-', $name), '-');
     $message = $error ?? $errors->getBag($bag)->first($errorKey ?? $name);
     $describedBy = trim(($hint ? $id.'-hint ' : '').($message ? $id.'-error' : ''));
+    $controlClass = $tabler ? match ($type) { 'select' => 'form-select', 'checkbox' => 'form-check-input', default => 'form-control' } : null;
     $control = $attributes->merge(array_filter([
+        'class' => $controlClass,
         'id' => $id,
         'name' => $name,
         'required' => $required,
@@ -45,7 +50,7 @@
     <legend>{{ $label }}@if ($mark)<span class="req" aria-hidden="true"> *</span>@endif</legend>
     @if ($hint)<div class="hint" id="{{ $id }}-hint">{{ $hint }}</div>@endif
     @foreach ($choices as $optionValue => $optionLabel)
-      <label class="radio"><input type="radio" name="{{ $name }}" value="{{ $optionValue }}" id="{{ $id }}-{{ $loop->index }}"
+      <label class="radio"><input type="radio"{!! $tabler ? ' class="form-check-input"' : '' !!} name="{{ $name }}" value="{{ $optionValue }}" id="{{ $id }}-{{ $loop->index }}"
         @checked((string) $value === (string) $optionValue) @if ($required) required @endif @if ($message) aria-invalid="true" @endif
         @if ($loop->first && $attributes->get('autofocus')) autofocus @endif> {{ $optionLabel }}</label>
     @endforeach
@@ -59,7 +64,7 @@
   </div>
 @else
   <div class="field">
-    <label for="{{ $id }}">{{ $label }}@if ($mark)<span class="req" aria-hidden="true"> *</span>@endif</label>
+    <label for="{{ $id }}"{!! $tabler ? ' class="form-label"' : '' !!}>{{ $label }}@if ($mark)<span class="req" aria-hidden="true"> *</span>@endif</label>
     @if ($hint)<div class="hint" id="{{ $id }}-hint">{{ $hint }}</div>@endif
     @if ($type === 'select')
       <select {{ $control }}>
