@@ -1,0 +1,206 @@
+/* Copyright (c) 2026 Unisolva for Information Technology and App Development L.L.C. All rights reserved. See LICENSE. */
+/* Staff screens on Tabler (M10): loaded after tabler.min.css. Only what Tabler does not do, or must do
+   differently here: 16 px text and 44 px controls (M8 CO-3), the two-tone focus ring (M8 CO-11), the TEST
+   banner, phone stacking of tables (M8 CO-12) and the Save & New and hand-over details. The public pages
+   and the poster keep app.css and never load this file. */
+
+:root {
+  --tblr-body-font-size: 1rem;
+  --tblr-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Arabic", Tahoma, sans-serif;
+  --ink: #1b1f24;
+  --muted: #5b6470;
+  --line: #d5d9de;
+  --focus: #f2b705;
+  --test: #a1121b;
+  --warn-bg: #fff4dc;
+  --warn-line: #f0d49a;
+  --err: #a1121b;
+  --radius: 6px;
+}
+
+body.staff { font-size: 1rem; }
+[hidden] { display: none !important; }
+
+/* Two-tone focus ring (WCAG C40): 2 px of --focus next to the element, 3 px of --ink outside it.
+   Tabler's own focus shadows are replaced so the ring looks the same everywhere. */
+:is(input, select, textarea, button, a, summary, .btn, .nav-link, .form-control, .form-select, .form-check-input):focus-visible {
+  outline: 3px solid var(--ink) !important; outline-offset: 2px !important; box-shadow: 0 0 0 5px var(--focus) !important;
+}
+.skip-link { position: absolute; inset-inline-start: -999rem; top: .5rem; z-index: 2000; background: #fff; color: var(--ink); padding: .5rem 1rem; border-radius: var(--radius); }
+.skip-link:focus { inset-inline-start: .5rem; }
+
+/* 44 px controls with 16 px text (M8 CO-3). */
+.form-control, .form-select { min-height: 44px; font-size: 1rem; }
+.btn { min-height: 44px; font-size: 1rem; font-weight: 600; }
+.btn-sm { min-height: 32px; font-size: .875rem; }
+.form-check-input { width: 1.5rem; height: 1.5rem; margin-top: 0; }
+.form-check { display: flex; align-items: center; gap: .5rem; min-height: 44px; padding-inline-start: 0; margin: 0; }
+.form-check .form-check-input { float: none; margin-inline-start: 0; flex: none; }
+.form-check-label { font-weight: 400; }
+.form-label { font-weight: 600; }
+a { padding-block: 2px; }
+.btn-link { padding-inline: 0; }
+
+/* TEST banner: full width, red, above everything. */
+.test-banner { background: var(--test); color: #fff; text-align: center; font-weight: 700; padding: .5rem 1rem; }
+
+/* Sidebar (from 992 px) and phone top bar. */
+.staff-nav { --tblr-navbar-bg: #1d2731; }
+.staff-topbar { display: flex; align-items: center; gap: .5rem; inline-size: 100%; min-inline-size: 0; }
+.staff-brand { margin-inline-end: auto; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1rem; padding-block: .5rem; }
+.staff-shortcuts { display: flex; gap: .375rem; flex: none; }
+.staff-shortcuts .btn { padding-inline: .75rem; }
+.staff-shortcuts .btn[aria-current=page] { box-shadow: inset 0 -3px 0 #fff; }
+.staff-nav .navbar-toggler { min-inline-size: 44px; min-block-size: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0; flex: none; }
+.staff-nav .navbar-toggler .icon { inline-size: 1.5rem; block-size: 1.5rem; }
+.staff-menu .nav-section-title { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: #b6c0ca; margin-block: 1rem .25rem; padding-inline: 1rem; }
+.staff-menu .nav-section-title:first-child { margin-block-start: .25rem; }
+.staff-nav .nav-link { min-block-size: 44px; font-size: 1rem; }
+/* The current page: bold with a bar at the start edge (M8 CO-13). */
+.staff-nav .nav-item.active > .nav-link { font-weight: 700; box-shadow: inset 4px 0 0 var(--tblr-primary); }
+.staff-user { border-block-start: 1px solid rgba(255, 255, 255, .15); margin-block-start: 1rem; padding-block: .5rem; }
+.staff-user-name { margin: 0; padding: .25rem 1rem; color: #fff; font-weight: 600; }
+.staff-user-role { display: block; font-weight: 400; font-size: .875rem; color: #b6c0ca; }
+.staff-user form { margin: 0; }
+.staff-signout { background: none; border: 0; inline-size: 100%; text-align: start; color: inherit; cursor: pointer; }
+html:not(.js) .staff-nav .collapse:not(.show) { display: block; }
+html:not(.js) .staff-nav .navbar-toggler { display: none; }
+@media (max-width: 991.98px) {
+  .staff-nav { padding-block: .25rem; }
+  .staff-nav .container-fluid { padding-inline: .75rem; }
+  .test-banner { font-size: .875rem; line-height: 1.35; padding: .3rem .75rem; }
+}
+@media (min-width: 992px) {
+  .staff-topbar { padding-inline: 0; }
+  .staff-brand { white-space: normal; padding: 1rem; font-size: 1.1rem; }
+  .staff-nav .navbar-collapse { flex: 1; overflow-y: auto; }
+  .staff-user { margin-block-start: auto; }
+  .has-test-banner .test-banner { position: sticky; top: 0; z-index: 1035; block-size: 2.5rem; line-height: 1.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .has-test-banner .navbar-vertical.navbar-expand-lg { top: 2.5rem; }
+  .has-test-banner .entry-bar { top: 2.5rem; }
+}
+
+.page-body { margin-block: 1rem 2rem; }
+.page-body:focus { outline: none; }
+.page-header { margin-block: 0 1rem; }
+.page-title { font-size: 1.5rem; margin: 0; }
+.page-subtitle { color: var(--muted); margin: .25rem 0 0; }
+.page-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.page-actions form { margin: 0; }
+.alert { font-size: 1rem; }
+h2 { font-size: 1.2rem; }
+.card-title { font-size: 1.1rem; }
+
+/* Shared form pieces (the <x-field> component and partials). */
+.field { margin-block-end: 1rem; }
+.hint, .form-hint { color: var(--muted); font-size: .875rem; font-weight: 400; }
+.error { color: var(--err); font-size: .9rem; margin-block-start: .25rem; }
+.req { color: var(--err); }
+[aria-invalid=true] { border-color: var(--err); }
+.field-radio { border: 0; padding: 0; margin-inline: 0; min-inline-size: 0; }
+.field-radio legend { font-weight: 600; padding: 0; margin-block-end: .25rem; font-size: 1rem; }
+.radio { display: flex; align-items: center; gap: .5rem; font-weight: 400; min-height: 44px; margin: 0; cursor: pointer; }
+.radio input { width: 1.5rem; height: 1.5rem; flex: none; margin: 0; }
+.password-wrap { display: flex; gap: .5rem; }
+.password-wrap input { flex: 1; min-inline-size: 0; }
+.password-toggle { flex: none; }
+.actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.narrow { max-inline-size: 32rem; }
+.org-line { font-size: 1.1rem; font-weight: 700; color: var(--tblr-primary); margin: .5rem 0 .25rem; }
+.secret { font-family: ui-monospace, Consolas, monospace; font-size: 1.4rem; letter-spacing: .08em; padding: .75rem 1rem; background: #fff; border: 2px dashed var(--tblr-primary); display: inline-block; }
+.btn-block { inline-size: 100%; }
+.spaced { margin-block: 1.25rem .5rem; }
+.spaced form, form.inline { margin: 0; }
+form.inline { display: inline-block; vertical-align: top; }
+input.short { inline-size: 7rem; display: inline-block; }
+.purge label { font-weight: 400; font-size: .875rem; }
+.purge input { inline-size: 8rem; display: inline-block; }
+.option-row { margin-block-end: .75rem; }
+.lang-block + .lang-block { margin-block-start: 1.5rem; padding-block-start: 1.5rem; border-block-start: 1px solid var(--line); }
+
+/* Tables: phone stacking with the column name in front of each value (M8 CO-12). */
+.card-table td, .card-table th { vertical-align: middle; }
+.row-actions { white-space: nowrap; }
+.row-actions a { margin-inline-end: .75rem; }
+.row-actions a:last-child { margin-inline-end: 0; }
+.select-cell { padding: 0 !important; vertical-align: middle; inline-size: 44px; }
+.select-hit { display: flex; align-items: center; justify-content: center; min-inline-size: 44px; min-block-size: 44px; margin: 0; cursor: pointer; }
+.select-hit input { width: 1.5rem; height: 1.5rem; margin: 0; }
+@media (max-width: 40rem) {
+  .stack-sm thead { display: none; }
+  .stack-sm tr { display: block; border-block-end: 1px solid var(--line); padding-block: .5rem; }
+  .stack-sm td { display: block; border: 0 !important; padding-block: .15rem !important; }
+  .stack-sm td[data-label]::before { content: attr(data-label) ": "; font-weight: 600; color: var(--muted); }
+  .stack-sm .select-hit { justify-content: flex-start; }
+  .row-actions a { display: inline-flex; align-items: center; min-block-size: 44px; }
+}
+
+/* Details lists. */
+.details { display: grid; grid-template-columns: minmax(8rem, max-content) 1fr; gap: .4rem 1rem; margin: 0; }
+.details dt { font-weight: 600; }
+.details dd { margin: 0; }
+@media (max-width: 40rem) { .details { grid-template-columns: 1fr; } }
+.changes { margin: 0; padding-inline-start: 1.1rem; }
+.overview { padding-inline-start: 1.25rem; margin: 0; }
+.overview li { margin-block-end: .35rem; }
+
+/* Badges with an icon. */
+.badge-lock { display: inline-flex; align-items: center; gap: .25rem; }
+.badge-lock svg { inline-size: .85em; block-size: .85em; }
+.badge { font-size: .8rem; }
+
+/* Save & New: the sticky exhibition bar and a status line that never moves the form (M8, M9 CO-13). */
+.entry-bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center;
+  background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: var(--radius); padding: .6rem 1rem; margin-block-end: 1rem; }
+.entry-status { min-height: calc(4rem + 2px); }
+.entry-status .alert { margin: 0; }
+@media (max-width: 40rem) { .entry-status { min-height: 1.5rem; } }
+.saved-count { font-weight: 600; margin-block: .75rem 0; }
+
+/* Visitor filters (M8 CO-19, M9 CO-12, CO-14): a fold on phones, open on wide screens. */
+.filters { margin-block-end: 1rem; }
+.filter-details > summary { cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: .5rem; min-block-size: 44px; list-style: none; }
+.filter-details > summary::-webkit-details-marker { display: none; }
+.filter-details[open] > summary { margin-block-end: .5rem; }
+.filter-details > summary::after { content: "\25BE"; }
+.filter-details[open] > summary::after { content: "\25B4"; }
+@media (min-width: 40.01rem) {
+  @supports selector(::details-content) {
+    .filter-details > summary { display: none; }
+    .filter-details::details-content { content-visibility: visible; display: contents; }
+  }
+}
+.filter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); gap: 0 1rem; }
+.result-count { font-weight: 600; margin-block: 0 .5rem; }
+.select-bar { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; align-items: center; margin-block: .5rem 1rem; }
+.pager { margin-block: 1rem; }
+
+/* Exhibition QR and branding. */
+.qr-card { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+.qr { inline-size: 220px; block-size: 220px; background: #fff; }
+.qr svg { display: block; inline-size: 100%; block-size: 100%; }
+.url { word-break: break-all; }
+.logo-preview { max-height: 64px; max-width: 200px; border: 1px solid var(--line); padding: 4px; background: #fff; }
+
+/* Hand-over card and package code (M9 CO-9, CO-10). */
+.code-text { font-family: ui-monospace, Consolas, monospace; font-weight: 700; letter-spacing: .1em; }
+.package-card { margin-block-end: 1rem; }
+.package-log { padding-inline-start: 1.25rem; margin: .5rem 0 0; }
+
+/* ERP. */
+.destination { border: 3px solid var(--tblr-primary); border-radius: var(--radius); padding: .75rem 1rem; margin-block: 1rem; background: #fff; }
+.destination-test { border-color: var(--test); }
+.destination-kind { font-size: 2rem; font-weight: 800; letter-spacing: .05em; }
+.destination-test .destination-kind { color: var(--test); }
+.erp-blocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1rem; }
+.erp-block.is-active { border-color: var(--tblr-primary); border-width: 2px; }
+.activate-choice { margin-block-end: 1rem; }
+.activate-choice fieldset { border: 0; padding: 0; margin: 0 0 .5rem; }
+.activate-choice legend { font-weight: 600; margin-block-end: .25rem; font-size: 1rem; }
+.choice-row { display: flex; flex-wrap: wrap; gap: .25rem 2rem; }
+.erp-block h3 { margin-block-start: 0; display: flex; gap: .75rem; align-items: center; }
+.totals { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+
+/* Home: one card per open exhibition (M10 CO-3). */
+.stat-value { font-size: 1.75rem; font-weight: 700; line-height: 1.2; }
+.stat-split { color: var(--muted); font-size: .875rem; }

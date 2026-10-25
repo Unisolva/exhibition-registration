@@ -94,6 +94,29 @@ class SecurityHeadersTest extends TestCase
         $this->assertFalse($response->headers->has('X-Cacheable'));
 
         $this->get('/assets/app.0000000000.css')->assertNotFound();
+
+        // M10 CO-1: the vendored Tabler files keep their folder and ".min" part.
+        foreach (['vendor/tabler/tabler.min.css' => 'text/css', 'vendor/tabler/tabler.min.js' => 'text/javascript'] as $file => $type) {
+            $url = Asset::url($file);
+            $this->assertMatchesRegularExpression('#^/assets/vendor/tabler/tabler\.min\.[0-9a-f]{10}\.(css|js)$#', $url);
+            $this->assertStringStartsWith($type, $this->get($url)->assertOk()->headers->get('Content-Type'));
+        }
+        $this->get('/assets/vendor/tabler/tabler.min.0000000000.css')->assertNotFound();
+        $this->get('/assets/vendor/../app.'.substr((string) sha1_file(public_path('assets/app.css')), 0, 10).'.css')->assertNotFound();
+    }
+
+    public function test_tabler_makes_no_request_to_another_host(): void
+    {
+        // M10 CO-1: no web font import and no remote URL in the vendored CSS; only data: images.
+        $css = (string) file_get_contents(public_path('assets/vendor/tabler/tabler.min.css'));
+        $this->assertStringNotContainsString('@import', $css);
+        $this->assertStringNotContainsString('@font-face', $css);
+        preg_match_all('#url\(\s*["\']?([^"\')]+)#', $css, $m);
+        foreach ($m[1] as $url) {
+            $this->assertStringStartsWith('data:', $url);
+        }
+        $this->assertStringNotContainsString('sourceMappingURL', $css);
+        $this->assertStringNotContainsString('sourceMappingURL', (string) file_get_contents(public_path('assets/vendor/tabler/tabler.min.js')));
     }
 
     public function test_robots_are_told_to_stay_out(): void

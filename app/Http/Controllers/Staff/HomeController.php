@@ -19,6 +19,8 @@ use Illuminate\View\View;
  * the session, or the chooser). Admins and super admins get a short overview:
  * registrations today and in total per open exhibition and, in Odoo mode,
  * items needing review, whether sending is on and which connection is active.
+ * M10 CO-3: one card per open exhibition, with the QR / staff split and, when
+ * it offers a welcome package, packages given today and in total.
  */
 class HomeController extends Controller
 {
@@ -38,7 +40,10 @@ class HomeController extends Controller
             ->whereIn('exhibition_id', $open->pluck('id'))
             ->whereNull('trashed_at')->whereNull('deleted_at')
             ->groupBy('exhibition_id')
-            ->selectRaw('exhibition_id, COUNT(*) AS total, SUM(created_at BETWEEN ? AND ?) AS today', [$dayStart, $dayEnd])
+            ->selectRaw('exhibition_id, COUNT(*) AS total, SUM(created_at BETWEEN ? AND ?) AS today,'
+                .' SUM(source = ?) AS total_qr, SUM(source = ? AND created_at BETWEEN ? AND ?) AS today_qr,'
+                .' SUM(package_received_at IS NOT NULL) AS packages, SUM(package_received_at BETWEEN ? AND ?) AS packages_today',
+                [$dayStart, $dayEnd, 'public', 'public', $dayStart, $dayEnd, $dayStart, $dayEnd])
             ->get()->keyBy('exhibition_id');
 
         $odoo = $settings->get('erp_mode') === 'odoo';

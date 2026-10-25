@@ -29,7 +29,7 @@ Route::redirect('/', '/staff');
 
 // Versioned asset names; the web server rewrites these itself, this route is the fallback.
 Route::get('assets/{file}', AssetController::class)
-    ->where('file', '[a-z0-9-]+\.[0-9a-f]{10}\.(css|js)')
+    ->where('file', '(vendor/[a-z0-9-]+/)?[a-z0-9-]+(\.min)?\.[0-9a-f]{10}\.(css|js)')
     ->name('asset');
 
 Route::get('logo/{hash}.{ext}', LogoController::class)

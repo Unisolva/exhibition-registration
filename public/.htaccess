@@ -18,8 +18,8 @@ RewriteEngine On
 RewriteCond %{HTTP:Authorization} .
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-# Versioned asset names (app.<hash>.css) map to the real file; served without PHP.
-RewriteRule ^assets/([a-z0-9-]+)\.[0-9a-f]{10}\.(css|js)$ assets/$1.$2 [L]
+# Versioned asset names (app.<hash>.css, vendor/tabler/tabler.min.<hash>.css) map to the real file; served without PHP.
+RewriteRule ^assets/((?:vendor/[a-z0-9-]+/)?[a-z0-9-]+(?:\.min)?)\.[0-9a-f]{10}\.(css|js)$ assets/$1.$2 [L]
 
 <IfModule mod_headers.c>
     <FilesMatch "\.(css|js)$">
