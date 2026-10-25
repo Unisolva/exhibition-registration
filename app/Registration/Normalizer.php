@@ -32,12 +32,20 @@ class Normalizer
 
     public const MIN_PHONE_DIGITS = 7;
 
+    public const MAX_DETAILS = 100;
+
+    /** M10 CO-6: staff see their own wording for a number that is not valid. */
+    public const STAFF_PHONE_INVALID = "This doesn't look like a valid mobile number. Check it with the visitor.";
+
+    private bool $staff = false;
+
     /**
      * @param  array<string, mixed>  $input  raw request values keyed by field key
      * @param  Collection<int, FieldDefinition>  $fields  active fields
      */
-    public function normalize(array $input, Collection $fields, string $country, string $locale): Submission
+    public function normalize(array $input, Collection $fields, string $country, string $locale, bool $staff = false): Submission
     {
+        $this->staff = $staff;
         $errors = [];
         $old = [];
         $values = [
@@ -75,6 +83,20 @@ class Normalizer
                 $field->type === 'region' => $this->region($field, $value, $country, $label, $locale, $values, $errors),
                 default => $extra[$field->key] = $this->choice($field, self::digitsOnlyToAscii($value), self::MAX_CUSTOM_TEXT, $label, $locale, $errors),
             };
+
+            // M10 CO-5: the choice that asks for details needs them; any other choice ignores them.
+            if (($detailsValue = $field->detailsOption()) !== null && $value === $detailsValue) {
+                $detailsKey = $field->key.'_details';
+                $typedDetails = is_string($input[$detailsKey] ?? null) ? $input[$detailsKey] : '';
+                $old[$detailsKey] = $typedDetails;
+                $details = (string) preg_replace('/\s+/u', ' ', self::trim($typedDetails));
+                if ($details === '') {
+                    $errors[$detailsKey] = __('public.error.details_required', [], $locale);
+                } elseif (mb_strlen($details) > self::MAX_DETAILS) {
+                    $errors[$detailsKey] = __('public.error.too_long', ['field' => __('public.details_label', [], $locale), 'max' => self::MAX_DETAILS], $locale);
+                }
+                $extra[$detailsKey] = $details;
+            }
         }
 
         return new Submission(
@@ -165,9 +187,9 @@ class Normalizer
     }
 
     /**
-     * Work order §5 step 3 and §16.5: a number that parses gets an E.164 key;
-     * phone_e164 and phone_valid only when it is also valid. Rejected only when
-     * fewer than 7 digits remain.
+     * Work order §5 step 3 and §16.5: a number that parses gets an E.164 key.
+     * M10 CO-6: a number libphonenumber does not consider valid (read with the
+     * default country) is refused, on the public form and on staff screens.
      *
      * @param  array<string, mixed>  $values
      * @param  array<string, string>  $errors
@@ -195,15 +217,24 @@ class Normalizer
         try {
             $number = $util->parse($cleaned, $country);
         } catch (NumberParseException) {
+            $errors['phone'] = $this->invalidPhone($locale);
+
             return;
         }
-
         $e164 = $util->format($number, PhoneNumberFormat::E164);
         $values['phone_key'] = $e164;
-        if ($util->isValidNumber($number)) {
-            $values['phone_e164'] = $e164;
-            $values['phone_valid'] = true;
+        if (! $util->isValidNumber($number)) {
+            $errors['phone'] = $this->invalidPhone($locale);
+
+            return;
         }
+        $values['phone_e164'] = $e164;
+        $values['phone_valid'] = true;
+    }
+
+    private function invalidPhone(string $locale): string
+    {
+        return $this->staff ? self::STAFF_PHONE_INVALID : __('public.error.phone_invalid', [], $locale);
     }
 
     /**

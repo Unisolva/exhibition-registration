@@ -113,6 +113,8 @@
       else { el.value = ''; }
     }
     clearFieldErrors();
+    // Hides "Please specify" again (staff.js listens, M10 CO-5).
+    form.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
   function focusName() {

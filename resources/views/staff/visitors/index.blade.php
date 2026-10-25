@@ -106,25 +106,32 @@
   @endif
 @else
   <p class="result-count" role="status">{{ $total }} {{ $total === 1 ? 'visitor' : 'visitors' }}</p>
-  @if ($canPush)
+  @php($selectable = $canPush || $canTrash)
+  @if ($selectable)
   {{-- Selection lives only on this page: a new filter, search or page starts empty (work order §7). --}}
-  <form method="post" action="{{ route('batches.preview') }}" autocomplete="off" data-select>
+  <form method="post" action="{{ $canPush ? route('batches.preview') : route('visitors.bulk-trash.review') }}" autocomplete="off" data-select>
     @csrf
     <div class="select-bar">
       <label class="check"><input type="checkbox" data-select-all> Select all on this page</label>
       <span data-select-count aria-live="polite">0 selected</span>
-      <button type="submit" class="btn btn-primary" data-select-submit>Send selected to Odoo…</button>
+      @if ($canPush)
+        <button type="submit" class="btn btn-primary" data-select-submit>Send selected to Odoo…</button>
+      @endif
+      @if ($canTrash)
+        {{-- M10 CO-8: a separate action on the same selection. --}}
+        <button type="submit" class="btn btn-outline-danger" formaction="{{ route('visitors.bulk-trash.review') }}" data-select-submit>Move selected to trash…</button>
+      @endif
     </div>
   @endif
   <div class="card mb-3"><div class="table-responsive"><table class="table table-vcenter card-table stack-sm visitors">
     <thead>
-      <tr>@if ($canPush)<th><span class="hint">Select</span></th>@endif<th>Name</th><th>Phone</th><th>Exhibition</th><th>Registered</th>@if ($manager)<th>Source</th>@endif @if ($showErp)<th>ERP</th>@endif @if ($showPackage)<th>Package</th>@endif<th><span class="hint">Actions</span></th></tr>
+      <tr>@if ($selectable)<th><span class="hint">Select</span></th>@endif<th>Name</th><th>Phone</th><th>Exhibition</th><th>Registered</th>@if ($manager)<th>Source</th>@endif @if ($showErp)<th>ERP</th>@endif @if ($showPackage)<th>Package</th>@endif<th><span class="hint">Actions</span></th></tr>
     </thead>
     <tbody>
     @foreach ($page->items() as $visitor)
       @php($lock = $locks[$visitor->id] ?? null)
       <tr>
-        @if ($canPush)
+        @if ($selectable)
           <td class="select-cell"><label class="select-hit"><input type="checkbox" name="visitor_ids[]" value="{{ $visitor->id }}" aria-label="Select {{ $visitor->name }}" data-select-row></label></td>
         @endif
         <td data-label="Name">
@@ -153,7 +160,7 @@
     @endforeach
     </tbody>
   </table></div></div>
-  @if ($canPush)
+  @if ($selectable)
   </form>
   @endif
   <nav class="actions pager" aria-label="Pages">
@@ -163,7 +170,7 @@
 @endif
 @endsection
 
-@if ($canPush)
+@if ($canPush || $canTrash)
   @push('scripts')
   <script src="{{ \App\Support\Asset::url('select.js') }}" defer></script>
   @endpush

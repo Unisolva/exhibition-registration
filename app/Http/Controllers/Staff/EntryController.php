@@ -22,15 +22,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * Save & New (work order §7), for every role. Staff may enter visitors for
- * closed exhibitions and while public registration is off. Answers JSON to
- * the page script and plain redirects without JavaScript.
+ * Save & New (work order §7), for every role. M10 CO-7: the system replaces
+ * paper, so staff enter visitors for open exhibitions only (public
+ * registration being off does not stop them). Answers JSON to the page
+ * script and plain redirects without JavaScript.
  */
 class EntryController extends Controller
 {
     public const SESSION_KEY = 'entry_exhibition_id';
 
     public const DUPLICATE_NOTE = 'This phone number is already registered at this exhibition.';
+
+    public const CLOSED_NOTE = 'Registration for this exhibition is closed. Choose an open exhibition.';
 
     public function __construct(
         private readonly Settings $settings,
@@ -41,14 +44,20 @@ class EntryController extends Controller
 
     public function show(Request $request): Response
     {
+        $closed = null;
         if ($request->filled('exhibition') && ($chosen = Exhibition::query()->find((int) $request->query('exhibition')))) {
-            $request->session()->put(self::SESSION_KEY, $chosen->id);
+            if ($chosen->is_open) {
+                $request->session()->put(self::SESSION_KEY, $chosen->id);
+            } else {
+                $closed = $chosen;
+            }
         }
 
-        $exhibition = $request->boolean('change') ? null : $this->chosenExhibition($request);
+        $exhibition = $request->boolean('change') || $closed ? null : $this->chosenExhibition($request);
         if ($exhibition === null) {
             return response()->view('staff.entry.choose', [
-                'exhibitions' => Exhibition::query()->orderByDesc('starts_on')->orderByDesc('id')->get(),
+                'exhibitions' => Exhibition::query()->where('is_open', true)->orderByDesc('starts_on')->orderByDesc('id')->get(),
+                'closed' => $closed,
             ]);
         }
 
@@ -74,6 +83,7 @@ class EntryController extends Controller
             FieldDefinition::activeInOrder(),
             (string) $this->settings->get('default_country'),
             'en',
+            staff: true,
         );
 
         $token = strtoupper((string) $request->input('submission_token', ''));
@@ -84,6 +94,11 @@ class EntryController extends Controller
         // §6 step 3, with the token bound to the user who committed it.
         if ($replay = $this->replay($request, $exhibition, $token, $submission)) {
             return $replay;
+        }
+
+        // M10 CO-7: a closed exhibition takes no new entries; a replay of a committed one still succeeds (above).
+        if (! $exhibition->is_open) {
+            return $this->answer($request, 422, ['errors' => ['_form' => self::CLOSED_NOTE]], $exhibition, (string) Str::ulid(), $submission);
         }
 
         if (! $submission->isValid()) {
@@ -212,6 +227,6 @@ class EntryController extends Controller
     {
         $id = $request->session()->get(self::SESSION_KEY);
 
-        return $id ? Exhibition::query()->find($id) : null;
+        return $id ? Exhibition::query()->whereKey($id)->where('is_open', true)->first() : null;
     }
 }

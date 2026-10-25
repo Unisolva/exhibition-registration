@@ -8,14 +8,14 @@
 
   var all = form.querySelector('[data-select-all]');
   var count = form.querySelector('[data-select-count]');
-  var submit = form.querySelector('[data-select-submit]');
+  var submits = form.querySelectorAll('[data-select-submit]');
   var rows = form.querySelectorAll('[data-select-row]');
 
   function update() {
     var n = 0;
     for (var i = 0; i < rows.length; i++) { if (rows[i].checked) { n++; } }
     count.textContent = n + ' selected';
-    submit.disabled = n === 0;
+    for (var s = 0; s < submits.length; s++) { submits[s].disabled = n === 0; }
     all.checked = n > 0 && n === rows.length;
     all.indeterminate = n > 0 && n < rows.length;
   }

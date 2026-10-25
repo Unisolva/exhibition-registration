@@ -7,7 +7,7 @@ A self-hosted web application for agricultural companies that collect visitor de
 ## What it does
 
 - **One QR code per exhibition.** Visitors scan it and fill a short form on their phone. Arabic (right to left) and English.
-- **Fast staff entry.** Staff enter visitors at the booth or from paper forms with Save & New. The exhibition stays selected between visitors, and a lost connection never loses what was typed or saves a visitor twice.
+- **Fast staff entry.** Staff enter visitors face to face at the booth with Save & New. The exhibition stays selected between visitors, and a lost connection never loses what was typed or saves a visitor twice.
 - **One visitor list** across all exhibitions, with search and filters. Repeat sign-ups of the same phone number at an exhibition are flagged, never merged.
 - **Configurable form.** Administrators add their own fields (text or a list of choices) in Arabic and English without code changes.
 - **Selected visitors only go to the CRM.** An administrator ticks the visitors to send and confirms. Each one becomes an Odoo lead. Nothing is sent automatically, and a visitor already sent is never sent twice.

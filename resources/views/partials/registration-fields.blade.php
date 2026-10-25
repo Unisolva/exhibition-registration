@@ -1,7 +1,7 @@
 {{-- Copyright (c) 2026 Unisolva for Information Technology and App Development L.L.C. All rights reserved. See LICENSE. --}}
 {{-- Fields of a registration form. Expects $fields (FormView::fields), $old and $fieldErrors.
      After a failed submit the first invalid field gets autofocus (M8 CO-10). --}}
-@php($firstInvalid = collect($fields)->first(fn ($field) => isset($fieldErrors[$field['key']]))['key'] ?? null)
+@php($firstInvalid = collect($fields)->flatMap(fn ($field) => [$field['key'], $field['key'].'_details'])->first(fn ($key) => isset($fieldErrors[$key])))
 @foreach ($fields as $field)
   @if ($field['control'] === 'radio')
     <x-field type="radio" :name="$field['key']" :id="'f-'.$field['key']" :label="$field['label']"
@@ -19,5 +19,15 @@
              :autocomplete="$field['autocomplete'] ?: false" :inputmode="$field['inputmode'] ?: false" :dir="$field['dir'] ?: false"
              :error="$fieldErrors[$field['key']] ?? null" :required="$field['required']" :mark="$field['required']"
              :autofocus="$firstInvalid === $field['key']" />
+  @endif
+  @if ($field['details'] ?? null)
+    {{-- M10 CO-5: shown while the choice that asks for details is selected; without JavaScript always shown. --}}
+    @php($detailsKey = $field['key'].'_details')
+    <div class="field-details" data-details-for="{{ $field['key'] }}" data-details-value="{{ $field['details'] }}">
+      <x-field :name="$detailsKey" :id="'f-'.$detailsKey" :label="__('public.details_label')"
+               :hint="__('public.details_hint', ['choice' => $field['options'][$field['details']] ?? $field['details']])"
+               :value="$old[$detailsKey] ?? ''" maxlength="100" :error="$fieldErrors[$detailsKey] ?? null"
+               :autofocus="$firstInvalid === $detailsKey" />
+    </div>
   @endif
 @endforeach

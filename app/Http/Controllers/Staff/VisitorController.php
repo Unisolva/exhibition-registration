@@ -54,6 +54,8 @@ class VisitorController extends Controller
             'occupation' => FieldDefinition::query()->where('key', 'occupation')->first(),
             'timezone' => (string) $this->settings->get('display_timezone'),
             'canPush' => Gate::allows('registrations.push') && $erp,
+            // M10 CO-8: managers can move selected visitors to the trash.
+            'canTrash' => Gate::allows('registrations.view-all'),
             // M8 CO-17: no ERP column or filter in mode "none"; CO-19: the number of matches.
             'showErp' => $erp,
             'syncKind' => $reference !== null ? DB::table('erp_connections')->where('id', $reference)->value('kind') : null,
