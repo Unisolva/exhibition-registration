@@ -96,7 +96,9 @@ class FlowAndCopyTest extends TestCase
             ->assertSee(route('visitors.index', ['exhibition' => $open->id]), false)
             ->assertDontSee('Sending to Odoo')
             ->getContent();
-        $this->assertMatchesRegularExpression('#<td data-label="Today">2</td>\s*<td data-label="In total">3</td>#', $html);
+        // M10 CO-3: a card per open exhibition with the QR / staff split.
+        $this->assertMatchesRegularExpression('#Today</div>\s*<div class="stat-value">2</div>\s*<div class="stat-split">QR 2 · staff 0</div>#', $html);
+        $this->assertMatchesRegularExpression('#In total</div>\s*<div class="stat-value">3</div>\s*<div class="stat-split">QR 3 · staff 0</div>#', $html);
 
         // Odoo mode: items needing review, sending on or off, the active connection; the ERP link for super admins only.
         $this->readyToPush('test');

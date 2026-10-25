@@ -7,7 +7,8 @@ namespace App\Support;
 /**
  * Versioned asset URLs without a build step: public/assets/app.css is served
  * as /assets/app.<first 10 hex of its SHA-1>.css, so a new release never meets
- * a stale cached copy.
+ * a stale cached copy. Vendored files keep their folder and ".min" part:
+ * assets/vendor/tabler/tabler.min.css is /assets/vendor/tabler/tabler.min.<hash>.css (M10 CO-1).
  */
 class Asset
 {
@@ -29,7 +30,7 @@ class Asset
      */
     public static function resolve(string $versioned): ?string
     {
-        if (preg_match('/^([a-z0-9-]+)\.([0-9a-f]{10})\.(css|js)$/', $versioned, $m) !== 1) {
+        if (preg_match('#^((?:vendor/[a-z0-9-]+/)?[a-z0-9-]+(?:\.min)?)\.([0-9a-f]{10})\.(css|js)$#', $versioned, $m) !== 1) {
             return null;
         }
 
