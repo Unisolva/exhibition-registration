@@ -130,7 +130,7 @@ test('thank-you with a welcome package: code and QR visible on a phone, the QR o
   await context.close();
 });
 
-/** Decode the QR from a screenshot of the gift box as it is drawn (M11: on the accent colour). */
+/** Decode the QR from a screenshot of the gift box as it is drawn (M11). */
 async function decodeBoxScreenshot(page) {
   const png = (await page.locator('.package-box').screenshot()).toString('base64');
   await page.addScriptTag({ path: require.resolve('jsqr/dist/jsQR.js') });
@@ -148,37 +148,38 @@ async function decodeBoxScreenshot(page) {
   }, png);
 }
 
-test('thank-you gift box with and without an accent colour, Arabic and English at 360 (M11 CO-2)', async ({ browser, baseURL }, testInfo) => {
+test('thank-you gift line with and without a gift text colour, Arabic and English at 360 (M11 CO-2)', async ({ browser, baseURL }, testInfo) => {
   test.skip(testInfo.project.name !== 'en-360', 'one run covers both languages; it changes a global setting');
   test.setTimeout(120000);
   const f = fixture(testInfo);
   const admin = await adminPage(browser, testInfo);
-  const setAccent = async (value) => {
+  const setGiftText = async (value) => {
     await admin.goto('/staff/settings/branding');
-    await admin.locator('#accent_color').fill(value);
+    await admin.locator('#gift_text_color').fill(value);
     await admin.getByRole('button', { name: 'Save' }).click();
     await expect(admin.locator('.alert-success')).toContainText('Branding saved.');
   };
   try {
-    for (const accent of ['#FEB71F', '']) {
-      await setAccent(accent);
+    for (const colour of ['#2D7A1D', '']) {
+      await setGiftText(colour);
       for (const lang of ['ar', 'en']) {
         const context = await browser.newContext({ ...testInfo.project.use, baseURL, bypassCSP: true, storageState: undefined });
         const page = await context.newPage();
         await page.goto(`/r/${f.packageExhibitionToken}?lang=${lang}`);
-        await page.locator('#f-name').fill(`Accent ${lang} ${accent || 'none'}`);
+        await page.locator('#f-name').fill(`Gift line ${lang} ${colour || 'none'}`);
         await page.locator('#f-phone').fill(`0109${String(Date.now()).slice(-7)}`);
         await page.locator('form button[type=submit]').click();
         await expect(page).toHaveURL(/\/thanks$/);
-        const box = page.locator('.package-box');
-        const look = await box.evaluate((el) => ({ bg: getComputedStyle(el).backgroundColor, ink: getComputedStyle(el).color, border: getComputedStyle(el).borderTopStyle }));
-        if (accent) {
-          expect(look).toEqual({ bg: 'rgb(254, 183, 31)', ink: 'rgb(27, 31, 36)', border: 'none' });
-          expect(await page.locator('.package-qr').evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgb(255, 255, 255)');
+        const line = await page.locator('.package-show').evaluate((el) => ({ color: getComputedStyle(el).color, weight: getComputedStyle(el).fontWeight }));
+        const box = await page.locator('.package-box').evaluate((el) => ({ bg: getComputedStyle(el).backgroundColor, border: getComputedStyle(el).borderTopStyle }));
+        // The box keeps its dashed border and no fill either way.
+        expect(box).toEqual({ bg: 'rgba(0, 0, 0, 0)', border: 'dashed' });
+        if (colour) {
+          expect(line).toEqual({ color: 'rgb(45, 122, 29)', weight: '700' });
         } else {
-          expect(look.border).toBe('dashed');
+          expect(line).toEqual({ color: 'rgb(27, 31, 36)', weight: '600' });
         }
-        expect(await seriousViolations(page), `${lang} ${accent} axe`).toEqual([]);
+        expect(await seriousViolations(page), `${lang} ${colour} axe`).toEqual([]);
         await noHorizontalScroll(page);
         const code = (await page.locator('.package-code').textContent()).replace(/[^0-9A-Z]/g, '').slice(-6);
         expect(await decodeBoxScreenshot(page)).toBe(`${baseURL}/staff/packages/${code}`);
@@ -186,7 +187,7 @@ test('thank-you gift box with and without an accent colour, Arabic and English a
       }
     }
   } finally {
-    await setAccent('');
+    await setGiftText('');
     await admin.context().close();
   }
 });

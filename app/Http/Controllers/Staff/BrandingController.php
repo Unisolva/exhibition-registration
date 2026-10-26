@@ -27,7 +27,7 @@ class BrandingController extends Controller
         return view('staff.settings.branding', [
             'settings' => $this->settings,
             'logoUrl' => $branding->logoUrl(),
-            'accent' => $branding->accent(),
+            'giftText' => $branding->giftTextColor(),
         ]);
     }
 
@@ -37,7 +37,7 @@ class BrandingController extends Controller
             'org_name_en' => ['nullable', 'string', 'max:100'],
             'org_name_ar' => ['nullable', 'string', 'max:100'],
             'brand_color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
-            'accent_color' => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'gift_text_color' => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'privacy_url' => ['nullable', 'string', 'max:255', 'url:https'],
             'logo' => ['nullable', 'file'],
         ]);
@@ -49,13 +49,13 @@ class BrandingController extends Controller
             ]);
         }
 
-        // M11 CO-1: dark or white text, whichever is better, must reach 4.5:1 on the accent.
-        $accent = ($data['accent_color'] ?? null) ?: null;
-        if ($accent !== null) {
-            [, $ratio] = Branding::inkFor($accent);
+        // M11 CO-1: the gift line is text on white, so the same check as the brand colour.
+        $giftText = ($data['gift_text_color'] ?? null) ?: null;
+        if ($giftText !== null) {
+            $ratio = Branding::contrastWithWhite($giftText);
             if ($ratio < Branding::MIN_CONTRAST) {
                 throw ValidationException::withMessages([
-                    'accent_color' => sprintf('Neither dark nor white text reaches 4.5:1 on this colour; the better one has %.2f:1. Choose a lighter or darker colour.', $ratio),
+                    'gift_text_color' => sprintf('This colour on white has a contrast of %.2f:1; it needs at least 4.5:1. Choose a darker colour.', $ratio),
                 ]);
             }
         }
@@ -64,7 +64,7 @@ class BrandingController extends Controller
             'org_name_en' => trim((string) ($data['org_name_en'] ?? '')),
             'org_name_ar' => trim((string) ($data['org_name_ar'] ?? '')),
             'brand_color' => strtoupper($data['brand_color']),
-            'accent_color' => $accent !== null ? strtoupper($accent) : null,
+            'gift_text_color' => $giftText !== null ? strtoupper($giftText) : null,
             'privacy_url' => ($data['privacy_url'] ?? null) ?: null,
             'show_powered_by' => $request->boolean('show_powered_by'),
         ];
