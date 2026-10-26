@@ -223,7 +223,7 @@ input.short { inline-size: 7rem; display: inline-block; }
 .stat-value { font-size: 1.75rem; font-weight: 700; line-height: 1.2; }
 .stat-split { color: var(--muted); font-size: .875rem; }
 .bulk-names { padding-inline-start: 1.25rem; }
-.accent-preview { padding: .75rem 1rem; border-radius: var(--radius); font-weight: 600; margin-block: -.25rem 1rem; }
+.gift-text-sample { font-weight: 700; margin-block: -.25rem .5rem; }
 
 /* Check boxes outside <x-field>, and notices from shared partials. */
 .check { display: flex; align-items: center; gap: .5rem; font-weight: 400; min-height: 44px; margin: 0; }

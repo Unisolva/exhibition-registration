@@ -4,10 +4,10 @@ All notable changes. Versions follow semantic versioning; each release is the gi
 
 ## [1.4.0] - 2026-10-26
 
-An accent colour for the gift box. **Database:** no migration (a new setting). A rollback to 1.3.1 needs no restore.
+A colour for the gift instruction line. **Database:** no migration (a new setting). A rollback to 1.3.1 needs no restore.
 
-- CO-1: Branding has an optional "Accent colour". The text colour on it, dark or white, is chosen automatically by contrast; a colour on which neither reaches 4.5:1 is refused with the measured ratio. The Branding page shows a preview.
-- CO-2: When it is set, the thank-you page's gift box is filled with the accent and its text uses the chosen colour; the QR keeps a white tile so it still scans. Without it the box looks as before. Nothing else on the public pages changes.
+- CO-1: Branding has an optional "Gift text colour". Like the brand colour it must reach 4.5:1 contrast on white; a colour below that is refused with the measured ratio. The Branding page shows the line in that colour.
+- CO-2: When it is set, the thank-you page's line asking visitors to show the code for their gift is in that colour and bold. The gift box, its dashed border, the code and the QR are unchanged; without the setting the page looks as before.
 
 ## [1.3.1] - 2026-10-25
 

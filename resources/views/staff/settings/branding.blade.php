@@ -23,13 +23,14 @@
 
     <x-field name="brand_color" label="Brand colour" hint="Hex, e.g. #1F4E79. White text on it must reach 4.5:1 contrast."
              :value="old('brand_color', $settings->get('brand_color'))" required maxlength="7" dir="ltr" />
-    {{-- M11 CO-1: the gift box colour; the text colour on it is chosen automatically. --}}
-    <x-field name="accent_color" label="Accent colour (optional)"
-             hint="Fills the gift box on the thank-you page. Leave empty to keep the dashed brand-colour border."
-             :value="old('accent_color', $settings->get('accent_color'))" maxlength="7" dir="ltr" />
-    @if ($accent)
-      <style nonce="{{ $cspNonce }}">.accent-preview{background:{{ $accent['color'] }};color:{{ $accent['ink'] }}}</style>
-      <p class="accent-preview">Gift box preview: {{ $accent['color'] }} with {{ $accent['ink'] === \App\Support\Branding::INK_DARK ? 'dark' : 'white' }} text</p>
+    {{-- M11 CO-1: the colour of the gift instruction line on the thank-you page. --}}
+    <x-field name="gift_text_color" label="Gift text colour (optional)"
+             hint="Colour of the line that tells visitors to show the code for their gift. Leave empty for the normal text colour."
+             :value="old('gift_text_color', $settings->get('gift_text_color'))" maxlength="7" dir="ltr" />
+    @if ($giftText)
+      <style nonce="{{ $cspNonce }}">.gift-text-sample{color:{{ $giftText }}}</style>
+      <p class="gift-text-sample">{{ __('public.package_show', [], 'en') }}</p>
+      <p class="gift-text-sample" lang="ar" dir="rtl">{{ __('public.package_show', [], 'ar') }}</p>
     @endif
     <x-field type="url" name="privacy_url" label="Privacy page link (optional)" hint="An https address."
              :value="old('privacy_url', $settings->get('privacy_url'))" maxlength="255" dir="ltr" />
