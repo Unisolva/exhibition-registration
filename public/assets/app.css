@@ -150,6 +150,9 @@ th { font-size: .875rem; color: var(--muted); }
 .package-qr svg { display: block; inline-size: 100%; block-size: 100%; }
 .package-code { font-family: ui-monospace, Consolas, monospace; font-size: 2rem; font-weight: 800; letter-spacing: .2em; margin: .25rem 0; }
 .package-show { margin: 0; font-weight: 600; }
+/* M11 CO-2: with an accent colour the box is filled with it; the QR keeps a white tile so it still scans. */
+.has-accent .package-box { background: var(--accent); color: var(--accent-ink); border: 0; }
+.has-accent .package-qr { inline-size: 188px; block-size: 188px; padding: 10px; border-radius: 4px; }
 /* Staff: hand-over card and the code in visitor details (M9 CO-9, CO-10). */
 .code-text { font-family: ui-monospace, Consolas, monospace; font-weight: 700; letter-spacing: .1em; }
 .package-card { margin-block-end: 1rem; }

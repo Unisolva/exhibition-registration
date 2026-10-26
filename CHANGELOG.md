@@ -2,6 +2,13 @@
 
 All notable changes. Versions follow semantic versioning; each release is the git tag `v<version>`.
 
+## [1.4.0] - 2026-10-26
+
+An accent colour for the gift box. **Database:** no migration (a new setting). A rollback to 1.3.1 needs no restore.
+
+- CO-1: Branding has an optional "Accent colour". The text colour on it, dark or white, is chosen automatically by contrast; a colour on which neither reaches 4.5:1 is refused with the measured ratio. The Branding page shows a preview.
+- CO-2: When it is set, the thank-you page's gift box is filled with the accent and its text uses the chosen colour; the QR keeps a white tile so it still scans. Without it the box looks as before. Nothing else on the public pages changes.
+
 ## [1.3.1] - 2026-10-25
 
 A default choice for lists. **Database:** no migration. A rollback to 1.3.0 needs no restore.
