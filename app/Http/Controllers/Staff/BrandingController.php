@@ -27,6 +27,7 @@ class BrandingController extends Controller
         return view('staff.settings.branding', [
             'settings' => $this->settings,
             'logoUrl' => $branding->logoUrl(),
+            'accent' => $branding->accent(),
         ]);
     }
 
@@ -36,6 +37,7 @@ class BrandingController extends Controller
             'org_name_en' => ['nullable', 'string', 'max:100'],
             'org_name_ar' => ['nullable', 'string', 'max:100'],
             'brand_color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'accent_color' => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'privacy_url' => ['nullable', 'string', 'max:255', 'url:https'],
             'logo' => ['nullable', 'file'],
         ]);
@@ -47,10 +49,22 @@ class BrandingController extends Controller
             ]);
         }
 
+        // M11 CO-1: dark or white text, whichever is better, must reach 4.5:1 on the accent.
+        $accent = ($data['accent_color'] ?? null) ?: null;
+        if ($accent !== null) {
+            [, $ratio] = Branding::inkFor($accent);
+            if ($ratio < Branding::MIN_CONTRAST) {
+                throw ValidationException::withMessages([
+                    'accent_color' => sprintf('Neither dark nor white text reaches 4.5:1 on this colour; the better one has %.2f:1. Choose a lighter or darker colour.', $ratio),
+                ]);
+            }
+        }
+
         $values = [
             'org_name_en' => trim((string) ($data['org_name_en'] ?? '')),
             'org_name_ar' => trim((string) ($data['org_name_ar'] ?? '')),
             'brand_color' => strtoupper($data['brand_color']),
+            'accent_color' => $accent !== null ? strtoupper($accent) : null,
             'privacy_url' => ($data['privacy_url'] ?? null) ?: null,
             'show_powered_by' => $request->boolean('show_powered_by'),
         ];

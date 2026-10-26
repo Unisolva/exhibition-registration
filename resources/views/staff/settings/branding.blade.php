@@ -23,6 +23,14 @@
 
     <x-field name="brand_color" label="Brand colour" hint="Hex, e.g. #1F4E79. White text on it must reach 4.5:1 contrast."
              :value="old('brand_color', $settings->get('brand_color'))" required maxlength="7" dir="ltr" />
+    {{-- M11 CO-1: the gift box colour; the text colour on it is chosen automatically. --}}
+    <x-field name="accent_color" label="Accent colour (optional)"
+             hint="Fills the gift box on the thank-you page. Leave empty to keep the dashed brand-colour border."
+             :value="old('accent_color', $settings->get('accent_color'))" maxlength="7" dir="ltr" />
+    @if ($accent)
+      <style nonce="{{ $cspNonce }}">.accent-preview{background:{{ $accent['color'] }};color:{{ $accent['ink'] }}}</style>
+      <p class="accent-preview">Gift box preview: {{ $accent['color'] }} with {{ $accent['ink'] === \App\Support\Branding::INK_DARK ? 'dark' : 'white' }} text</p>
+    @endif
     <x-field type="url" name="privacy_url" label="Privacy page link (optional)" hint="An https address."
              :value="old('privacy_url', $settings->get('privacy_url'))" maxlength="255" dir="ltr" />
     <x-field type="checkbox" name="show_powered_by" label='Show "Powered by Unisolva" on public pages'

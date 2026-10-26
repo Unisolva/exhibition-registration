@@ -3,7 +3,7 @@
 // 44 px touch targets, no horizontal scroll at 360 px, no foreign requests, a full submission.
 
 const { test, expect } = require('@playwright/test');
-const { fixture, isArabic, publicFormUrl, watchRequests, noHorizontalScroll } = require('./helpers');
+const { fixture, isArabic, publicFormUrl, watchRequests, noHorizontalScroll, adminPage, seriousViolations } = require('./helpers');
 
 test('renders in its language and direction with the right keyboards and touch targets', async ({ page, baseURL }, testInfo) => {
   const f = fixture(testInfo);
@@ -128,4 +128,65 @@ test('thank-you with a welcome package: code and QR visible on a phone, the QR o
   expect(decoded).toBe(`${baseURL}/staff/packages/${code}`);
   await expect(page.getByText('Register another person')).toHaveCount(0);
   await context.close();
+});
+
+/** Decode the QR from a screenshot of the gift box as it is drawn (M11: on the accent colour). */
+async function decodeBoxScreenshot(page) {
+  const png = (await page.locator('.package-box').screenshot()).toString('base64');
+  await page.addScriptTag({ path: require.resolve('jsqr/dist/jsQR.js') });
+  return page.evaluate(async (b64) => {
+    const img = new Image();
+    img.src = 'data:image/png;base64,' + b64;
+    await img.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width; canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const data = ctx.getImageData(0, 0, img.width, img.height);
+    const result = window.jsQR(data.data, img.width, img.height);
+    return result ? result.data : null;
+  }, png);
+}
+
+test('thank-you gift box with and without an accent colour, Arabic and English at 360 (M11 CO-2)', async ({ browser, baseURL }, testInfo) => {
+  test.skip(testInfo.project.name !== 'en-360', 'one run covers both languages; it changes a global setting');
+  test.setTimeout(120000);
+  const f = fixture(testInfo);
+  const admin = await adminPage(browser, testInfo);
+  const setAccent = async (value) => {
+    await admin.goto('/staff/settings/branding');
+    await admin.locator('#accent_color').fill(value);
+    await admin.getByRole('button', { name: 'Save' }).click();
+    await expect(admin.locator('.alert-success')).toContainText('Branding saved.');
+  };
+  try {
+    for (const accent of ['#FEB71F', '']) {
+      await setAccent(accent);
+      for (const lang of ['ar', 'en']) {
+        const context = await browser.newContext({ ...testInfo.project.use, baseURL, bypassCSP: true, storageState: undefined });
+        const page = await context.newPage();
+        await page.goto(`/r/${f.packageExhibitionToken}?lang=${lang}`);
+        await page.locator('#f-name').fill(`Accent ${lang} ${accent || 'none'}`);
+        await page.locator('#f-phone').fill(`0109${String(Date.now()).slice(-7)}`);
+        await page.locator('form button[type=submit]').click();
+        await expect(page).toHaveURL(/\/thanks$/);
+        const box = page.locator('.package-box');
+        const look = await box.evaluate((el) => ({ bg: getComputedStyle(el).backgroundColor, ink: getComputedStyle(el).color, border: getComputedStyle(el).borderTopStyle }));
+        if (accent) {
+          expect(look).toEqual({ bg: 'rgb(254, 183, 31)', ink: 'rgb(27, 31, 36)', border: 'none' });
+          expect(await page.locator('.package-qr').evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgb(255, 255, 255)');
+        } else {
+          expect(look.border).toBe('dashed');
+        }
+        expect(await seriousViolations(page), `${lang} ${accent} axe`).toEqual([]);
+        await noHorizontalScroll(page);
+        const code = (await page.locator('.package-code').textContent()).replace(/[^0-9A-Z]/g, '').slice(-6);
+        expect(await decodeBoxScreenshot(page)).toBe(`${baseURL}/staff/packages/${code}`);
+        await context.close();
+      }
+    }
+  } finally {
+    await setAccent('');
+    await admin.context().close();
+  }
 });

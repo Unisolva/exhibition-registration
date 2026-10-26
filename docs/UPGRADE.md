@@ -27,6 +27,8 @@ A release whose migration is not additive says so in `CHANGELOG.md` and names th
 
 - **1.1.0:** one additive migration, `exhibitions.default_locale` (Arabic or English, not null, default Arabic). A rollback to 1.0.0 needs no restore: 1.0.0 ignores the column and new rows get the default. After the upgrade every existing exhibition opens in Arabic; change it on the exhibition's Edit page. A logo uploaded before 1.1.0 is shown without width and height until it is uploaded again.
 
+- **1.4.0:** no migration; the new setting `accent_color` starts empty, so the thank-you page looks as before. A rollback to 1.3.1 needs no restore.
+
 - **1.3.1:** no migration. A rollback to 1.3.0 needs no restore.
 
 - **1.3.0:** no migration. Staff pages load the vendored Tabler files from `public/assets/vendor/tabler/` (served by the same versioned-asset rule, now also for `vendor/<name>/<file>.min.<hash>.css|js`). A rollback to 1.2.0 needs no restore.

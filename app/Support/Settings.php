@@ -21,6 +21,8 @@ class Settings
         'logo_width' => null,
         'logo_height' => null,
         'brand_color' => '#1F4E79',
+        // M11 CO-1: fills the thank-you page's gift box; null keeps the dashed brand-colour border.
+        'accent_color' => null,
         'show_powered_by' => true,
         'display_timezone' => 'Africa/Cairo',
         'public_registration_enabled' => true,

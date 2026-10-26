@@ -9,9 +9,10 @@
 <meta name="robots" content="noindex, nofollow">
 <title>@yield('title') · {{ $branding->orgName($locale) }}</title>
 <link rel="stylesheet" href="{{ \App\Support\Asset::url('app.css') }}">
-<style nonce="{{ $cspNonce }}">:root{--brand:{{ $branding->color() }}}</style>
+@php($accent = $branding->accent())
+<style nonce="{{ $cspNonce }}">:root{--brand:{{ $branding->color() }}@if ($accent);--accent:{{ $accent['color'] }};--accent-ink:{{ $accent['ink'] }}@endif}</style>
 </head>
-<body class="public">
+<body class="public{{ $accent ? ' has-accent' : '' }}">
 <header class="public-head">
   <div class="wrap narrow public-head-inner">
     @if ($logo = $branding->logoUrl())
